@@ -78,3 +78,4 @@ curl -X POST https://murastorage.pythonanywhere.com/api/auth/login/ \
 - Vérifier les headers d'authentification
 
 **🎉 Configuration terminée ! Votre frontend pointe maintenant vers le backend PythonAnywhere.**
+
