@@ -1,0 +1,4 @@
+nom,prix_achat,prix_vente,quantite,reference,description,categorie,code_barre,unite,fournisseur,marque,modele,etat,devise,sku
+Produit Test 1,1000,1500,50,REF001,Description du produit test,Electronique,1234567890123,piece,Fournisseur A,Brand A,Model A,actif,XAF,SKU001
+Produit Test 2,2000,2500,30,REF002,Description du produit test 2,Informatique,1234567890124,piece,Fournisseur B,Brand B,Model B,actif,XAF,SKU002
+Produit Test 3,3000,3500,20,REF003,Description du produit test 3,Maison,1234567890125,piece,Fournisseur C,Brand C,Model C,actif,XAF,SKU003

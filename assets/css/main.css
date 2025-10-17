@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Primary color overrides: use green as primary for utilities that rely on CSS vars */
+:root {
+  --color-primary: 16 185 129; /* tailwind emerald-500 */
+}
+
+.text-primary { color: rgb(var(--color-primary)); }
+.bg-primary { background-color: rgb(var(--color-primary)); }
+.border-primary { border-color: rgb(var(--color-primary)); }
