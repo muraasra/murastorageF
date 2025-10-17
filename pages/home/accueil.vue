@@ -4,14 +4,37 @@ definePageMeta({
   });
 import Avis from "~/components/home/Avis.vue";
 
+// Métadonnées SEO optimisées
 useSeoMeta({
-  title: 'Mura Storage - Logiciel de gestion de stock moderne',
-  ogTitle: 'Mura Storage - Logiciel de gestion de stock moderne',
+  title: 'Mura Storage - Logiciel de Gestion de Stock Professionnel',
+  ogTitle: 'Mura Storage - Logiciel de Gestion de Stock Professionnel',
   description: 'Optimisez vos inventaires, suivez les mouvements et accélérez vos opérations avec Mura Storage. Essai gratuit 14 jours.',
   ogDescription: 'Plateforme complète de gestion de stock propulsée par Groupe Mura, avec tarification flexible, sécurité RGPD et support 24/7.',
   ogType: 'website',
-  ogImage: '/img/og-image-MuraSrorage.png',
-  twitterCard: 'summary_large_image'
+  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  twitterCard: 'summary_large_image',
+  keywords: 'gestion stock, inventaire, logiciel stock, Mura Storage, entreprise, optimisation, RGPD, gestion entrepôt',
+  author: 'Groupe Mura'
+});
+
+// Données structurées JSON-LD
+const { getOrganizationSchema, getSoftwareApplicationSchema, getWebSiteSchema } = useStructuredData()
+
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify(getOrganizationSchema())
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify(getSoftwareApplicationSchema())
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify(getWebSiteSchema())
+    }
+  ]
 });
 </script>
 

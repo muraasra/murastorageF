@@ -1,1 +1,43 @@
+User-agent: *
+Allow: /
 
+# Pages publiques importantes
+Allow: /home/accueil
+Allow: /home/a_propos
+Allow: /home/services
+Allow: /home/tarification
+Allow: /home/faq
+Allow: /home/contact_accueil
+Allow: /home/inscription
+Allow: /home/conditions
+Allow: /home/confidentialite
+
+# Pages privées à exclure
+Disallow: /connexion
+Disallow: /admin/
+Disallow: /superadmin/
+Disallow: /user/
+Disallow: /debug-auth
+Disallow: /test-public
+Disallow: /facturation
+Disallow: /facturation copy
+Disallow: /produits
+Disallow: /partenaires
+Disallow: /stock_produit
+Disallow: /mouvements-stock
+Disallow: /listes-factures
+Disallow: /liste-ordres
+Disallow: /commandes_partenaires
+Disallow: /transfert
+Disallow: /transfert-simple
+Disallow: /utilisateurs
+Disallow: /journal
+Disallow: /guide
+Disallow: /tarification
+Disallow: /abonnement
+
+# Sitemap
+Sitemap: https://murastorage.netlify.app/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

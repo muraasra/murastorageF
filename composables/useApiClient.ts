@@ -1,5 +1,6 @@
 // Composable centralisé pour tous les appels API
 import { API_BASE_URL } from '@/constants'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
 export const useApiClient = () => {
   const { smartFetch } = useSmartCache()

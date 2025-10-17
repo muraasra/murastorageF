@@ -219,6 +219,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import { useAuthStore } from '@/stores/auth'
 import { API_BASE_URL } from '@/constants'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
 definePageMeta({
   layout: "accueil",
@@ -226,6 +227,7 @@ definePageMeta({
 
 const { error, success } = useNotification()
 const auth = useAuthStore()
+const { handleApiError } = useErrorHandler()
 
 // État du formulaire
 const loginType = ref<'superadmin' | 'user'>('superadmin')
@@ -303,7 +305,7 @@ const handleLogin = async () => {
     })
 
     if (apiError.value) {
-      error(apiError.value.message || 'Erreur de connexion')
+      handleApiError(apiError.value, 'connexion')
       return
     }
 
@@ -353,7 +355,7 @@ const handleLogin = async () => {
 
   } catch (err) {
     console.error('Erreur de connexion:', err)
-    error('Une erreur est survenue lors de la connexion')
+    // La gestion d'erreur est déjà faite par handleApiError
   } finally {
     isLoading.value = false
   }
