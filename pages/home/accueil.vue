@@ -14,7 +14,8 @@ useSeoMeta({
   ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
   twitterCard: 'summary_large_image',
   keywords: 'gestion stock, inventaire, logiciel stock, Mura Storage, entreprise, optimisation, RGPD, gestion entrepôt',
-  author: 'Groupe Mura'
+  author: 'Groupe Mura',
+  'google-site-verification': '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA'
 });
 
 // Données structurées JSON-LD
@@ -39,6 +40,11 @@ useHead({
 </script>
 
 <template>
+  <!-- Balise de vérification Google Search Console -->
+  <Head>
+    <Meta name="google-site-verification" content="9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA" />
+  </Head>
+  
   <div class="w-full h-full">
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">
