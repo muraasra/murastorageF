@@ -18,33 +18,18 @@ useSeoMeta({
   'google-site-verification': '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA'
 });
 
-// Données structurées JSON-LD
-const { getOrganizationSchema, getSoftwareApplicationSchema, getWebSiteSchema } = useStructuredData()
-
+// Balise de vérification Google Search Console
 useHead({
-  script: [
+  meta: [
     {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify(getOrganizationSchema())
-    },
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify(getSoftwareApplicationSchema())
-    },
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify(getWebSiteSchema())
+      name: 'google-site-verification',
+      content: '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA'
     }
   ]
 });
 </script>
 
 <template>
-  <!-- Balise de vérification Google Search Console -->
-  <Head>
-    <Meta name="google-site-verification" content="9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA" />
-  </Head>
-  
   <div class="w-full h-full">
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">

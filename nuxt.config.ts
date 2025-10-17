@@ -9,10 +9,9 @@ export default defineNuxtConfig({
   devtools: { enabled: process.env.NODE_ENV === 'development' },
   modules: ['@nuxt/ui', '@pinia/nuxt'],
 
-  // Optimisations pour les transitions rapides
+  // Configuration expérimentale simplifiée
   experimental: {
-    payloadExtraction: false, // Évite l'extraction de payload pour des transitions plus rapides
-    inlineSSRStyles: false,   // Optimise le rendu SSR
+    payloadExtraction: false
   },
 
   // Configuration des transitions
@@ -49,25 +48,18 @@ export default defineNuxtConfig({
     }
   },
 
-  // Configuration Vite pour les performances SEO
+  // Configuration Vite simplifiée
   vite: {
     build: {
       rollupOptions: {
-        output: {
-          manualChunks: {
-            vendor: ['vue', 'vue-router'],
-            ui: ['@nuxt/ui']
-          }
-        }
+        external: ['@nuxt/kit']
       }
     }
   },
 
-  // Configuration SEO et performances
+  // Configuration Nitro simplifiée
   nitro: {
-    preset: 'static',
-    compressPublicAssets: true,
-    minify: true
+    preset: 'static'
   },
 
   app: {
