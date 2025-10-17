@@ -3,6 +3,7 @@ definePageMeta({
     layout: "accueil",
   });
 import Avis from "~/components/home/Avis.vue";
+import { useMuraTracking } from '@/composables/useMuraTracking'
 
 // Métadonnées SEO optimisées
 useSeoMeta({
@@ -27,6 +28,13 @@ useHead({
     }
   ]
 });
+
+// Tracking Google Analytics
+const { trackHomePage } = useMuraTracking()
+
+onMounted(() => {
+  trackHomePage()
+})
 </script>
 
 <template>
