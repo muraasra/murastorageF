@@ -43,28 +43,13 @@ export default defineNuxtConfig({
 
   // Configuration de build optimisée
   build: {
-    transpile: ['@nuxt/ui'],
     extractCSS: {
       ignoreOrder: true
     }
   },
 
-  // Configuration Vite pour des builds plus rapides
-  vite: {
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            vendor: ['vue', 'vue-router'],
-            ui: ['@nuxt/ui']
-          }
-        }
-      }
-    },
-    optimizeDeps: {
-      include: ['@nuxt/ui']
-    }
-  },
+  // Configuration Vite
+  vite: {},
 
   app: {
     head: {
