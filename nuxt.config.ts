@@ -1,8 +1,8 @@
 export default defineNuxtConfig({
-  ssr: false, // Désactiver SSR temporairement pour debug
+  ssr: false, // Mode SPA pour Netlify
 
   nitro: {
-    preset: 'node-server'
+    preset: 'static' // Preset statique pour Netlify
   },
 
   devtools: { enabled: true },

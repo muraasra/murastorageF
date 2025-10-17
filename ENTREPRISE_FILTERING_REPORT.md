@@ -249,3 +249,4 @@ class BoutiqueViewSet(viewsets.ModelViewSet):
 
 
 
+
