@@ -61,8 +61,8 @@ const packs = [
   {
     id: 'basique',
     nom: 'Basique',
-    prix: 19,
-    devise: '€',
+    prix: 15000,
+    devise: 'Fcfa',
     duree: 'mois',
     description: 'Parfait pour les petites entreprises',
     fonctionnalites: [
@@ -77,8 +77,8 @@ const packs = [
   {
     id: 'professionnel',
     nom: 'Professionnel',
-    prix: 49,
-    devise: '€',
+    prix: 35000,
+    devise: 'Fcfa',
     duree: 'mois',
     description: 'Idéal pour les entreprises en croissance',
     fonctionnalites: [
@@ -95,8 +95,8 @@ const packs = [
   {
     id: 'entreprise',
     nom: 'Entreprise',
-    prix: 0,
-    devise: '€',
+    prix: 75000,
+    devise: 'Fcfa',
     duree: 'mois',
     description: 'Solutions sur mesure',
     fonctionnalites: [
@@ -317,7 +317,7 @@ const submitForm = async () => {
     console.log('Données envoyées au backend:', registrationData)
     
     // Appel à l'API
-    const { data, error: apiError } = await useApi('http://127.0.0.1:8000/api/inscription/inscription/', {
+    const { data, error: apiError } = await useApi('https://murastorage.netlify.app/api/inscription/inscription/', {
       method: 'POST',
       body: registrationData,
       server: false
