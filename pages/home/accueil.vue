@@ -14,7 +14,7 @@ useSeoMeta({
   ogType: 'website',
   ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
   twitterCard: 'summary_large_image',
-  keywords: 'gestion stock, inventaire, logiciel stock, Mura Storage, entreprise, optimisation, RGPD, gestion entrepôt',
+  keywords: 'gestion stock, inventaire, logiciel stock, Mura Storage, entreprise, optimisation, RGPD, gestion entrepôt , wilfried tayou',
   author: 'Groupe Mura',
   'google-site-verification': '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA'
 });
@@ -40,7 +40,7 @@ onMounted(() => {
 <template>
   <div class="w-full h-full">
     <!-- Hero Section -->
-    <section class="relative bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">
+    <section class="relative bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden -z-20">
     <!-- Background Shapes -->
       <div class="absolute inset-0">
     <div class="absolute top-0 left-0 w-full h-full">
@@ -49,12 +49,12 @@ onMounted(() => {
           </svg>
         </div>
         <!-- Floating elements -->
-        <div class="absolute top-20 left-10 w-20 h-20 bg-emerald-200 rounded-full opacity-20 animate-pulse"></div>
-        <div class="absolute top-40 right-20 w-16 h-16 bg-blue-200 rounded-full opacity-20 animate-pulse delay-1000"></div>
-        <div class="absolute bottom-20 left-1/4 w-12 h-12 bg-green-200 rounded-full opacity-20 animate-pulse delay-2000"></div>
+        <div class="absolute top-20 left-10 w-20 h-20 bg-emerald-200 rounded-full opacity-20 animate-pulse -z-10"></div>
+        <div class="absolute top-40 right-20 w-16 h-16 bg-blue-200 rounded-full opacity-20 animate-pulse delay-1000 -z-10"></div>
+        <div class="absolute bottom-20 left-1/4 w-12 h-12 bg-green-200 rounded-full opacity-20 animate-pulse delay-2000 -z-10"></div>
       </div>
       
-      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+      <div class="relative z-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <!-- Content -->
           <div class="text-center lg:text-left">
@@ -129,7 +129,7 @@ onMounted(() => {
           
           <!-- Image/Illustration -->
           <div class="relative">
-            <div class="relative z-10">
+            <div class="relative z-0">
               <img 
                 src="../../public/img/undraw_finance_m6vw_1_-removebg-preview.png" 
                 alt="Mura Storage - Gestion de stock moderne" 

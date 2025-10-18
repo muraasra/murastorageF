@@ -5,35 +5,52 @@ definePageMeta({
 </script>
 
 <template>
-  <div>
-POLITIQUE DE CONFIDENTIALITÉ – MURA STORAGE
+  <div class="max-w-4xl mx-auto px-6 py-8 text-justify leading-relaxed">
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">
+      POLITIQUE DE CONFIDENTIALITÉ – MURA STORAGE
+    </h1>
 
-Dernière mise à jour : {{ new Date().toLocaleDateString('fr-FR') }}
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-8 text-center">
+      Dernière mise à jour : {{ new Date().toLocaleDateString('fr-FR') }}
+    </p>
 
-1. INTRODUCTION ET DÉFINITIONS GÉNÉRALES
+    <div class="prose prose-lg max-w-none dark:prose-invert">
+      <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">1. INTRODUCTION ET DÉFINITIONS GÉNÉRALES</h2>
 
-1.1. Objet et portée de la présente Politique
-La présente Politique de Confidentialité ("Politique") régit la collecte, l'utilisation, le stockage, le traitement, la protection et la communication des données personnelles des utilisateurs de la plateforme Mura Storage ("Plateforme", "Service", "Nous", "Notre", "Groupe Mura") développée et exploitée par Groupe Mura, société camerounaise immatriculée au Registre du Commerce sous le numéro RC/CMR/2024/XXXX, dont le siège social est situé à Bamendzi 2, Bafoussam, Cameroun.
+      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">1.1. Objet et portée de la présente Politique</h3>
+      <p class="mb-4 text-gray-700 dark:text-gray-300">
+        La présente Politique de Confidentialité ("Politique") régit la collecte, l'utilisation, le stockage, le traitement, la protection et la communication des données personnelles des utilisateurs de la plateforme Mura Storage ("Plateforme", "Service", "Nous", "Notre", "Groupe Mura") développée et exploitée par Groupe Mura, société camerounaise immatriculée au Registre du Commerce sous le numéro RC/CMR/2024/XXXX, dont le siège social est situé à Bamendzi 2, Bafoussam, Cameroun.
+      </p>
+      <p class="mb-6 text-gray-700 dark:text-gray-300">
+        Cette Politique s'applique à tous les utilisateurs ("Utilisateur", "Vous", "Votre") de notre plateforme de gestion de stock, qu'ils soient des entreprises, des particuliers, des partenaires commerciaux, des visiteurs de notre site web, des utilisateurs de nos applications mobiles, des intégrateurs utilisant nos API, ou toute personne interagissant avec nos services. En utilisant notre Service, Vous acceptez expressément les termes de cette Politique de Confidentialité.
+      </p>
 
-Cette Politique s'applique à tous les utilisateurs ("Utilisateur", "Vous", "Votre") de notre plateforme de gestion de stock, qu'ils soient des entreprises, des particuliers, des partenaires commerciaux, des visiteurs de notre site web, des utilisateurs de nos applications mobiles, des intégrateurs utilisant nos API, ou toute personne interagissant avec nos services. En utilisant notre Service, Vous acceptez expressément les termes de cette Politique de Confidentialité.
+      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">1.2. Conformité réglementaire</h3>
+      <p class="mb-6 text-gray-700 dark:text-gray-300">
+        Cette Politique est établie en conformité avec le Règlement Général sur la Protection des Données (RGPD) de l'Union Européenne (Règlement UE 2016/679), la Loi camerounaise sur la protection des données personnelles, et toute autre réglementation applicable en matière de protection des données personnelles dans les juridictions où nous opérons.
+      </p>
 
-1.2. Conformité réglementaire
-Cette Politique est établie en conformité avec le Règlement Général sur la Protection des Données (RGPD) de l'Union Européenne (Règlement UE 2016/679), la Loi camerounaise sur la protection des données personnelles, et toute autre réglementation applicable en matière de protection des données personnelles dans les juridictions où nous opérons.
+      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">1.3. Principes fondamentaux</h3>
+      <p class="mb-3 text-gray-700 dark:text-gray-300">
+        Nous nous engageons à respecter les principes fondamentaux suivants dans le traitement de vos données personnelles :
+      </p>
+      <ul class="list-disc list-inside mb-6 text-gray-700 dark:text-gray-300 space-y-2">
+        <li>Licéité, loyauté et transparence du traitement</li>
+        <li>Limitation des finalités (collecte pour des finalités déterminées, explicites et légitimes)</li>
+        <li>Minimisation des données (données adéquates, pertinentes et limitées au nécessaire)</li>
+        <li>Exactitude et mise à jour des données</li>
+        <li>Limitation de la conservation (durées de conservation appropriées)</li>
+        <li>Intégrité et confidentialité (sécurité appropriée des données)</li>
+        <li>Responsabilité et capacité de démonstration</li>
+      </ul>
 
-1.3. Principes fondamentaux
-Nous nous engageons à respecter les principes fondamentaux suivants dans le traitement de vos données personnelles :
-- Licéité, loyauté et transparence du traitement
-- Limitation des finalités (collecte pour des finalités déterminées, explicites et légitimes)
-- Minimisation des données (données adéquates, pertinentes et limitées au nécessaire)
-- Exactitude et mise à jour des données
-- Limitation de la conservation (durées de conservation appropriées)
-- Intégrité et confidentialité (sécurité appropriée des données)
-- Responsabilité et capacité de démonstration
+      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">1.4. Définitions importantes</h3>
+      <p class="mb-3 text-gray-700 dark:text-gray-300">
+        Pour les besoins de cette Politique, les termes suivants ont les significations qui leur sont attribuées :
+      </p>
 
-1.4. Définitions importantes
-Pour les besoins de cette Politique, les termes suivants ont les significations qui leur sont attribuées :
-
-"Données personnelles" : toute information se rapportant à une personne physique identifiée ou identifiable directement ou indirectement, notamment par référence à un identifiant tel qu'un nom, un numéro d'identification, des données de localisation, un identifiant en ligne, ou à un ou plusieurs éléments spécifiques propres à l'identité physique, physiologique, génétique, psychique, économique, culturelle ou sociale de cette personne.
+      <div class="space-y-4 text-gray-700 dark:text-gray-300">
+        <p><strong>"Données personnelles"</strong> : toute information se rapportant à une personne physique identifiée ou identifiable directement ou indirectement, notamment par référence à un identifiant tel qu'un nom, un numéro d'identification, des données de localisation, un identifiant en ligne, ou à un ou plusieurs éléments spécifiques propres à l'identité physique, physiologique, génétique, psychique, économique, culturelle ou sociale de cette personne.</p>
 
 "Traitement" : toute opération ou ensemble d'opérations effectuées ou non à l'aide de procédés automatisés et appliquées à des données personnelles, telles que la collecte, l'enregistrement, l'organisation, la structuration, la conservation, l'adaptation ou la modification, l'extraction, la consultation, l'utilisation, la communication par transmission, la diffusion ou toute autre forme de mise à disposition, le rapprochement ou l'interconnexion, la limitation, l'effacement ou la destruction.
 
@@ -790,10 +807,56 @@ Nous nous engageons à améliorer continuellement nos pratiques de protection de
 25.4. Merci
 Merci de votre confiance et de votre utilisation de Mura Storage. Nous nous engageons à protéger vos données et à vous fournir un service de qualité.
 
-Pour toute question concernant cette Politique de Confidentialité, n'hésitez pas à nous contacter à dpo@murastorage.com.
+        <p class="mb-4 text-gray-700 dark:text-gray-300">
+          Pour toute question concernant cette Politique de Confidentialité, n'hésitez pas à nous contacter à dpo@murastorage.com.
+        </p>
 
-Groupe Mura - Mura Storage
-Bamendzi 2, Bafoussam, Cameroun
-+237 658 934 147 | info@murastorage.com | www.murastorage.com
+        <p class="text-center font-semibold text-gray-800 dark:text-white mt-8">
+          Groupe Mura - Mura Storage<br>
+          Bamendzi 2, Bafoussam, Cameroun<br>
+          +237 658 934 147 | info@murastorage.com | www.murastorage.com
+        </p>
+      </div>
+    </div>
   </div>
 </template>
+
+<style scoped>
+/* Styles globaux pour tout le contenu de la politique de confidentialité */
+.prose h2 {
+  @apply text-2xl font-semibold text-gray-800 dark:text-white mb-4 mt-8;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3 mt-6;
+}
+
+.prose h4 {
+  @apply text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-4;
+}
+
+.prose p {
+  @apply mb-4 text-gray-700 dark:text-gray-300 leading-relaxed;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-4 text-gray-700 dark:text-gray-300 space-y-2;
+}
+
+.prose ol {
+  @apply list-decimal list-inside mb-4 text-gray-700 dark:text-gray-300 space-y-2;
+}
+
+.prose li {
+  @apply text-gray-700 dark:text-gray-300;
+}
+
+.prose strong {
+  @apply font-semibold text-gray-800 dark:text-white;
+}
+
+/* Styles pour les sections numérotées */
+.prose > * {
+  @apply text-justify;
+}
+</style>

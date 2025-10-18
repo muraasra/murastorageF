@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue";
+import { API_BASE_URL } from '@/constants'
 
 definePageMeta({
   layout: "accueil",
@@ -108,7 +109,7 @@ const submitForm = async () => {
 
   try {
     // Envoyer les données au backend Django
-    const response = await fetch("http://127.0.0.1:8000/api/contact/submit/", {
+    const response = await fetch(`${API_BASE_URL}/api/contact/submit/`, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",

@@ -9,7 +9,7 @@ const navIsOpen = ref(false);
 
 <template>
   <header
-    class="sticky top-0 z-10 py-2 px-6 w-full flex items-center justify-between border-b dark:bg-black dark:border-b-gray-600 bg-white border-b-gray-200"
+    class="sticky top-0 z-[9999] py-2 px-6 w-full flex items-center justify-between border-b dark:bg-black dark:border-b-gray-600 bg-white border-b-gray-200"
   >
     <h1 class="flex items-center justify-center">
       <NuxtLink href="/" class="text-lg md:text-xl font-extrabold"
@@ -38,7 +38,7 @@ const navIsOpen = ref(false);
     <!-- Navigation -->
     <nav
       :class="navIsOpen ? 'block' : 'hidden'"
-      class="absolute top-14 left-0 w-full bg-emerald-500 dark:bg-black md:static md:flex md:space-x-6 md:w-auto md:bg-transparent md:dark:bg-transparent"
+      class="absolute top-14 left-0 w-full bg-emerald-500 dark:bg-black md:static md:flex md:space-x-6 md:w-auto md:bg-transparent md:dark:bg-transparent z-[9998]"
     >
       <NuxtLink href="/home/accueil" class="block px-4 py-2 hover:text-emerald-500 md:inline">Accueil</NuxtLink>
       <NuxtLink href="/home/a_propos" class="block px-4 py-2 hover:text-emerald-500 md:inline">A propos</NuxtLink>
