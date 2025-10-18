@@ -52,10 +52,10 @@ const factures = ref<FactureUI[]>([]);
 const loading = ref(true);
 const allFactures = ref<FactureUI[]>([]);
 
-// --- API Data ---
-const { data: produits } = await useApi<Product[]>('http://127.0.0.1:8000/api/produits/', { method: 'GET' });
-const { data: commandesClient } = await useApi<Commande[]>('http://127.0.0.1:8000/api/commandes-client/', { method: 'GET' });
-const { data: commandesPartenaires } = await useApi<Commande[]>('http://127.0.0.1:8000/api/commandes-partenaire/', { method: 'GET' });
+// --- API Data - Éviter les appels côté serveur ---
+const { data: produits } = process.server ? { data: ref([]) } : await useApi<Product[]>('http://127.0.0.1:8000/api/produits/', { method: 'GET' });
+const { data: commandesClient } = process.server ? { data: ref([]) } : await useApi<Commande[]>('http://127.0.0.1:8000/api/commandes-client/', { method: 'GET' });
+const { data: commandesPartenaires } = process.server ? { data: ref([]) } : await useApi<Commande[]>('http://127.0.0.1:8000/api/commandes-partenaire/', { method: 'GET' });
 
 // --- Computed ---
 const computerCount = computed(() =>

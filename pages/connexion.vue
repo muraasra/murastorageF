@@ -220,6 +220,7 @@ import { useNotification } from '@/types/useNotification'
 import { useAuthStore } from '@/stores/auth'
 import { API_BASE_URL } from '@/constants'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useTracking } from '@/composables/useTracking'
 
 definePageMeta({
   layout: "accueil",
@@ -228,6 +229,7 @@ definePageMeta({
 const { error, success } = useNotification()
 const auth = useAuthStore()
 const { handleApiError } = useErrorHandler()
+const { trackPage, trackLogin, trackButtonClick, trackError } = useTracking()
 
 // État du formulaire
 const loginType = ref<'superadmin' | 'user'>('superadmin')
@@ -288,6 +290,11 @@ const handleLogin = async () => {
   if (!validateForm()) return
 
   isLoading.value = true
+  
+  // Tracking du début de connexion - Éviter les appels côté serveur
+  if (process.client) {
+    trackButtonClick('login_submit', 'connexion_page')
+  }
 
   try {
     // Préparer les données selon le type de connexion
@@ -297,43 +304,43 @@ const handleLogin = async () => {
       ...(loginType.value === 'user' && { entreprise_id: formData.entrepriseId })
     }
 
-    // Appel à l'API JWT
-    const { data, error: apiError } = await useApi(`${API_BASE_URL}/api/auth/jwt/login/`, {
-      method: 'POST',
-      body: loginData,
-      server: false
-    })
-
-    if (apiError.value) {
-      handleApiError(apiError.value, 'connexion')
+    // Appel à l'API JWT - Éviter les appels côté serveur
+    if (process.server) {
+      error('Connexion non disponible pendant le pré-rendu')
+      isLoading.value = false
       return
     }
 
+    const response = await $fetch<any>(`${API_BASE_URL}/api/auth/jwt/login/`, {
+      method: 'POST',
+      body: loginData
+    })
+
     // Sauvegarder le token dans le store auth
-    auth.setToken(data.value.access)
+    auth.setToken(response.access)
     
     // Sauvegarder les informations utilisateur dans le store auth
     auth.setUser({
-      id: data.value.user.id,
-      username: data.value.user.username,
-      email: data.value.user.email,
-      role: data.value.user.role
+      id: response.user.id,
+      username: response.user.username,
+      email: response.user.email,
+      role: response.user.role
     })
 
     // Sauvegarder les données supplémentaires dans localStorage
     if (process.client) {
-      localStorage.setItem('user', JSON.stringify(data.value.user))
-      localStorage.setItem('refresh_token', data.value.refresh)
-      localStorage.setItem('entreprise', JSON.stringify(data.value.entreprise))
+      localStorage.setItem('user', JSON.stringify(response.user))
+      localStorage.setItem('refresh_token', response.refresh)
+      localStorage.setItem('entreprise', JSON.stringify(response.entreprise))
       
       // Ne sauvegarder la boutique que si elle existe
-      if (data.value.boutique) {
-        localStorage.setItem('boutique', JSON.stringify(data.value.boutique))
+      if (response.boutique) {
+        localStorage.setItem('boutique', JSON.stringify(response.boutique))
       } else {
         localStorage.removeItem('boutique')
       }
       
-      localStorage.setItem('permissions', JSON.stringify(data.value.permissions))
+      localStorage.setItem('permissions', JSON.stringify(response.permissions))
       
       if (formData.rememberMe) {
         localStorage.setItem('remember_me', 'true')
@@ -341,10 +348,15 @@ const handleLogin = async () => {
     }
 
     success('Connexion réussie !')
+    
+    // Tracking de la connexion réussie - Éviter les appels côté serveur
+    if (process.client) {
+      trackLogin(loginType.value)
+    }
 
     // Redirection selon le rôle
     setTimeout(() => {
-      const userRole = data.value.user.role
+      const userRole = response.user.role
       if (userRole === 'superadmin') {
         navigateTo('/superadmin/dashboard')
       } else {
@@ -355,7 +367,11 @@ const handleLogin = async () => {
 
   } catch (err) {
     console.error('Erreur de connexion:', err)
-    // La gestion d'erreur est déjà faite par handleApiError
+    error('Identifiant de connexion incorrect')
+    // Tracking de l'erreur générale - Éviter les appels côté serveur
+    // if (process.client) {
+    //   trackError('login_exception', err.message || 'Unknown exception', 'connexion_page')
+    // }
   } finally {
     isLoading.value = false
   }
@@ -363,6 +379,11 @@ const handleLogin = async () => {
 
 // Charger les données sauvegardées
 onMounted(() => {
+  // Tracking de la page de connexion - Éviter les appels côté serveur
+  if (process.client) {
+    trackPage('Connexion', '/connexion')
+  }
+  
   if (process.client) {
     const rememberMe = localStorage.getItem('remember_me')
     if (rememberMe === 'true') {

@@ -70,7 +70,7 @@ const checkBoutiqueAssignment = async () => {
     // Recharger les données utilisateur depuis le serveur
     const { useApi } = await import('@/stores/useApi')
     console.log('[Boutique Check] Appel API pour utilisateur ID:', userData.id)
-    const { data, error } = await useApi(`http://127.0.0.1:8000/api/users/${userData.id}/`)
+    const { data, error } = await useApi(`https://murastorage.pythonanywhere.com/api/users/${userData.id}/`)
     
     console.log('[Boutique Check] Réponse API:', { data: data.value, error: error.value })
     

@@ -261,7 +261,7 @@ const loadBoutiques = async () => {
 
     try {
       const headers = getAuthHeaders()
-      const data = await $fetch<Boutique[]>(`http://127.0.0.1:8000/api/boutiques/?entreprise=${entrepriseId}`, {
+      const data = await $fetch<Boutique[]>(`https://murastorage.pythonanywhere.com/api/boutiques/?entreprise=${entrepriseId}`, {
         headers
       })
       boutiques.value = data || []
@@ -291,7 +291,7 @@ const deleteBoutique = async (id: number) => {
     try {
       try {
         const headers = getAuthHeaders()
-        await $fetch(`http://127.0.0.1:8000/api/boutiques/${id}/`, {
+        await $fetch(`https://murastorage.pythonanywhere.com/api/boutiques/${id}/`, {
           method: 'DELETE',
           headers
         })

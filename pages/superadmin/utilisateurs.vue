@@ -270,7 +270,7 @@ const loadUsers = async () => {
 
     try {
       const headers = getAuthHeaders()
-      const data = await $fetch<User[]>(`http://127.0.0.1:8000/api/users/?entreprise=${entrepriseId}`, {
+      const data = await $fetch<User[]>(`https://murastorage.pythonanywhere.com/api/users/?entreprise=${entrepriseId}`, {
         headers
       })
       users.value = data || []
@@ -300,7 +300,7 @@ const deleteUser = async (id: number) => {
     try {
       try {
         const headers = getAuthHeaders()
-        await $fetch(`http://127.0.0.1:8000/api/users/${id}/`, {
+        await $fetch(`https://murastorage.pythonanywhere.com/api/users/${id}/`, {
           method: 'DELETE',
           headers
         })

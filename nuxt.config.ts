@@ -1,8 +1,12 @@
 export default defineNuxtConfig({
-  ssr: false, // Mode SPA pour Netlify
+  ssr: true, // Activer SSR pour le pré-rendu
 
   nitro: {
-    preset: 'static' // Preset statique pour Netlify
+    preset: 'static', // Preset statique pour Netlify
+    prerender: {
+      crawlLinks: false, // Désactiver le crawl automatique pour éviter les erreurs API
+      ignore: ['/api/**'] // Ignorer les routes API
+    }
   },
 
   // Désactiver les devtools en production
@@ -39,6 +43,13 @@ export default defineNuxtConfig({
   components: {
     global: true,
     dirs: ['~/components']
+  },
+
+  // Configuration pour éviter les appels API côté serveur
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.NODE_ENV === 'production' ? 'https://your-api-domain.com' : 'http://127.0.0.1:8000'
+    }
   },
 
   // Configuration de build optimisée

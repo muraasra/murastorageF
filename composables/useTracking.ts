@@ -1,6 +1,26 @@
 import { ANALYTICS_EVENTS } from '~/constants/analytics'
 
 export const useTracking = () => {
+  // Éviter les appels API côté serveur
+  if (process.server) {
+    return {
+      trackPage: () => {},
+      trackSignup: () => {},
+      trackLogin: () => {},
+      trackSubscription: () => {},
+      trackButtonClick: () => {},
+      trackError: () => {},
+      trackPurchase: () => {},
+      trackSearch: () => {},
+      trackFormSubmit: () => {},
+      trackDownload: () => {},
+      trackSocialShare: () => {},
+      trackVideoPlay: () => {},
+      trackVideoComplete: () => {},
+      trackCustomEvent: () => {}
+    }
+  }
+
   const { trackEvent, trackPageView, trackConversion, trackEcommerce } = useAnalytics()
 
   // Tracking des pages

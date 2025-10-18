@@ -32,9 +32,26 @@ export function useSubscription() {
   const availablePlans = ref<Plan[]>([])
   const error = ref<string | null>(null)
 
+  // Éviter les appels API côté serveur - initialiser avec des valeurs par défaut
+  if (process.server) {
+    loading.value = false
+    currentPlan.value = null
+    currentSubscription.value = null
+    currentUsage.value = []
+    currentLimits.value = {}
+    availablePlans.value = []
+    error.value = null
+  }
+
   const formatPrice = (amount: number) => new Intl.NumberFormat('fr-FR', { style: 'decimal' }).format(amount)
 
   const fetchPlans = async () => {
+    // Éviter les appels API côté serveur
+    if (process.server) {
+      availablePlans.value = []
+      return
+    }
+    
     const { data, error: err } = await useApi(`${API_BASE_URL}/api/subscription-plans/`, { method: 'GET', server: false, cacheTTL: 5 * 60 * 1000 })
     if (err.value) throw new Error(err.value.message)
     const plans = (data.value as any[]) || []
@@ -57,6 +74,13 @@ export function useSubscription() {
   }
 
   const fetchCurrent = async () => {
+    // Éviter les appels API côté serveur
+    if (process.server) {
+      currentSubscription.value = null
+      currentPlan.value = null
+      return
+    }
+    
     const { data, error: err } = await useApi(`${API_BASE_URL}/api/subscriptions/current/`, { method: 'GET', server: false, cacheTTL: 5 * 60 * 1000 })
     if (err.value) throw new Error(err.value.message)
     const sub = data.value as any
@@ -76,6 +100,13 @@ export function useSubscription() {
   }
 
   const fetchUsage = async () => {
+    // Éviter les appels API côté serveur
+    if (process.server) {
+      currentUsage.value = []
+      currentLimits.value = {}
+      return
+    }
+    
     const { data, error: err } = await useApi(`${API_BASE_URL}/api/subscriptions/usage/`, { method: 'GET', server: false, cacheTTL: 5 * 60 * 1000 })
     if (err.value) throw new Error(err.value.message)
     const u: any = (data.value as any) || {}
@@ -90,12 +121,23 @@ export function useSubscription() {
   }
 
   const fetchLimits = async () => {
+    // Éviter les appels API côté serveur
+    if (process.server) {
+      currentLimits.value = {}
+      return
+    }
+    
     const { data, error: err } = await useApi(`${API_BASE_URL}/api/subscriptions/limits/`, { method: 'GET', server: false, cacheTTL: 5 * 60 * 1000 })
     if (err.value) throw new Error(err.value.message)
     currentLimits.value = (data.value as any) || {}
   }
 
   const refresh = async () => {
+    // Éviter les appels API côté serveur
+    if (process.server) {
+      return
+    }
+    
     loading.value = true
     error.value = null
     try {

@@ -281,6 +281,16 @@ const {
   upgradeSubscription
 } = useSubscription()
 
+// Éviter les appels API côté serveur
+if (process.server) {
+  // Initialiser avec des valeurs par défaut côté serveur
+  currentPlan.value = null
+  currentUsage.value = []
+  currentLimits.value = {}
+  availablePlans.value = []
+  loading.value = false
+}
+
 const upgradingPlanId = ref<number | null>(null)
 const showUpgradeOnly = ref(false)
 
@@ -333,10 +343,20 @@ async function handleUpgrade(planId: number) {
 }
 
 async function refreshAll() {
+  // Éviter les appels API côté serveur
+  if (process.server) {
+    return
+  }
+  
   await refresh()
 }
 
 async function sendNotifications() {
+  // Éviter les appels API côté serveur
+  if (process.server) {
+    return
+  }
+  
   try {
     const response = await $fetch('/api/subscriptions/send_notifications/', {
       method: 'POST',
@@ -367,9 +387,11 @@ function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('fr-FR')
 }
 
-// Load data on mount
+// Load data on mount - Éviter les appels côté serveur
 onMounted(async () => {
-  await refreshAll()
+  if (process.client) {
+    await refreshAll()
+  }
 })
 </script>
 

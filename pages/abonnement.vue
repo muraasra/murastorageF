@@ -161,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useSubscription, formatLimit } from '~/composables/useSubscription'
 
 definePageMeta({
@@ -178,6 +178,16 @@ const {
   refresh,
   upgradeSubscription
 } = useSubscription()
+
+// Éviter les appels API côté serveur
+if (process.server) {
+  // Initialiser avec des valeurs par défaut côté serveur
+  currentPlan.value = null
+  currentUsage.value = []
+  currentLimits.value = {}
+  availablePlans.value = []
+  loading.value = false
+}
 
 const upgradingPlanId = ref<number | null>(null)
 
@@ -196,6 +206,13 @@ async function handleUpgrade(planId: number) {
     upgradingPlanId.value = null
   }
 }
+
+// Charger les données côté client uniquement
+onMounted(async () => {
+  if (process.client) {
+    await refresh()
+  }
+})
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('fr-FR', {
