@@ -365,9 +365,10 @@ const handleLogin = async () => {
 
   } catch (err) {
     console.error('Erreur de connexion:', err)
-    // Tracking de l'erreur générale
-    trackError('login_exception', err.message || 'Unknown exception', 'connexion_page')
-    // La gestion d'erreur est déjà faite par handleApiError
+    error('Identifiant de connexion incorrect')
+    // // Tracking de l'erreur générale
+    // trackError('login_exception', err.message || 'Unknown exception', 'connexion_page')
+    // // La gestion d'erreur est déjà faite par handleApiError
   } finally {
     isLoading.value = false
   }
