@@ -41,7 +41,7 @@ const verifyCode = async () => {
   isLoading.value = true
 
   try {
-    const { data, error: apiError } = await useApi('http://127.0.0.1:8000/api/email-verification/verify_code/', {
+    const { data, error: apiError } = await useApi('https://murastorage.pythonanywhere.com/api/email-verification/verify_code/', {
       method: 'POST',
       body: JSON.stringify({
         email: email.value,
@@ -89,7 +89,7 @@ const resendCode = async () => {
   isResending.value = true
 
   try {
-    const { data, error: apiError } = await useApi('http://127.0.0.1:8000/api/email-verification/resend_code/', {
+    const { data, error: apiError } = await useApi('https://murastorage.pythonanywhere.com/api/email-verification/resend_code/', {
       method: 'POST',
       body: JSON.stringify({
         email: email.value
