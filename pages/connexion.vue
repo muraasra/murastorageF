@@ -220,7 +220,6 @@ import { useNotification } from '@/types/useNotification'
 import { useAuthStore } from '@/stores/auth'
 import { API_BASE_URL } from '@/constants'
 import { useErrorHandler } from '@/composables/useErrorHandler'
-import { useTracking } from '@/composables/useTracking'
 
 definePageMeta({
   layout: "accueil",
@@ -229,7 +228,6 @@ definePageMeta({
 const { error, success } = useNotification()
 const auth = useAuthStore()
 const { handleApiError } = useErrorHandler()
-const { trackPage, trackLogin, trackButtonClick, trackError } = useTracking()
 
 // État du formulaire
 const loginType = ref<'superadmin' | 'user'>('superadmin')
@@ -290,9 +288,6 @@ const handleLogin = async () => {
   if (!validateForm()) return
 
   isLoading.value = true
-  
-  // Tracking du début de connexion
-  trackButtonClick('login_submit', 'connexion_page')
 
   try {
     // Préparer les données selon le type de connexion
@@ -310,8 +305,6 @@ const handleLogin = async () => {
     })
 
     if (apiError.value) {
-      // Tracking de l'erreur de connexion
-      trackError('login_error', apiError.value.message || 'Unknown error', 'connexion_page')
       handleApiError(apiError.value, 'connexion')
       return
     }
@@ -348,9 +341,6 @@ const handleLogin = async () => {
     }
 
     success('Connexion réussie !')
-    
-    // Tracking de la connexion réussie
-    trackLogin(loginType.value)
 
     // Redirection selon le rôle
     setTimeout(() => {
@@ -365,10 +355,7 @@ const handleLogin = async () => {
 
   } catch (err) {
     console.error('Erreur de connexion:', err)
-    error('Identifiant de connexion incorrect')
-    // // Tracking de l'erreur générale
-    // trackError('login_exception', err.message || 'Unknown exception', 'connexion_page')
-    // // La gestion d'erreur est déjà faite par handleApiError
+    // La gestion d'erreur est déjà faite par handleApiError
   } finally {
     isLoading.value = false
   }
@@ -376,9 +363,6 @@ const handleLogin = async () => {
 
 // Charger les données sauvegardées
 onMounted(() => {
-  // Tracking de la page de connexion
-  trackPage('Connexion', '/connexion')
-  
   if (process.client) {
     const rememberMe = localStorage.getItem('remember_me')
     if (rememberMe === 'true') {
