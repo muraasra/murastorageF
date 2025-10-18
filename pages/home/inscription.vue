@@ -317,7 +317,7 @@ const submitForm = async () => {
     console.log('Données envoyées au backend:', registrationData)
     
     // Appel à l'API
-    const { data, error: apiError } = await useApi('https://murastorage.pythonanywhere.com/api/inscription/inscription/', {
+    const { data, error: apiError } = await useApi('https://murastorage.pythonanywhere.com/api/inscription/', {
       method: 'POST',
       body: registrationData,
       server: false
