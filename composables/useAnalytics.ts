@@ -53,10 +53,42 @@ export const useAnalytics = () => {
     })
   }
 
+  // Initialisation Google Analytics
+  const initGoogleAnalytics = (gaId: string) => {
+    if (process.client && gaId && gaId !== 'G-XXXXXXXXXX') {
+      // Script Google Analytics
+      const script = document.createElement('script')
+      script.async = true
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`
+      document.head.appendChild(script)
+
+      // Configuration gtag
+      window.dataLayer = window.dataLayer || []
+      function gtag(...args: any[]) {
+        window.dataLayer.push(args)
+      }
+      window.gtag = gtag
+      gtag('js', new Date())
+      gtag('config', gaId)
+    }
+  }
+
+  // Initialisation Google Search Console
+  const initGoogleSearchConsole = (gscId: string) => {
+    if (process.client && gscId) {
+      const meta = document.createElement('meta')
+      meta.name = 'google-site-verification'
+      meta.content = gscId
+      document.head.appendChild(meta)
+    }
+  }
+
   return {
     trackEvent,
     trackPageView,
     trackConversion,
-    trackEcommerce
+    trackEcommerce,
+    initGoogleAnalytics,
+    initGoogleSearchConsole
   }
 }

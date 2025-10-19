@@ -49,3 +49,9 @@ export const CUSTOM_EVENTS = {
   INVOICE_CREATE: 'invoice_create',
   USER_MANAGEMENT: 'user_management'
 } as const
+
+// Configuration des services d'analytics
+export const ANALYTICS_CONFIG = {
+  GA_ID: 'G-XXXXXXXXXX', // Remplacez par votre ID Google Analytics
+  GSC_ID: '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA' // ID Google Search Console
+} as const
