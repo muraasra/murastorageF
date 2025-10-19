@@ -251,17 +251,23 @@ const useAuthStore = () => {
 
 const API_BASE_URL = 'https://murastorage.pythonanywhere.com'
 
-// Fonction de test de l'API
+// Fonction de test de l'API - Test simple de connectivité
 const testApiConnection = async () => {
   try {
     console.log('Test de connexion à l\'API...')
-    const response = await $fetch(`${API_BASE_URL}/api/health/`, {
-      method: 'GET',
+    // Test simple avec un endpoint qui existe probablement
+    const response = await $fetch(`${API_BASE_URL}/api/auth/jwt/login/`, {
+      method: 'OPTIONS', // Méthode OPTIONS pour tester la connectivité
       timeout: 5000
     })
     console.log('API accessible:', response)
     return true
-  } catch (err) {
+  } catch (err: any) {
+    // Si c'est une erreur 405 (Method Not Allowed), c'est bon signe - l'API répond
+    if (err.statusCode === 405 || err.status === 405) {
+      console.log('API accessible (405 Method Not Allowed est normal)')
+      return true
+    }
     console.error('API non accessible:', err)
     return false
   }
@@ -366,13 +372,7 @@ const handleLogin = async () => {
       return
     }
 
-    // Test de connexion à l'API d'abord
-    const apiAccessible = await testApiConnection()
-    if (!apiAccessible) {
-      error('Serveur non accessible. Vérifiez votre connexion internet.')
-      isLoading.value = false
-      return
-    }
+    // Pas de test préalable - on va directement à la connexion
 
     // Préparer les données selon le type de connexion
     const loginData = {
@@ -389,7 +389,10 @@ const handleLogin = async () => {
       body: loginData,
       headers: {
         'Content-Type': 'application/json',
-      }
+        'Accept': 'application/json',
+      },
+      credentials: 'omit', // Éviter les problèmes CORS
+      mode: 'cors'
     })
 
     // Sauvegarder le token dans le store auth
@@ -443,16 +446,21 @@ const handleLogin = async () => {
 
   } catch (err: any) {
     console.error('Erreur de connexion détaillée:', err)
+    console.error('Type d\'erreur:', typeof err)
+    console.error('Message:', err.message)
+    console.error('Status:', err.status || err.statusCode)
     
     // Gestion d'erreur plus spécifique
     if (err.statusCode === 401 || err.status === 401) {
       error('Email ou mot de passe incorrect')
     } else if (err.statusCode === 400 || err.status === 400) {
       error('Données de connexion invalides')
-    } else if (err.statusCode === 0 || err.message?.includes('fetch')) {
-      error('Impossible de se connecter au serveur. Vérifiez votre connexion.')
-    } else if (err.statusCode >= 500) {
+    } else if (err.statusCode === 0 || err.status === 0 || err.message?.includes('fetch') || err.message?.includes('CORS')) {
+      error('Problème de connexion au serveur. Vérifiez votre connexion internet.')
+    } else if (err.statusCode >= 500 || err.status >= 500) {
       error('Erreur du serveur. Veuillez réessayer plus tard.')
+    } else if (err.message?.includes('timeout')) {
+      error('Connexion trop lente. Vérifiez votre connexion internet.')
     } else {
       error(`Erreur de connexion: ${err.message || 'Erreur inconnue'}`)
     }
