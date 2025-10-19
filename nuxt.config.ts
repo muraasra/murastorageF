@@ -2,7 +2,7 @@ export default defineNuxtConfig({
   ssr: false, // Désactiver SSR temporairement pour debug
 
   nitro: {
-    preset: 'node-server'
+    preset: 'static'
   },
 
   devtools: { enabled: true },
@@ -10,29 +10,19 @@ export default defineNuxtConfig({
 
   // Optimisations pour les transitions rapides
   experimental: {
-    payloadExtraction: false, // Évite l'extraction de payload pour des transitions plus rapides
-    inlineSSRStyles: false,   // Optimise le rendu SSR
+    payloadExtraction: false // Évite l'extraction de payload pour des transitions plus rapides
   },
 
   // Configuration des transitions
   router: {
     options: {
       scrollBehaviorType: 'smooth'
-    },
-    prefetchLinks: true
+    }
   },
 
   // Optimisations de rendu
   render: {
-    resourceHints: true,
-    http2: {
-      push: true,
-      pushAssets: (req, res, publicPath, preloadFiles) => {
-        return preloadFiles
-          .filter(f => f.asType === 'script' && f.file.includes('runtime'))
-          .map(f => `<${publicPath}${f.file}>; rel=preload; as=${f.asType}`)
-      }
-    }
+    resourceHints: true
   },
 
   // Configuration des composants
@@ -43,24 +33,11 @@ export default defineNuxtConfig({
 
   // Configuration de build optimisée
   build: {
-    transpile: ['@nuxt/ui'],
-    extractCSS: {
-      ignoreOrder: true
-    }
+    transpile: ['@nuxt/ui']
   },
 
-  // Configuration Vite pour des builds plus rapides
+  // Configuration Vite simplifiée
   vite: {
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            vendor: ['vue', 'vue-router'],
-            ui: ['@nuxt/ui']
-          }
-        }
-      }
-    },
     optimizeDeps: {
       include: ['@nuxt/ui']
     }
