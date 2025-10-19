@@ -43,3 +43,5 @@ export const DEFAULT_EVENT_PARAMS = {
   environment: process.env.NODE_ENV || 'development'
 }
 
+
+

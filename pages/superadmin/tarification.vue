@@ -169,6 +169,7 @@
               :key="plan.id"
               class="bg-white rounded-lg shadow-md p-6 flex flex-col border-2"
               :class="{ 'border-blue-500': plan.isCurrent }"
+              
             >
               <h3 class="text-2xl font-bold mb-4" :class="isCurrent(plan) ? 'text-blue-600' : 'text-gray-900'">
                 {{ plan.display_name || plan.name }}

@@ -192,3 +192,5 @@ gtag('config', measurementId, {
 - [Google Search Console](https://search.google.com/search-console/)
 - [RGPD et Analytics](https://support.google.com/analytics/answer/9019185)
 
+
+
