@@ -251,6 +251,22 @@ const useAuthStore = () => {
 
 const API_BASE_URL = 'https://murastorage.pythonanywhere.com'
 
+// Fonction de test de l'API
+const testApiConnection = async () => {
+  try {
+    console.log('Test de connexion à l\'API...')
+    const response = await $fetch(`${API_BASE_URL}/api/health/`, {
+      method: 'GET',
+      timeout: 5000
+    })
+    console.log('API accessible:', response)
+    return true
+  } catch (err) {
+    console.error('API non accessible:', err)
+    return false
+  }
+}
+
 const useErrorHandler = () => {
   return {
     handleApiError: (err: any) => {
@@ -343,13 +359,6 @@ const handleLogin = async () => {
   }
 
   try {
-    // Préparer les données selon le type de connexion
-    const loginData = {
-      email: formData.email,
-      password: formData.password,
-      ...(loginType.value === 'user' && { entreprise_id: formData.entrepriseId })
-    }
-
     // Appel à l'API JWT - Éviter les appels côté serveur
     if (process.server) {
       error('Connexion non disponible pendant le pré-rendu')
@@ -357,9 +366,30 @@ const handleLogin = async () => {
       return
     }
 
+    // Test de connexion à l'API d'abord
+    const apiAccessible = await testApiConnection()
+    if (!apiAccessible) {
+      error('Serveur non accessible. Vérifiez votre connexion internet.')
+      isLoading.value = false
+      return
+    }
+
+    // Préparer les données selon le type de connexion
+    const loginData = {
+      email: formData.email,
+      password: formData.password,
+      ...(loginType.value === 'user' && { entreprise_id: formData.entrepriseId })
+    }
+
+    console.log('Tentative de connexion avec:', loginData)
+    console.log('URL API:', `${API_BASE_URL}/api/auth/jwt/login/`)
+    
     const response = await $fetch<any>(`${API_BASE_URL}/api/auth/jwt/login/`, {
       method: 'POST',
-      body: loginData
+      body: loginData,
+      headers: {
+        'Content-Type': 'application/json',
+      }
     })
 
     // Sauvegarder le token dans le store auth
@@ -411,13 +441,26 @@ const handleLogin = async () => {
       }
     }, 1000)
 
-  } catch (err) {
-    console.error('Erreur de connexion:', err)
-    error('Identifiant de connexion incorrect')
+  } catch (err: any) {
+    console.error('Erreur de connexion détaillée:', err)
+    
+    // Gestion d'erreur plus spécifique
+    if (err.statusCode === 401 || err.status === 401) {
+      error('Email ou mot de passe incorrect')
+    } else if (err.statusCode === 400 || err.status === 400) {
+      error('Données de connexion invalides')
+    } else if (err.statusCode === 0 || err.message?.includes('fetch')) {
+      error('Impossible de se connecter au serveur. Vérifiez votre connexion.')
+    } else if (err.statusCode >= 500) {
+      error('Erreur du serveur. Veuillez réessayer plus tard.')
+    } else {
+      error(`Erreur de connexion: ${err.message || 'Erreur inconnue'}`)
+    }
+    
     // Tracking de l'erreur générale - Éviter les appels côté serveur
-    // if (process.client) {
-    //   trackError('login_exception', err.message || 'Unknown exception', 'connexion_page')
-    // }
+    if (process.client) {
+      trackError('login_exception', err.message || 'Unknown exception', 'connexion_page')
+    }
   } finally {
     isLoading.value = false
   }
