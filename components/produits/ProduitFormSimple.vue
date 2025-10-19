@@ -4,6 +4,7 @@ import { z } from "zod"
 import type { FormSubmitEvent } from "#ui/types"
 import { useNotification } from '~/types/useNotification'
 import CreateCategorieModal from './CreateCategorieModal.vue'
+import { API_BASE_URL } from '@/constants'
 
 const { success, error } = useNotification()
 
@@ -28,11 +29,11 @@ const showCreateCategorieModal = ref(false)
 const loadReferenceData = async () => {
   try {
     // Charger les catégories
-    const categoriesResponse = await $fetch('http://127.0.0.1:8000/api/categories/')
+    const categoriesResponse = await $fetch(`${API_BASE_URL}/api/categories/`)
     categories.value = categoriesResponse || []
     
     // Charger les fournisseurs
-    const fournisseursResponse = await $fetch('http://127.0.0.1:8000/api/fournisseurs/')
+    const fournisseursResponse = await $fetch(`${API_BASE_URL}/api/fournisseurs/`)
     fournisseurs.value = fournisseursResponse || []
   } catch (err) {
     console.error('Erreur lors du chargement des données:', err)
@@ -163,12 +164,12 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     
     let response
     if (props.mode === 'create') {
-      response = await $fetch('http://127.0.0.1:8000/api/produits/', {
+      response = await $fetch(`${API_BASE_URL}/api/produits/`, {
         method: 'POST',
         body: productData,
       })
     } else {
-      response = await $fetch(`http://127.0.0.1:8000/api/produits/${props.produit.id}/`, {
+      response = await $fetch(`${API_BASE_URL}/api/produits/${props.produit.id}/`, {
         method: 'PUT',
         body: productData,
       })

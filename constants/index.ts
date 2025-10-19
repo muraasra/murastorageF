@@ -1,7 +1,7 @@
 // Configuration de l'API
 export const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-api-domain.com' 
-  : 'http://127.0.0.1:8000'
+  ? 'https://murastorage.pythonanywhere.com' 
+  : 'https://murastorage.pythonanywhere.com'
 
 // Configuration des routes
 export const ROUTES = {

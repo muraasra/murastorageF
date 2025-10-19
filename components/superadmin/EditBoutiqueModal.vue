@@ -134,6 +134,7 @@
 import { ref, reactive, watch } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import { useAuth } from '@/composables/useAuth'
+import { API_BASE_URL } from '@/constants'
 
 const props = defineProps<{
   isOpen: boolean
@@ -190,7 +191,7 @@ const updateBoutique = async () => {
     }
 
     try {
-      const data = await $fetch(`http://127.0.0.1:8000/api/boutiques/${boutiqueData.value.id}/`, {
+      const data = await $fetch(`${API_BASE_URL}/api/boutiques/${boutiqueData.value.id}/`, {
         method: 'PATCH',
         body: updateData,
         headers: getAuthHeaders()

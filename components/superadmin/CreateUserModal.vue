@@ -167,7 +167,7 @@ const createUser = async () => {
       return
     }
 
-    success('Utilisateur créé avec succès')
+    success('Utilisateur créé avec succès. Patientez 1 à 5 minutes pour son activation')
     emit('created')
     emit('close')
     

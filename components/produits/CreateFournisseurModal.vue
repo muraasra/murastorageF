@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { z } from "zod"
 import type { FormSubmitEvent } from "#ui/types"
 import { useNotification } from '~/types/useNotification'
+import { API_BASE_URL } from '@/constants'
 
 const { success, error } = useNotification()
 
@@ -51,7 +52,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
       actif: true,
     }
     
-    const response = await $fetch('http://127.0.0.1:8000/api/fournisseurs/', {
+    const response = await $fetch(`${API_BASE_URL}/api/fournisseurs/`, {
       method: 'POST',
       body: fournisseurData,
     })

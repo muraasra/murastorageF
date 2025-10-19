@@ -190,6 +190,7 @@
 import { ref, reactive, watch, onMounted } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import { useAuth } from '@/composables/useAuth'
+import { API_BASE_URL } from '@/constants'
 
 const props = defineProps<{
   isOpen: boolean
@@ -247,7 +248,7 @@ const loadBoutiques = async () => {
     const entrepriseId = entrepriseData.id
 
     try {
-      const data = await $fetch(`http://127.0.0.1:8000/api/boutiques/?entreprise=${entrepriseId}`, {
+      const data = await $fetch(`${API_BASE_URL}/api/boutiques/?entreprise=${entrepriseId}`, {
         headers: getAuthHeaders()
       })
       boutiques.value = data || []
@@ -286,7 +287,7 @@ const updateUser = async () => {
     }
 
     try {
-      const data = await $fetch(`http://127.0.0.1:8000/api/users/${userData.value.id}/`, {
+      const data = await $fetch(`${API_BASE_URL}/api/users/${userData.value.id}/`, {
         method: 'PATCH',
         body: updateData,
         headers: getAuthHeaders()

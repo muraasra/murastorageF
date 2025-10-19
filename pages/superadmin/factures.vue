@@ -166,6 +166,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useNotification } from '@/types/useNotification'
+import { API_BASE_URL } from '@/constants'
 
 definePageMeta({
   layout: "superadmin",
@@ -245,7 +246,7 @@ const loadFactures = async () => {
     const entrepriseId = entrepriseData.id
 
     try {
-      const data = await $fetch(`https://murastorage.pythonanywhere.com/api/factures/?entreprise=${entrepriseId}`)
+      const data = await $fetch(`${API_BASE_URL}/api/factures/?entreprise=${entrepriseId}`)
       factures.value = data || []
     } catch (apiError: any) {
       error('Erreur lors du chargement des factures: ' + (apiError.data?.message || apiError.message))
@@ -271,7 +272,7 @@ const editFacture = (facture: any) => {
 const deleteFacture = async (id: number) => {
   if (confirm('Êtes-vous sûr de vouloir supprimer cette facture ? Cette action est irréversible.')) {
     try {
-      const { error: apiError } = await useApi(`https://murastorage.pythonanywhere.com/api/factures/${id}/`, {
+      const { error: apiError } = await useApi(`${API_BASE_URL}/api/factures/${id}/`, {
         method: 'DELETE',
         server: false
       })

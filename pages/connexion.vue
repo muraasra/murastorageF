@@ -430,7 +430,7 @@ const handleLogin = async () => {
 
     console.log('Tentative de connexion avec:', loginData)
     console.log('URL API:', `${API_BASE_URL}/api/auth/jwt/login/`)
-    
+
     const response = await $fetch<any>(`${API_BASE_URL}/api/auth/jwt/login/`, {
       method: 'POST',
       body: loginData,

@@ -64,6 +64,7 @@
 import { ref, reactive } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import { useAuth } from '@/composables/useAuth'
+import { API_BASE_URL } from '@/constants'
 
 const props = defineProps<{
   isOpen: boolean
@@ -112,7 +113,7 @@ const createBoutique = async () => {
     }
 
     try {
-      const data = await $fetch('http://127.0.0.1:8000/api/boutiques/', {
+      const data = await $fetch(`${API_BASE_URL}/api/boutiques/`, {
         method: 'POST',
         body: boutiqueData,
         headers: getAuthHeaders()
@@ -122,7 +123,7 @@ const createBoutique = async () => {
       return
     }
 
-    success('Entrepôt créé avec succès')
+    success('Entrepôt créé avec succès. Patientez 1 à 5 minutes pour son activation')
     emit('created')
     emit('close')
     

@@ -50,14 +50,24 @@ const stockDistribution = computed(() => {
 
 onMounted(async () => {
   if (process.client) {
+    console.log('[User Page] Début du chargement')
+    
     // Charger les données utilisateur
     const user = localStorage.getItem('user')
     const entreprise = localStorage.getItem('entreprise')
     const boutique = localStorage.getItem('boutique')
     
+    console.log('[User Page] Données localStorage:', { user: !!user, entreprise: !!entreprise, boutique: !!boutique })
+    
     if (user) userData.value = JSON.parse(user)
     if (entreprise) entrepriseData.value = JSON.parse(entreprise)
     if (boutique) boutiqueData.value = JSON.parse(boutique)
+    
+    console.log('[User Page] Données parsées:', { 
+      userData: userData.value?.role, 
+      entrepriseData: entrepriseData.value?.nom, 
+      boutiqueData: boutiqueData.value?.nom 
+    })
     
     // Charger les stocks de l'entrepôt connecté
     if (boutiqueData.value?.id) {

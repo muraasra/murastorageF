@@ -185,6 +185,7 @@ import { useNotification } from '@/types/useNotification'
 import { useAuth } from '@/composables/useAuth'
 import CreateUserModal from '@/components/superadmin/CreateUserModal.vue'
 import EditUserModal from '@/components/superadmin/EditUserModal.vue'
+import { API_BASE_URL } from '@/constants'
 
 definePageMeta({
   layout: "superadmin",
@@ -270,7 +271,7 @@ const loadUsers = async () => {
 
     try {
       const headers = getAuthHeaders()
-      const data = await $fetch<User[]>(`https://murastorage.pythonanywhere.com/api/users/?entreprise=${entrepriseId}`, {
+      const data = await $fetch<User[]>(`${API_BASE_URL}/api/users/?entreprise=${entrepriseId}`, {
         headers
       })
       users.value = data || []
@@ -300,7 +301,7 @@ const deleteUser = async (id: number) => {
     try {
       try {
         const headers = getAuthHeaders()
-        await $fetch(`https://murastorage.pythonanywhere.com/api/users/${id}/`, {
+        await $fetch(`${API_BASE_URL}/api/users/${id}/`, {
           method: 'DELETE',
           headers
         })

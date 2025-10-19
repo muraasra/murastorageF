@@ -4,6 +4,7 @@ import { z } from "zod"
 import type { FormSubmitEvent } from "#ui/types"
 import { useApi } from '@/stores/useApi'
 import { useNotification } from '~/types/useNotification'
+import { API_BASE_URL } from '@/constants'
 
 const { success, error } = useNotification()
 
@@ -24,8 +25,8 @@ const loading = ref(false)
 const loadReferenceData = async () => {
   try {
     const [categoriesRes, fournisseursRes] = await Promise.all([
-      useApi('http://127.0.0.1:8000/api/categories/'),
-      useApi('http://127.0.0.1:8000/api/fournisseurs/')
+      useApi(`${API_BASE_URL}/api/categories/`),
+      useApi(`${API_BASE_URL}/api/fournisseurs/`)
     ])
     
     categories.value = categoriesRes.data.value || []
@@ -215,12 +216,12 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     
     let response
     if (props.mode === 'create') {
-      response = await useApi('http://127.0.0.1:8000/api/produits/', {
+      response = await useApi(`${API_BASE_URL}/api/produits/`, {
         method: 'POST',
         body: productData,
       })
     } else {
-      response = await useApi(`http://127.0.0.1:8000/api/produits/${props.produit.id}/`, {
+      response = await useApi(`${API_BASE_URL}/api/produits/${props.produit.id}/`, {
         method: 'PUT',
         body: productData,
       })

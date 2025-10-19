@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useApi } from '@/stores/useApi'
 import { useNotification } from '~/types/useNotification'
+import { API_BASE_URL } from '@/constants'
 
 const { success, error } = useNotification()
 
@@ -72,7 +73,7 @@ const importProduits = async () => {
     const formData = new FormData()
     formData.append('file', selectedFile.value)
     
-    const { data, error: apiError } = await useApi('http://127.0.0.1:8000/api/produits/import/', {
+    const { data, error: apiError } = await useApi(`${API_BASE_URL}/api/produits/import/`, {
       method: 'POST',
       body: formData,
       headers: {
@@ -113,7 +114,7 @@ const exportProduits = async () => {
       date_range: exportOptions.value.dateRange
     })
     
-    const { data, error: apiError } = await useApi(`http://127.0.0.1:8000/api/produits/export/?${params}`)
+    const { data, error: apiError } = await useApi(`${API_BASE_URL}/api/produits/export/?${params}`)
     
     if (!apiError.value && data.value) {
       // Créer et télécharger le fichier

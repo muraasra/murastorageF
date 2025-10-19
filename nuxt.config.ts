@@ -10,7 +10,8 @@ export default defineNuxtConfig({
 
   // Optimisations pour les transitions rapides
   experimental: {
-    payloadExtraction: false // Évite l'extraction de payload pour des transitions plus rapides
+    payloadExtraction: false, // Évite l'extraction de payload pour des transitions plus rapides
+    appManifest: false // Désactive la récupération de /_nuxt/builds/meta/*.json
   },
 
   // Configuration des transitions
@@ -54,7 +55,7 @@ export default defineNuxtConfig({
     }
   },
 
-  css: ['~/assets/css/main.css'],
+          css: ['~/assets/css/main.css', '~/assets/css/transitions.css'],
 
   postcss: {
     plugins: {

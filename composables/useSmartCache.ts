@@ -1,104 +1,142 @@
-// Composable pour la gestion intelligente du cache
+// Composable pour la gestion du cache intelligent
+import { ref, reactive } from 'vue'
+
+interface CacheEntry {
+  data: any
+  timestamp: number
+  ttl: number // Time to live en millisecondes
+}
+
+interface CacheStore {
+  [key: string]: CacheEntry
+}
+
 export const useSmartCache = () => {
-  const nuxtApp = useNuxtApp()
-  const $cachedFetch = nuxtApp?.$cachedFetch as any
-  
-  // Stratégies de cache par type de données - Durées augmentées
-  const cacheStrategies = {
-    // Données statiques (utilisateurs, entrepôts) - cache très long
-    static: { ttl: 60 * 60 * 1000 }, // 1 heure
-    
-    // Données dynamiques (stocks, mouvements) - cache moyen
-    dynamic: { ttl: 30 * 60 * 1000 }, // 30 minutes
-    
-    // Données critiques (authentification) - pas de cache
-    critical: { cache: false },
-    
-    // Données de session (profil utilisateur) - cache long
-    session: { ttl: 45 * 60 * 1000 }, // 45 minutes
-    
-    // Produits - cache long
-    products: { ttl: 45 * 60 * 1000 }, // 45 minutes
-    
-    // Factures - cache moyen
-    invoices: { ttl: 15 * 60 * 1000 } // 15 minutes
+  const cache = reactive<CacheStore>({})
+  const maxSize = ref(100) // Taille maximale du cache
+  const defaultTTL = ref(5 * 60 * 1000) // 5 minutes par défaut
+
+  // Nettoyer le cache expiré
+  const cleanExpiredCache = () => {
+    const now = Date.now()
+    Object.keys(cache).forEach(key => {
+      const entry = cache[key]
+      if (now - entry.timestamp > entry.ttl) {
+        delete cache[key]
+        console.log(`[Cache] Entrée expirée supprimée: ${key}`)
+      }
+    })
   }
-  
-  // Fonction pour déterminer la stratégie selon l'URL
-  const getStrategy = (url: string): any => {
-    if (url.includes('/auth/') || url.includes('/login/') || url.includes('/logout/')) {
-      return cacheStrategies.critical
-    }
+
+  // Obtenir une valeur du cache
+  const get = (key: string) => {
+    cleanExpiredCache()
     
-    if (url.includes('/stocks/') || url.includes('/mouvements/') || url.includes('/factures/')) {
-      return cacheStrategies.dynamic
+    const entry = cache[key]
+    if (!entry) {
+      console.log(`[Cache] Cache miss: ${key}`)
+      return null
     }
-    
-    if (url.includes('/utilisateurs/') || url.includes('/boutiques/') || url.includes('/entreprises/')) {
-      return cacheStrategies.static
+
+    const now = Date.now()
+    if (now - entry.timestamp > entry.ttl) {
+      delete cache[key]
+      console.log(`[Cache] Entrée expirée: ${key}`)
+      return null
     }
-    
-    if (url.includes('/profile/') || url.includes('/user/')) {
-      return cacheStrategies.session
-    }
-    
-    if (url.includes('/produits/') || url.includes('/categories/') || url.includes('/fournisseurs/')) {
-      return cacheStrategies.products
-    }
-    
-    if (url.includes('/factures/') || url.includes('/commandes/')) {
-      return cacheStrategies.invoices
-    }
-    
-    // Par défaut, cache moyen
-    return cacheStrategies.session
+
+    console.log(`[Cache] Cache hit: ${key}`)
+    return entry.data
   }
-  
-  // Fonction principale pour les requêtes avec cache intelligent
-  const smartFetch = async (url: string, options: any = {}) => {
-    const strategy = getStrategy(url)
-    const mergedOptions = {
-      ...strategy,
-      ...options
-    }
-    
-    return $cachedFetch(url, mergedOptions)
-  }
-  
-  // Fonction pour invalider le cache d'un pattern
-  const invalidateCache = (pattern: string) => {
-    if (!process.client) return
-    
-    try {
-      const keys = Object.keys(localStorage)
-      const regex = new RegExp(pattern)
+
+  // Mettre une valeur dans le cache
+  const set = (key: string, data: any, ttl?: number) => {
+    // Nettoyer le cache si nécessaire
+    if (Object.keys(cache).length >= maxSize.value) {
+      cleanExpiredCache()
       
-      keys.forEach(key => {
-        if (key.includes('app_cache_') && regex.test(key)) {
-          localStorage.removeItem(key)
-          console.log(`[Cache] Invalidé: ${key}`)
-        }
-      })
-    } catch (e) {
-      console.warn('Erreur lors de l\'invalidation du cache:', e)
+      // Si toujours plein, supprimer les plus anciennes entrées
+      if (Object.keys(cache).length >= maxSize.value) {
+        const entries = Object.entries(cache)
+        entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
+        const toDelete = entries.slice(0, Math.floor(maxSize.value / 2))
+        toDelete.forEach(([key]) => delete cache[key])
+        console.log(`[Cache] Cache nettoyé, ${toDelete.length} entrées supprimées`)
+      }
+    }
+
+    cache[key] = {
+      data,
+      timestamp: Date.now(),
+      ttl: ttl || defaultTTL.value
+    }
+
+    console.log(`[Cache] Entrée mise en cache: ${key}`)
+  }
+
+  // Supprimer une entrée du cache
+  const remove = (key: string) => {
+    if (cache[key]) {
+      delete cache[key]
+      console.log(`[Cache] Entrée supprimée: ${key}`)
     }
   }
-  
-  // Fonction pour précharger des données importantes
-  const preloadData = async (urls: string[]) => {
-    const promises = urls.map(url => smartFetch(url))
+
+  // Vider tout le cache
+  const clear = () => {
+    Object.keys(cache).forEach(key => delete cache[key])
+    console.log('[Cache] Cache vidé')
+  }
+
+  // Obtenir les statistiques du cache
+  const getStats = () => {
+    cleanExpiredCache()
+    return {
+      size: Object.keys(cache).length,
+      maxSize: maxSize.value,
+      keys: Object.keys(cache)
+    }
+  }
+
+  // Cache avec fonction de fallback
+  const getOrSet = async (key: string, fetcher: () => Promise<any>, ttl?: number) => {
+    const cached = get(key)
+    if (cached !== null) {
+      return cached
+    }
+
     try {
-      await Promise.all(promises)
-      console.log(`[Cache] Préchargé ${urls.length} endpoints`)
-    } catch (e) {
-      console.warn('Erreur lors du préchargement:', e)
+      const data = await fetcher()
+      set(key, data, ttl)
+      return data
+    } catch (error) {
+      console.error(`[Cache] Erreur lors de la récupération pour ${key}:`, error)
+      throw error
     }
   }
-  
+
+  // Précharger des données
+  const preload = async (keys: string[], fetchers: (() => Promise<any>)[], ttl?: number) => {
+    const promises = keys.map((key, index) => 
+      getOrSet(key, fetchers[index], ttl).catch(err => {
+        console.warn(`[Cache] Erreur préchargement ${key}:`, err)
+        return null
+      })
+    )
+
+    await Promise.allSettled(promises)
+    console.log(`[Cache] Préchargement terminé pour ${keys.length} clés`)
+  }
+
   return {
-    smartFetch,
-    invalidateCache,
-    preloadData,
-    cacheStrategies
+    cache,
+    get,
+    set,
+    remove,
+    clear,
+    getStats,
+    getOrSet,
+    preload,
+    cleanExpiredCache
   }
 }

@@ -1,5 +1,16 @@
 <template>
   <div>
+    <!-- Indicateur de préchargement -->
+    <div v-if="isLoading" class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+      <div class="flex items-center">
+        <svg class="animate-spin h-4 w-4 text-blue-600 dark:text-blue-400 mr-2" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-sm text-blue-800 dark:text-blue-200">Préchargement des données...</span>
+      </div>
+    </div>
+
     <!-- Indicateur d'entrepôt sélectionné -->
     <div v-if="currentBoutique" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
       <div class="flex items-center justify-between">
@@ -57,6 +68,11 @@
       <ul class="flex flex-wrap gap-2 text-sm">
         <li><NuxtLink to="/superadmin/dashboard" class="px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">Dashboard</NuxtLink></li>
         <li><button @click="showSettings = true" class="px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">Paramètres</button></li>
+        <li><button @click="refreshData" class="px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">Rafraîchir</button></li>
+        <li><NuxtLink to="/superadmin/utilisateurs" class="px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">Utilisateurs</NuxtLink></li>
+        <li><NuxtLink to="/superadmin/entrepots" class="px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">Entrepôts</NuxtLink></li>
+        <li><NuxtLink to="/superadmin/produits" class="px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">Produits</NuxtLink></li>
+        <li><NuxtLink to="/superadmin/factures" class="px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">Factures</NuxtLink></li>
         <li><NuxtLink to="/facturation" class="px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">Facturation</NuxtLink></li>
       </ul>
     </nav>
@@ -262,6 +278,7 @@ import EditBoutiqueModal from '@/components/superadmin/EditBoutiqueModal.vue'
 import EditEntrepriseModal from '@/components/superadmin/EditEntrepriseModal.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import { API_BASE_URL } from '@/constants'
+import { useSuperAdminOptimizerSafe } from '@/composables/useSuperAdminOptimizerSafe'
 
 definePageMeta({
   layout: "superadmin",
@@ -269,30 +286,39 @@ definePageMeta({
 
 const { error, success } = useNotification()
 const { getAuthHeaders } = useAuth()
+const { 
+  preloader, 
+  warehouseRedirect, 
+  initializeOptimizations,
+  accessWarehouseOptimized,
+  refreshAllData,
+  getPerformanceStats
+} = useSuperAdminOptimizerSafe()
 
-// État des données
+// État des données - utiliser les données préchargées
 const stats = reactive({
   total_boutiques: 0,
   total_utilisateurs: 0
 })
 
-const boutiques = ref<any[]>([])
-const users = ref<any[]>([])
+// Utiliser les données préchargées comme source principale
+const boutiques = computed(() => preloader.preloadedData.boutiques || [])
+const users = computed(() => preloader.preloadedData.users || [])
+const entrepriseData = computed(() => preloader.preloadedData.entreprise || null)
 const boutiquesStats = ref<any[]>([])
 const currentBoutique = ref<any>(null)
-const entrepriseData = ref<any>(null)
+const isLoading = computed(() => preloader.isLoading.value)
 
 // Initialisation sécurisée
 const initializeData = () => {
-  if (!boutiques.value) boutiques.value = []
-  if (!users.value) users.value = []
-  if (!boutiquesStats.value) boutiquesStats.value = []
+  // Les données sont maintenant gérées par le préchargeur
+  console.log('[Dashboard] Initialisation des données')
 }
 
-// États de chargement
-const loadingStats = ref(true)
-const loadingBoutiques = ref(true)
-const loadingUsers = ref(true)
+// États de chargement - utiliser le préchargeur
+const loadingStats = computed(() => isLoading.value)
+const loadingBoutiques = computed(() => isLoading.value)
+const loadingUsers = computed(() => isLoading.value)
 const loadingBoutiquesStats = ref(true)
 
 // Recherche
@@ -313,126 +339,46 @@ const selectedBoutique = ref(null)
 const showSettings = ref(false)
 
 
-// Charger les statistiques
+// Charger les statistiques - utiliser les données préchargées
 const loadStats = async () => {
-  loadingStats.value = true
   try {
-    // Récupérer l'ID de l'entreprise depuis le localStorage
-    const entreprise = localStorage.getItem('entreprise')
-    if (!entreprise) {
-      error('Informations entreprise manquantes')
-      return
+    // Les données sont déjà préchargées, juste mettre à jour les stats
+    stats.total_boutiques = boutiques.value.length
+    stats.total_utilisateurs = users.value.length
+    
+    // Normaliser le logo si nécessaire
+    if (entrepriseData.value?.logo && typeof entrepriseData.value.logo === 'string') {
+      const isAbs = /^https?:\/\//i.test(entrepriseData.value.logo)
+      entrepriseData.value.logo = isAbs 
+        ? entrepriseData.value.logo 
+        : `${API_BASE_URL}${entrepriseData.value.logo.startsWith('/') ? entrepriseData.value.logo : `/${entrepriseData.value.logo}`}`
     }
     
-    const e = JSON.parse(entreprise)
-    const entrepriseId = e.id
-    // normaliser logo pour la carte entreprise
-    if (e.logo && typeof e.logo === 'string') {
-      const isAbs = /^https?:\/\//i.test(e.logo)
-      e.logo = isAbs ? e.logo : `${API_BASE_URL}${e.logo.startsWith('/') ? e.logo : `/${e.logo}`}`
-    }
-    entrepriseData.value = e
-
-    try {
-      // Charger les statistiques de l'entreprise spécifique
-      const { data: entrepriseData, error: entrepriseError } = await useApi(`${API_BASE_URL}/api/entreprises/${entrepriseId}/`, {
-        method: 'GET',
-        server: false,
-        headers: getAuthHeaders() as any
-      })
-      
-      if (entrepriseData.value) {
-        // Les statistiques seront mises à jour par les autres fonctions loadBoutiques et loadUsers
-        console.log('🔍 Données entreprise chargées:', entrepriseData.value)
-      }
-    } catch (apiError: any) {
-      error('Erreur lors du chargement des statistiques: ' + (apiError.data?.message || apiError.message))
-      return
-    }
+    console.log('[Dashboard] Statistiques mises à jour:', stats)
   } catch (err) {
-    console.error('Erreur chargement stats:', err)
-  } finally {
-    loadingStats.value = false
+    console.error('[Dashboard] Erreur mise à jour stats:', err)
   }
 }
 
-// Charger les entrepôts
+// Charger les entrepôts - utiliser les données préchargées
 const loadBoutiques = async () => {
-  loadingBoutiques.value = true
   try {
-    // Récupérer l'ID de l'entreprise depuis le localStorage
-    const entreprise = localStorage.getItem('entreprise')
-    if (!entreprise) {
-      error('Informations entreprise manquantes')
-      return
-    }
-    
-    const entrepriseData = JSON.parse(entreprise)
-    const entrepriseId = entrepriseData.id
-
-    try {
-      const { data: boutiquesData, error: boutiquesError } = await useApi(`${API_BASE_URL}/api/boutiques/?entreprise=${entrepriseId}`, {
-        method: 'GET',
-        server: false,
-        headers: getAuthHeaders() as any
-      })
-      
-      if (boutiquesData.value && typeof boutiquesData.value === 'object' && 'results' in boutiquesData.value) {
-        boutiques.value = Array.isArray(boutiquesData.value.results) ? boutiquesData.value.results : []
-      } else {
-        boutiques.value = Array.isArray(boutiquesData.value) ? boutiquesData.value : []
-      }
-      
-      // mettre à jour le compteur fiable
-      stats.total_boutiques = boutiques.value.length
-    } catch (apiError: any) {
-      error('Erreur lors du chargement des entrepôts: ' + (apiError.data?.message || apiError.message))
-      return
-    }
+    // Les données sont déjà préchargées, juste mettre à jour les stats
+    stats.total_boutiques = boutiques.value.length
+    console.log('[Dashboard] Entrepôts chargés:', boutiques.value.length)
   } catch (err) {
-    console.error('Erreur chargement boutiques:', err)
-  } finally {
-    loadingBoutiques.value = false
+    console.error('[Dashboard] Erreur chargement entrepôts:', err)
   }
 }
 
-// Charger les utilisateurs
+// Charger les utilisateurs - utiliser les données préchargées
 const loadUsers = async () => {
-  loadingUsers.value = true
   try {
-    // Récupérer l'ID de l'entreprise depuis le localStorage
-    const entreprise = localStorage.getItem('entreprise')
-    if (!entreprise) {
-      error('Informations entreprise manquantes')
-      return
-    }
-    
-    const entrepriseData = JSON.parse(entreprise)
-    const entrepriseId = entrepriseData.id
-
-    try {
-      const { data: usersData, error: usersError } = await useApi(`${API_BASE_URL}/api/users/?entreprise=${entrepriseId}`, {
-        method: 'GET',
-        server: false,
-        headers: getAuthHeaders() as any
-      })
-      
-      if (usersData.value && typeof usersData.value === 'object' && 'results' in usersData.value) {
-        users.value = Array.isArray(usersData.value.results) ? usersData.value.results : []
-      } else {
-        users.value = Array.isArray(usersData.value) ? usersData.value : []
-      }
-      
-      // mettre à jour le compteur fiable
-      stats.total_utilisateurs = users.value.length
-    } catch (apiError: any) {
-      error('Erreur lors du chargement des utilisateurs: ' + (apiError.data?.message || apiError.message))
-      return
-    }
+    // Les données sont déjà préchargées, juste mettre à jour les stats
+    stats.total_utilisateurs = users.value.length
+    console.log('[Dashboard] Utilisateurs chargés:', users.value.length)
   } catch (err) {
-    console.error('Erreur chargement users:', err)
-  } finally {
-    loadingUsers.value = false
+    console.error('[Dashboard] Erreur chargement utilisateurs:', err)
   }
 }
 
@@ -457,18 +403,13 @@ const getRoleBadgeClass = (role: string) => {
 const deleteBoutique = async (id: number) => {
   if (confirm('Êtes-vous sûr de vouloir supprimer cet entrepôt ?')) {
     try {
-      const { error: apiError } = await useApi(`${API_BASE_URL}/api/boutiques/${id}/`, {
+      await $fetch(`${API_BASE_URL}/api/boutiques/${id}/`, {
         method: 'DELETE',
-        server: false
+        headers: getAuthHeaders()
       })
 
-      if (apiError.value) {
-        error('Erreur lors de la suppression')
-        return
-      }
-
       // Invalider le cache des entrepôts
-      invalidateCache('boutiques')
+      preloader.invalidateCache()
       
       success('Entrepôt supprimé avec succès')
       loadBoutiques()
@@ -678,67 +619,82 @@ const loadRuptures = async () => {
 
 // Rafraîchir les données après mise à jour de l'entreprise
 const onEntrepriseUpdated = async () => {
+  // Invalider le cache et recharger
+  preloader.invalidateCache()
+  await preloader.preloadAllData()
   await loadStats()
 }
 
-// Fonction pour accéder au dashboard d'un entrepôt
+// Fonction pour accéder au dashboard d'un entrepôt - version optimisée
 const accessBoutiqueDashboard = async (boutique: any) => {
+  await accessWarehouseOptimized(boutique)
+}
+
+// Fonction pour effacer la sélection d'entrepôt - version optimisée
+const clearBoutiqueSelection = () => {
+  warehouseRedirect.clearWarehouseSelection()
+  currentBoutique.value = null
+}
+
+// Fonction pour rafraîchir les données et invalider le cache
+const refreshData = async () => {
+  console.log('[Dashboard] Rafraîchissement des données')
   try {
-    // Sauvegarder l'entrepôt sélectionné dans le localStorage
-    localStorage.setItem('boutique', JSON.stringify(boutique))
-    
-    // Mettre à jour l'entrepôt actuel
-    currentBoutique.value = boutique
-    
-    // Afficher une notification de confirmation
-    success(`Accès au dashboard de l'entrepôt "${boutique.nom}"`)
-    
-    // Rediriger vers l'espace entrepôt (menus visibles)
-    await navigateTo('/user')
+    await refreshAllData()
+    await loadStats()
+    await loadBoutiques()
+    await loadUsers()
+    await loadBoutiquesStats()
+    buildCharts()
+    computeRecentActivities()
+    await Promise.all([
+      loadSalesToday(),
+      loadRuptures()
+    ])
+    success('Données rafraîchies avec succès')
   } catch (err) {
-    console.error('Erreur accès dashboard:', err)
-    error('Erreur lors de l\'accès au dashboard de l\'entrepôt')
+    console.error('[Dashboard] Erreur rafraîchissement:', err)
+    error('Erreur lors du rafraîchissement des données')
   }
 }
 
-// Fonction pour effacer la sélection d'entrepôt
-const clearBoutiqueSelection = () => {
-  localStorage.removeItem('boutique')
-  currentBoutique.value = null
-  success('Retour au dashboard global')
-}
-
-// Charger les données au montage
+// Charger les données au montage - version optimisée avec préchargement
 onMounted(async () => {
+  console.log('[Dashboard] Début du chargement optimisé')
+  
   // Initialiser les données de manière sécurisée
   initializeData()
   
-  // Vérifier si un entrepôt est déjà sélectionné
-  const boutique = localStorage.getItem('boutique')
-  if (boutique) {
-    try {
-      currentBoutique.value = JSON.parse(boutique)
-    } catch (e) {
-      console.warn('Erreur parsing boutique:', e)
-      localStorage.removeItem('boutique')
-    }
+  // Restaurer la sélection d'entrepôt si elle existe
+  currentBoutique.value = warehouseRedirect.restoreWarehouseSelection()
+  
+  try {
+    // Initialiser toutes les optimisations
+    console.log('[Dashboard] Initialisation des optimisations...')
+    await initializeOptimizations()
+    
+    // Mettre à jour les statistiques avec les données préchargées
+    await Promise.all([
+      loadStats(),
+      loadBoutiques(),
+      loadUsers()
+    ])
+    
+    // Charger les données dépendantes après les données de base
+    await loadBoutiquesStats()
+    buildCharts()
+    computeRecentActivities()
+    await Promise.all([
+      loadSalesToday(),
+      loadRuptures()
+    ])
+    
+    console.log('[Dashboard] Chargement optimisé terminé')
+    console.log('[Dashboard] Statistiques de performance:', getPerformanceStats())
+  } catch (err) {
+    console.error('[Dashboard] Erreur lors du chargement optimisé:', err)
+    error('Erreur lors du chargement des données')
   }
-  
-  // Précharger les données importantes en parallèle
-  await Promise.all([
-    loadStats(),
-    loadBoutiques(),
-    loadUsers()
-  ])
-  
-  // Charger les données dépendantes après les données de base
-  await loadBoutiquesStats()
-  buildCharts()
-  computeRecentActivities()
-  await Promise.all([
-    loadSalesToday(),
-    loadRuptures()
-  ])
 })
 
 // UI helpers

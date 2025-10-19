@@ -11,7 +11,7 @@ interface User {
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
-  const baseUrl = ref('http://127.0.0.1:8000')
+  const baseUrl = ref('https://murastorage.pythonanywhere.com')
 
   const cookieToken = useCookie<string | null>('auth_token', {
     default: () => null,

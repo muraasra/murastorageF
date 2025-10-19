@@ -179,6 +179,7 @@ import { useNotification } from '@/types/useNotification'
 import { useAuth } from '@/composables/useAuth'
 import CreateBoutiqueModal from '@/components/superadmin/CreateBoutiqueModal.vue'
 import EditBoutiqueModal from '@/components/superadmin/EditBoutiqueModal.vue'
+import { API_BASE_URL } from '@/constants'
 
 definePageMeta({
   layout: "superadmin",
@@ -261,7 +262,7 @@ const loadBoutiques = async () => {
 
     try {
       const headers = getAuthHeaders()
-      const data = await $fetch<Boutique[]>(`https://murastorage.pythonanywhere.com/api/boutiques/?entreprise=${entrepriseId}`, {
+      const data = await $fetch<Boutique[]>(`${API_BASE_URL}/api/boutiques/?entreprise=${entrepriseId}`, {
         headers
       })
       boutiques.value = data || []
@@ -291,7 +292,7 @@ const deleteBoutique = async (id: number) => {
     try {
       try {
         const headers = getAuthHeaders()
-        await $fetch(`https://murastorage.pythonanywhere.com/api/boutiques/${id}/`, {
+        await $fetch(`${API_BASE_URL}/api/boutiques/${id}/`, {
           method: 'DELETE',
           headers
         })
