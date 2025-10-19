@@ -222,7 +222,7 @@ const useNotification = () => {
     if (process.client) {
       // Créer un élément toast
       const toast = document.createElement('div')
-      toast.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${
+      toast.className = `fixed bottom-4 right-4 z-[9999] px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${
         type === 'success' 
           ? 'bg-green-500 text-white' 
           : 'bg-red-500 text-white'
@@ -243,7 +243,7 @@ const useNotification = () => {
       `
       
       // Styles initiaux pour l'animation
-      toast.style.transform = 'translateX(100%)'
+      toast.style.transform = 'translateY(100%)'
       toast.style.opacity = '0'
       
       // Ajouter au DOM
@@ -251,13 +251,13 @@ const useNotification = () => {
       
       // Animation d'entrée
       setTimeout(() => {
-        toast.style.transform = 'translateX(0)'
+        toast.style.transform = 'translateY(0)'
         toast.style.opacity = '1'
       }, 100)
       
       // Suppression automatique après 5 secondes
       setTimeout(() => {
-        toast.style.transform = 'translateX(100%)'
+        toast.style.transform = 'translateY(100%)'
         toast.style.opacity = '0'
         setTimeout(() => {
           if (toast.parentElement) {
