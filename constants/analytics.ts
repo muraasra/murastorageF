@@ -1,37 +1,51 @@
-// Configuration Analytics
-export const ANALYTICS_CONFIG = {
-  // Google Analytics 4 ID (votre ID réel)
-  GA_ID: 'G-3H02VTX2K8',
-  
-  // Google Search Console ID
-  GSC_ID: '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA',
-  
-  // Facebook Pixel ID (optionnel)
-  FB_PIXEL_ID: 'YOUR_PIXEL_ID',
-  
-  // Google Ads ID (optionnel)
-  GA_ADS_ID: 'AW-XXXXXXXXXX'
-}
-
-// Événements personnalisés
+// Événements de tracking pour l'analytics
 export const ANALYTICS_EVENTS = {
-  // Événements de navigation
+  // Pages et navigation
   PAGE_VIEW: 'page_view',
-  NAVIGATION: 'navigation',
   
-  // Événements de conversion
+  // Authentification
   SIGNUP: 'sign_up',
   LOGIN: 'login',
-  SUBSCRIPTION: 'purchase',
+  LOGOUT: 'logout',
   
-  // Événements d'engagement
+  // Interactions
   BUTTON_CLICK: 'button_click',
   FORM_SUBMIT: 'form_submit',
-  DOWNLOAD: 'file_download',
   
-  // Événements e-commerce
+  // E-commerce
   ADD_TO_CART: 'add_to_cart',
   REMOVE_FROM_CART: 'remove_from_cart',
-  BEGIN_CHECKOUT: 'begin_checkout',
-  PURCHASE: 'purchase'
-}
+  VIEW_ITEM: 'view_item',
+  PURCHASE: 'purchase',
+  
+  // Abonnements
+  SUBSCRIPTION: 'subscription',
+  
+  // Recherche
+  SEARCH: 'search',
+  
+  // Téléchargements
+  DOWNLOAD: 'file_download',
+  
+  // Partage social
+  SOCIAL_SHARE: 'social_share',
+  
+  // Vidéo
+  VIDEO_PLAY: 'video_play',
+  VIDEO_COMPLETE: 'video_complete',
+  
+  // Erreurs
+  ERROR: 'error',
+  
+  // Performance
+  PERFORMANCE: 'performance'
+} as const
+
+// Configuration des événements personnalisés
+export const CUSTOM_EVENTS = {
+  PRODUCT_SCAN: 'product_scan',
+  STOCK_UPDATE: 'stock_update',
+  WAREHOUSE_TRANSFER: 'warehouse_transfer',
+  INVOICE_CREATE: 'invoice_create',
+  USER_MANAGEMENT: 'user_management'
+} as const

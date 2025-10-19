@@ -1,8 +1,12 @@
 export default defineNuxtConfig({
-  ssr: false, // Désactiver SSR temporairement pour debug
+  ssr: false, // Mode SPA pour éviter les problèmes SSR en production
 
   nitro: {
-    preset: 'static'
+    preset: 'static',
+    prerender: {
+      crawlLinks: false, // Désactiver le crawl automatique
+      ignore: ['/api/**'] // Ignorer les routes API
+    }
   },
 
   devtools: { enabled: true },
