@@ -218,19 +218,66 @@
 import { ref, reactive, onMounted } from 'vue'
 // Imports conditionnels pour éviter les erreurs SSR
 const useNotification = () => {
+  const showToast = (message: string, type: 'success' | 'error') => {
+    if (process.client) {
+      // Créer un élément toast
+      const toast = document.createElement('div')
+      toast.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out ${
+        type === 'success' 
+          ? 'bg-green-500 text-white' 
+          : 'bg-red-500 text-white'
+      }`
+      
+      // Icône selon le type
+      const icon = type === 'success' ? '✅' : '❌'
+      toast.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">${icon}</span>
+          <span class="font-medium">${message}</span>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+      `
+      
+      // Styles initiaux pour l'animation
+      toast.style.transform = 'translateX(100%)'
+      toast.style.opacity = '0'
+      
+      // Ajouter au DOM
+      document.body.appendChild(toast)
+      
+      // Animation d'entrée
+      setTimeout(() => {
+        toast.style.transform = 'translateX(0)'
+        toast.style.opacity = '1'
+      }, 100)
+      
+      // Suppression automatique après 5 secondes
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%)'
+        toast.style.opacity = '0'
+        setTimeout(() => {
+          if (toast.parentElement) {
+            toast.remove()
+          }
+        }, 300)
+      }, 5000)
+    }
+  }
+
   const error = (message: string) => {
-    if (process.client) {
-      console.error(message)
-      // Notification simple côté client
-      alert(message)
-    }
+    console.error(message)
+    showToast(message, 'error')
   }
+  
   const success = (message: string) => {
-    if (process.client) {
-      console.log(message)
-      alert(message)
-    }
+    console.log(message)
+    showToast(message, 'success')
   }
+  
   return { error, success }
 }
 
