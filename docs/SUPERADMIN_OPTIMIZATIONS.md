@@ -255,3 +255,4 @@ cache.remove('boutiques')
 3. **Service Worker** : Cache offline pour les données critiques
 4. **Analytics** : Mesurer l'impact des optimisations
 5. **Tests de performance** : Automatiser les tests de charge
+

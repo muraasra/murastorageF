@@ -2,6 +2,12 @@ import { API_BASE_URL } from '@/constants'
 
 export const useApiBase = () => {
   const getApiUrl = (endpoint: string) => {
+    // Vérifier que l'endpoint n'est pas undefined ou null
+    if (!endpoint) {
+      console.error('[useApiBase] Endpoint est undefined ou null')
+      return API_BASE_URL
+    }
+    
     // Si l'endpoint commence déjà par http, le retourner tel quel
     if (endpoint.startsWith('http')) {
       return endpoint

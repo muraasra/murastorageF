@@ -234,10 +234,36 @@ const userId = computed(() => user.value?.id);
 const fetchUserAndBoutiqueData = async () => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null;
-    if (!token) return;
+    if (!token) {
+      console.error('Token d\'authentification manquant');
+      return;
+    }
 
-    // Récupérer les données utilisateur
-    const userData = await $fetch<User>(`${API_BASE_URL}/api/user/me/`, {
+    // Récupérer l'ID utilisateur depuis le localStorage ou le store
+    const currentUser = user.value || (process.client ? JSON.parse(localStorage.getItem('user') || '{}') : {});
+    const userId = currentUser.id;
+    
+    if (!userId) {
+      console.error('ID utilisateur non trouvé dans les données locales');
+      console.log('Données utilisateur disponibles:', currentUser);
+      console.log('Tentative de récupération depuis le store auth...');
+      
+      // Essayer de récupérer depuis le store auth
+      const authStore = useAuthStore();
+      if (authStore.user?.id) {
+        console.log('ID utilisateur trouvé dans le store auth:', authStore.user.id);
+        user.value = authStore.user;
+        return;
+      }
+      
+      console.error('Aucun ID utilisateur trouvé nulle part');
+      return;
+    }
+    
+    console.log('Récupération des données pour l\'utilisateur ID:', userId);
+
+    // Récupérer les données utilisateur complètes
+    const userData = await $fetch<User>(`${API_BASE_URL}/api/users/${userId}/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -254,8 +280,9 @@ const fetchUserAndBoutiqueData = async () => {
     }
 
     // Récupérer les données de la boutique de l'utilisateur
-    if (userData?.boutique?.id) {
-      const boutiqueData = await $fetch(`${API_BASE_URL}/api/boutiques/${userData.boutique.id}/`, {
+    const boutiqueId = userData?.boutique?.id || userData?.boutique;
+    if (boutiqueId) {
+      const boutiqueData = await $fetch(`${API_BASE_URL}/api/boutiques/${boutiqueId}/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -270,9 +297,52 @@ const fetchUserAndBoutiqueData = async () => {
         }
         console.log('Données boutique mises à jour:', boutique.value);
       }
+    } else {
+      console.warn('Aucune boutique associée à l\'utilisateur');
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Erreur lors de la récupération des données:', err);
+    console.error('Détails de l\'erreur:', {
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      url: err.response?.url,
+      message: err.message
+    });
+    
+    // Si l'erreur est 404, essayer de récupérer les données depuis le localStorage
+    if (err.response?.status === 404) {
+      console.log('Endpoint non trouvé, utilisation des données locales');
+      if (process.client) {
+        const storedUser = localStorage.getItem('user');
+        const storedBoutique = localStorage.getItem('boutique');
+        
+        if (storedUser) {
+          try {
+            user.value = JSON.parse(storedUser);
+            console.log('Utilisateur restauré depuis localStorage:', user.value);
+          } catch (e) {
+            console.error('Erreur lors de la restauration de l\'utilisateur:', e);
+          }
+        }
+        
+        if (storedBoutique) {
+          try {
+            boutique.value = JSON.parse(storedBoutique);
+            console.log('Boutique restaurée depuis localStorage:', boutique.value);
+          } catch (e) {
+            console.error('Erreur lors de la restauration de la boutique:', e);
+          }
+        }
+      }
+    } else if (err.response?.status === 401) {
+      console.error('Token expiré ou invalide');
+      if (process.client) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('boutique');
+        window.location.href = '/login';
+      }
+    }
   }
 };
 
@@ -434,41 +504,80 @@ const createClient = async (clientData: Partial<Client>) => {
       throw new Error('Token d\'authentification manquant');
     }
     
-    // Récupérer l'entreprise depuis l'utilisateur connecté ou utiliser une par défaut
+    // Récupérer les données utilisateur si nécessaire
+    console.log('Données utilisateur actuelles:', user.value);
+    console.log('Données boutique actuelles:', boutique.value);
+    
+    if (!user.value?.entreprise?.id) {
+      console.log('Données entreprise manquantes, tentative de récupération...');
+      try {
+        await fetchUserAndBoutiqueData();
+      } catch (err) {
+        console.error('Erreur lors de la récupération des données:', err);
+      }
+    }
+    
+    // Si toujours pas d'entreprise, essayer de récupérer depuis le store auth ou utiliser des valeurs par défaut
     let entrepriseId = user.value?.entreprise?.id;
     if (!entrepriseId) {
-      // Si l'utilisateur n'a pas d'entreprise, utiliser la première entreprise disponible
-      console.warn('Utilisateur sans entreprise, utilisation d\'une entreprise par défaut');
-      // Pour l'instant, on utilise l'ID 8 (Entreprise Final) comme fallback
-      entrepriseId = 8;
+      console.warn('Aucune entreprise trouvée dans les données utilisateur');
+      
+      // Essayer de récupérer depuis le store auth
+      const authStore = useAuthStore();
+      if ((authStore.user as any)?.entreprise?.id) {
+        entrepriseId = (authStore.user as any).entreprise.id;
+        console.log('Entreprise trouvée dans le store auth:', entrepriseId);
+      } else {
+        console.warn('Utilisation d\'une entreprise par défaut (ID: 1)');
+        entrepriseId = 1;
+      }
     }
     
-    // Utiliser la boutique de l'utilisateur ou une boutique par défaut
+    // Récupérer l'ID de la boutique
     let boutiqueId = boutique.value?.id || user.value?.boutique?.id;
     if (!boutiqueId) {
-      // Si pas de boutique, utiliser la première boutique de l'entreprise
-      console.warn('Utilisateur sans boutique, utilisation d\'une boutique par défaut');
-      // Pour l'instant, on utilise l'ID 7 (Entrepôt Principal) comme fallback
-      boutiqueId = 7;
+      console.warn('Aucune boutique trouvée dans les données utilisateur');
+      
+      // Essayer de récupérer depuis le store auth
+      const authStore = useAuthStore();
+      if ((authStore.user as any)?.boutique?.id) {
+        boutiqueId = (authStore.user as any).boutique.id;
+        console.log('Boutique trouvée dans le store auth:', boutiqueId);
+      } else {
+        console.warn('Utilisation d\'une boutique par défaut (ID: 1)');
+        boutiqueId = 1;
+      }
     }
     
+    console.log('IDs utilisés - Entreprise:', entrepriseId, 'Boutique:', boutiqueId);
+    
     const clientPayload = {
-      nom: clientData.nom,
-      prenom: clientData.prenom || '',
-      telephone: clientData.telephone,
-      email: clientData.email || '',
-      adresse: clientData.adresse || '',
-      ville: clientData.ville || 'Bafoussam',
+      nom: clientData.nom?.trim() || '',
+      prenom: clientData.prenom?.trim() || '',
+      telephone: clientData.telephone?.trim() || '',
+      email: clientData.email?.trim() || '',
+      adresse: clientData.adresse?.trim() || '',
+      ville: clientData.ville?.trim() || 'Bafoussam',
       boutique: boutiqueId,
       entreprise: entrepriseId,
       actif: true
     };
     
+    // Validation des champs requis
+    if (!clientPayload.nom || !clientPayload.telephone || !clientPayload.entreprise || !clientPayload.boutique) {
+      throw new Error('Champs requis manquants: nom, telephone, entreprise, boutique');
+    }
+    
     console.log('Données client à envoyer:', clientPayload);
-    console.log('Utilisateur:', user.value);
-    console.log('Boutique:', boutique.value);
-    console.log('Boutique ID utilisé:', boutiqueId);
-    console.log('Entreprise ID utilisé:', entrepriseId);
+    console.log('Utilisateur connecté:', {
+      id: user.value?.id,
+      nom: user.value?.nom,
+      prenom: user.value?.prenom,
+      entreprise: user.value?.entreprise,
+      boutique: user.value?.boutique
+    });
+    console.log('Boutique récupérée:', boutique.value);
+    console.log('IDs utilisés - Entreprise:', entrepriseId, 'Boutique:', boutiqueId);
     console.log('Token disponible:', !!token);
     
     const newClient = await $fetch<Client>(`${API_BASE_URL}/api/clients/`, {
@@ -491,8 +600,14 @@ const createClient = async (clientData: Partial<Client>) => {
     
     if (err.response) {
       try {
-        const errorText = await err.response.text();
-        console.error('Réponse du serveur (texte):', errorText);
+        const errorData = await err.response.json();
+        console.error('Réponse du serveur (JSON):', errorData);
+        
+        // Si erreur 400, afficher les détails de validation
+        if (err.response.status === 400) {
+          console.error('Erreur de validation:', errorData);
+          throw new Error(`Erreur de validation: ${JSON.stringify(errorData)}`);
+        }
         
         // Si erreur 401, le token est probablement expiré
         if (err.response.status === 401) {
@@ -503,16 +618,24 @@ const createClient = async (clientData: Partial<Client>) => {
             localStorage.removeItem('boutique');
             window.location.href = '/login';
           }
+          throw new Error('Token expiré, veuillez vous reconnecter');
         }
+        
+        // Pour les autres erreurs, continuer avec les valeurs par défaut
+        console.warn('Erreur API, utilisation des valeurs par défaut');
+        throw new Error(`Erreur serveur ${err.response.status}: ${JSON.stringify(errorData)}`);
+        
       } catch (e) {
-        console.error('Impossible de lire la réponse d\'erreur:', e);
+        const errorText = await err.response.text();
+        console.error('Réponse du serveur (texte):', errorText);
         console.error('Status:', err.response.status);
         console.error('StatusText:', err.response.statusText);
+        throw new Error(`Erreur serveur ${err.response.status}: ${errorText}`);
       }
     } else {
-      console.error('Pas de réponse disponible');
+      console.error('Pas de réponse disponible - erreur de connexion');
+      throw new Error('Erreur de connexion au serveur');
     }
-    throw err;
   }
 };
 
@@ -596,6 +719,7 @@ const paymentMethod = ref('cash'); // Méthode de paiement
 const notes = ref(''); // Notes de la facture
 const showBarcodeScanner = ref(false);
 const barcodeInput = ref('');
+const isSubmitting = ref(false); // État de soumission de la facture
 
 const currentProductRef = ref("");
 const invoicePreview = ref<HTMLElement | null>(null);
@@ -788,10 +912,22 @@ onMounted(async () => {
     invoice.value.number = generateInvoiceNumber()
   }
 
-  // Vérifier si la boutique est présente, sinon récupérer les données depuis l'API
-  if (!boutique.value?.id) {
-    console.log('Boutique manquante, récupération des données depuis l\'API...');
+  // Vérifier et récupérer les données utilisateur si nécessaire
+  console.log('Vérification des données utilisateur au montage...');
+  console.log('Utilisateur:', user.value);
+  console.log('Boutique:', boutique.value);
+  
+  if (!user.value?.entreprise?.id || (!boutique.value?.id && !user.value?.boutique?.id)) {
+    console.log('Données utilisateur incomplètes, récupération depuis l\'API...');
     await fetchUserAndBoutiqueData();
+    
+    // Vérifier à nouveau après récupération
+    if (!user.value?.entreprise?.id) {
+      console.error('Impossible de récupérer les données entreprise');
+    }
+    if (!boutique.value?.id && !user.value?.boutique?.id) {
+      console.error('Impossible de récupérer les données boutique');
+    }
   }
 
   // Chargement des données depuis les API
@@ -840,7 +976,7 @@ const clearDraft = () => {
 const COMPANY_INFO = computed(() => {
   const entrepriseNom = boutique.value?.entreprise?.nom || user.value?.entreprise?.nom || 'Entreprise';
   const boutiqueAdresse = boutique.value?.adresse || 'Adresse non disponible';
-  const entrepriseNUI = boutique.value?.entreprise?.nui || user.value?.entreprise?.nui || '';
+  const entrepriseNUI = boutique.value?.entreprise?.numero_fiscal || user.value?.entreprise?.numero_fiscal || '';
   const boutiqueTelephone = boutique.value?.telephone || '';
   const entrepriseSite = boutique.value?.entreprise?.site_web || user.value?.entreprise?.site_web || '';
   
@@ -1257,7 +1393,11 @@ const addItem = () => {
 
 // Corriger la fonction submitInvoice
 const submitInvoice = async () => {
+  if (isSubmitting.value) return; // Empêcher les soumissions multiples
+  
   try {
+    isSubmitting.value = true; // Activer l'état de soumission
+    
     // Récupérer le token d'authentification
     const token = process.client ? localStorage.getItem('access_token') : null;
     
@@ -1645,6 +1785,8 @@ const submitInvoice = async () => {
   } catch (err: any) {
     error("Erreur inattendue");
     console.error("Erreur complète:", err);
+  } finally {
+    isSubmitting.value = false; // Désactiver l'état de soumission
   }
 };
 
@@ -1742,7 +1884,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                       <div class="text-sm text-green-600">{{ selectedClient.telephone }}</div>
                     </div>
                     <UButton 
-                      @click="selectedClient = null; invoice.client = { nom: '', prenom: '', telephone: '', email: '', adresse: '' }"
+                      @click="selectedClient = null; invoice.client = { id: 0, nom: '', prenom: '', telephone: '', email: '', adresse: '' }"
                       color="red" 
                       variant="ghost" 
                       size="sm"
@@ -2273,11 +2415,16 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
 
         <!-- Actions -->
         <div class="flex justify-end space-x-4">
-          <UButton @click="submitInvoice" color="green" variant="solid" size="lg" icon="i-heroicons-document-check">
-            Enregistrer la Facture
-          </UButton>
-          <UButton @click="printInvoice" size="lg" icon="i-heroicons-printer" color="blue" variant="solid">
-            Imprimer la Facture
+          <UButton 
+            @click="submitInvoice" 
+            color="green" 
+            variant="solid" 
+            size="lg" 
+            icon="i-heroicons-document-check"
+            :loading="isSubmitting"
+            :disabled="isSubmitting"
+          >
+            {{ isSubmitting ? 'Création en cours...' : 'Enregistrer la Facture' }}
           </UButton>
         </div>
         </div>

@@ -1,9 +1,7 @@
 // Composable pour les transitions rapides entre pages
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 export const useFastTransitions = () => {
-  const router = useRouter()
   const isTransitioning = ref(false)
   const preloadedPages = ref(new Set())
   const pageCache = ref(new Map())
@@ -38,8 +36,15 @@ export const useFastTransitions = () => {
     if (preloadedPages.value.has(path)) return
 
     try {
+      // Vérifier que le path n'est pas undefined ou null
+      if (!path) {
+        console.warn('⚠️ Path est undefined ou null pour le préchargement')
+        return
+      }
+
       // Précharger le composant de la page
-      const component = await import(`~/pages${path === '/' ? '/index' : path}.vue`)
+      const componentPath = `~/pages${path === '/' ? '/index' : path}.vue`
+      const component = await import(/* @vite-ignore */ componentPath)
       
       // Mettre en cache
       pageCache.value.set(path, {
@@ -55,7 +60,7 @@ export const useFastTransitions = () => {
   }
 
   // Navigation optimisée avec préchargement
-  const navigateTo = async (path: string, options = {}) => {
+  const navigateToOptimized = async (path: string, options = {}) => {
     isTransitioning.value = true
 
     try {
@@ -65,7 +70,7 @@ export const useFastTransitions = () => {
       }
 
       // Navigation avec transition rapide
-      await router.push(path)
+      await navigateTo(path, options)
       
       // Marquer la transition comme terminée
       setTimeout(() => {
@@ -89,11 +94,16 @@ export const useFastTransitions = () => {
     })
 
     // Navigation immédiate
-    return navigateTo(path, options)
+    return navigateToOptimized(path, options)
   }
 
   // Obtenir les pages liées à une page donnée
   const getRelatedPages = (currentPath: string) => {
+    // Vérifier que le path n'est pas undefined ou null
+    if (!currentPath) {
+      return []
+    }
+
     const relations = {
       '/user': ['/facturation', '/listes-factures', '/mouvements-stock'],
       '/facturation': ['/listes-factures', '/stock-produit'],
@@ -184,7 +194,7 @@ export const useFastTransitions = () => {
     preloadedPages: computed(() => preloadedPages.value),
     
     // Fonctions
-    navigateTo,
+    navigateTo: navigateToOptimized,
     smartNavigate,
     preloadPage,
     preloadImportantPages,

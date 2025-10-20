@@ -85,6 +85,10 @@ export const useApiOptimizer = () => {
     return getOrCreateRequest(key, async () => {
       return requestWithRetry(async () => {
         return requestWithTimeout(async () => {
+          // Vérifier que l'URL n'est pas undefined ou null
+          if (!url) {
+            throw new Error('URL non définie')
+          }
           const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`
           
           const response = await $fetch(fullUrl, {
@@ -158,3 +162,4 @@ export const useApiOptimizer = () => {
     timeout
   }
 }
+

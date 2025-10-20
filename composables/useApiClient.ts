@@ -7,6 +7,12 @@ export const useApiClient = () => {
   
   // Fonction pour construire l'URL complète
   const buildUrl = (endpoint: string): string => {
+    // Vérifier que l'endpoint n'est pas undefined ou null
+    if (!endpoint) {
+      console.error('[useApiClient] Endpoint est undefined ou null')
+      return API_BASE_URL
+    }
+    
     // Si l'endpoint commence déjà par http, le retourner tel quel
     if (endpoint.startsWith('http')) {
       return endpoint

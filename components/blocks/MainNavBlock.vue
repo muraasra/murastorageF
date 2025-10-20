@@ -80,7 +80,7 @@ const filteredItems = computed(() => {
             class="flex items-center p-4 hover:bg-emerald-500 hover:text-white cursor-pointer transition duration-200"
           >
             <!-- Icône -->
-            <UIcon :name="item.icon" class="w-8 h-8 text-emerald-500 dark:text-white mr-3" />
+            <UIcon :name="item.icon || 'i-heroicons-home'" class="w-8 h-8 text-emerald-500 dark:text-white mr-3" />
 
             <!-- Infos -->
             <div class="flex-1">

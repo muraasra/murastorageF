@@ -1,3 +1,5 @@
+import type { Produit } from "@/types"
+
 // Configuration de l'API
 export const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://murastorage.pythonanywhere.com' 
@@ -36,107 +38,198 @@ export const NOTIFICATION_DURATION = 5000 // 5 secondes
 export const API_TIMEOUT = 30000 // 30 secondes
 export const REQUEST_TIMEOUT = 10000 // 10 secondes
 
-// Données de test pour les produits
-export const PRODUCTS_DATA = [
-  {
-    id: 1,
-    name: 'Produit Test 1',
-    price: 1000,
-    stock: 50,
-    category: 'Électronique'
-  },
-  {
-    id: 2,
-    name: 'Produit Test 2',
-    price: 2500,
-    stock: 25,
-    category: 'Informatique'
-  }
-] as const
-
-// Éléments de navigation pour admin
-export const NAVIGATION_ITEMS_ADMIN = [
-  {
-    name: 'Dashboard',
-    href: '/admin',
-    icon: 'dashboard'
-  },
-  {
-    name: 'Produits',
-    href: '/produits',
-    icon: 'products'
-  },
-  {
-    name: 'Stock',
-    href: '/stock_produit',
-    icon: 'stock'
-  },
-  {
-    name: 'Factures',
-    href: '/facturation',
-    icon: 'invoices'
-  },
-  {
-    name: 'Utilisateurs',
-    href: '/utilisateurs',
-    icon: 'users'
-  }
-] as const
-
-// Éléments de navigation pour superadmin
-export const NAVIGATION_ITEMS_SUPERADMIN = [
-  {
-    name: 'Dashboard',
-    href: '/superadmin/dashboard',
-    icon: 'dashboard'
-  },
-  {
-    name: 'Entreprises',
-    href: '/superadmin/entrepots',
-    icon: 'companies'
-  },
-  {
-    name: 'Produits',
-    href: '/superadmin/produits',
-    icon: 'products'
-  },
-  {
-    name: 'Factures',
-    href: '/superadmin/factures',
-    icon: 'invoices'
-  },
-  {
-    name: 'Utilisateurs',
-    href: '/superadmin/utilisateurs',
-    icon: 'users'
-  },
-  {
-    name: 'Tarification',
-    href: '/superadmin/tarification',
-    icon: 'pricing'
-  }
-] as const
-
-// Éléments de navigation génériques
 export const NAVIGATION_ITEMS = [
-  {
-    name: 'Accueil',
-    href: '/',
-    icon: 'home'
-  },
-  {
-    name: 'Produits',
-    href: '/produits',
-    icon: 'products'
-  },
-  {
-    name: 'Stock',
-    href: '/stock_produit',
-    icon: 'stock'
-  },
-  {
-    name: 'Factures',
-    href: '/facturation',
-    icon: 'invoices'
-  }
-] as const
+  [
+    {
+      name: "Stock des Produits",
+      link: "/stock_produit",
+      icon: "i-heroicons-square-2-stack",
+    },
+    {
+      name: "Mouvements de Stock",
+      link: "/mouvements-stock",
+      icon: "i-heroicons-chart-bar",
+    },
+  ],
+  [
+    {
+      name: "Facturation",
+      link: "/facturation",
+      icon: "i-heroicons-document-currency-dollar",
+    },
+    {
+      name: "Liste des factures",
+      link: "/listes-factures",
+      icon: "i-heroicons-clipboard-document-list",
+    },
+  ],
+  [
+    {
+      name: "Transfert",
+      link: "/transfert",
+      icon: "i-heroicons-arrows-right-left",
+    },
+  ],
+  [
+    {
+      name: "Logout",
+      link: "",
+      icon: "i-heroicons-power",
+    },
+  ],
+  // [
+  //   {
+  //     name: "Guide",
+  //     link: "/guide",
+  //     icon: "i-heroicons-book-open",
+  //   },
+  // ],
+];
+
+export const NAVIGATION_ITEMS_ADMIN = [
+  [
+    {
+      name: "Dashboard",
+      link: "/",
+      icon: "i-heroicons-rectangle-group",
+    },
+    {
+      name: "Produits",
+      link: "/produits",
+      icon: "i-heroicons-squares-plus",
+    },
+
+    {
+      name: "Stock des Produits",
+      link: "/stock_produit",
+      icon: "i-heroicons-square-2-stack",
+    },
+    {
+      name: "Mouvements de Stock",
+      link: "/mouvements-stock",
+      icon: "i-heroicons-chart-bar",
+    },
+  ],
+    [ 
+    {
+      name: "Partenaires",
+      link: "/partenaires",
+      icon: "i-heroicons-user-group",
+    },
+  ],
+  [ 
+    {
+      name: "Facturation",
+      link: "/facturation",
+      icon: "i-heroicons-document-currency-dollar",
+    },    
+    {
+      name: "Liste des factures",
+      link: "/listes-factures",
+      icon: "i-heroicons-clipboard-document-list",
+    },
+  ],
+  [
+    {
+      name: "Transfert",
+      link: "/transfert",
+      icon: "i-heroicons-arrows-right-left",
+    },
+  ],
+  // [
+  //   {
+  //     name: "Guide",
+  //     link: "/guide",
+  //     icon: "i-heroicons-book-open",
+  //   },
+  // ],
+  [
+    {
+      name: "Logout",
+      link: "",
+      icon: "i-heroicons-power",
+    },
+  ],
+];
+
+export const NAVIGATION_ITEMS_SUPERADMIN = [
+  [
+    {
+      name: "Dashboard",
+      link: "/",
+      icon: "i-heroicons-rectangle-group",
+    },
+    {
+      name: "Produits",
+      link: "/produits",
+      icon: "i-heroicons-squares-plus",
+    },
+    {
+      name: "Stock des Produits",
+      link: "/stock_produit",
+      icon: "i-heroicons-square-2-stack",
+    },
+    {
+      name: "Mouvements de Stock",
+      link: "/mouvements-stock",
+      icon: "i-heroicons-chart-bar",
+    },
+  ],
+  [
+    {
+      name: "Utilisateurs",
+      link: "/utilisateurs",
+      icon: "i-heroicons-user",
+    },
+    {
+      name: "Journal",
+      link: "/journal",
+      icon: "i-heroicons-clipboard-document-list",
+    },
+  ],
+  [ 
+    {
+      name: "Partenaires",
+      link: "/partenaires",
+      icon: "i-heroicons-user-group",
+    },
+  ],
+  [ 
+    {
+      name: "Facturation",
+      link: "/facturation",
+      icon: "i-heroicons-document-currency-dollar",
+    },    
+    {
+      name: "Liste des factures",
+      link: "/listes-factures",
+      icon: "i-heroicons-clipboard-document-list",
+    },
+  ],
+  [
+    {
+      name: "Transfert",
+      link: "/transfert",
+      icon: "i-heroicons-arrows-right-left",
+    },
+  ],
+  // [
+  //   {
+  //     name: "Guide",
+  //     link: "/guide",
+  //     icon: "i-heroicons-book-open",
+  //   },
+  // ],
+  [
+    {
+      name: "Logout",
+      link: "",
+      icon: "i-heroicons-power",
+    },
+  ],
+];
+
+export const PRODUCTS_DATA: Produit[] = [
+  
+];
+

@@ -41,12 +41,24 @@ export const useSuperAdminPreloader = () => {
 
     try {
       const entreprise = localStorage.getItem('entreprise')
+      const token = localStorage.getItem('access_token')
+      
       if (!entreprise) {
         throw new Error('Informations entreprise manquantes')
+      }
+      
+      if (!token) {
+        throw new Error('Token d\'authentification manquant')
       }
 
       const entrepriseData = JSON.parse(entreprise)
       const entrepriseId = entrepriseData.id
+
+      // Headers d'authentification
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
 
       // Précharger toutes les données en parallèle
       const [
@@ -59,25 +71,25 @@ export const useSuperAdminPreloader = () => {
         fournisseursRes
       ] = await Promise.allSettled([
         // Données entreprise
-        $fetch(`${API_BASE_URL}/api/entreprises/${entrepriseId}/`),
+        $fetch(`${API_BASE_URL}/api/entreprises/${entrepriseId}/`, { headers }),
         
         // Boutiques/Entrepôts
-        $fetch(`${API_BASE_URL}/api/boutiques/?entreprise=${entrepriseId}`),
+        $fetch(`${API_BASE_URL}/api/boutiques/?entreprise=${entrepriseId}`, { headers }),
         
         // Utilisateurs
-        $fetch(`${API_BASE_URL}/api/users/?entreprise=${entrepriseId}`),
+        $fetch(`${API_BASE_URL}/api/users/?entreprise=${entrepriseId}`, { headers }),
         
         // Produits
-        $fetch(`${API_BASE_URL}/api/produits/?entreprise=${entrepriseId}`),
+        $fetch(`${API_BASE_URL}/api/produits/?entreprise=${entrepriseId}`, { headers }),
         
         // Factures
-        $fetch(`${API_BASE_URL}/api/factures/?entreprise=${entrepriseId}`),
+        $fetch(`${API_BASE_URL}/api/factures/?entreprise=${entrepriseId}`, { headers }),
         
         // Catégories
-        $fetch(`${API_BASE_URL}/api/categories/`),
+        $fetch(`${API_BASE_URL}/api/categories/`, { headers }),
         
         // Fournisseurs
-        $fetch(`${API_BASE_URL}/api/fournisseurs/`)
+        $fetch(`${API_BASE_URL}/api/fournisseurs/`, { headers })
       ])
 
       // Traiter les résultats
@@ -150,9 +162,21 @@ export const useSuperAdminPreloader = () => {
   // Précharger les données spécifiques à un entrepôt
   const preloadBoutiqueData = async (boutiqueId: number) => {
     try {
+      const token = localStorage.getItem('access_token')
+      
+      if (!token) {
+        throw new Error('Token d\'authentification manquant')
+      }
+
+      // Headers d'authentification
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+
       const [stocksRes, mouvementsRes] = await Promise.allSettled([
-        $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueId}`),
-        $fetch(`${API_BASE_URL}/api/mouvements-stock/?entrepot=${boutiqueId}`)
+        $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueId}`, { headers }),
+        $fetch(`${API_BASE_URL}/api/mouvements-stock/?entrepot=${boutiqueId}`, { headers })
       ])
 
       return {
@@ -195,3 +219,4 @@ export const useSuperAdminPreloader = () => {
     isCacheValid
   }
 }
+

@@ -6,6 +6,15 @@ import { API_BASE_URL } from '@/constants'
 export async function useApi<T = unknown>(url: string, options: any = {}) {
   const auth = useAuthStore()
   
+  // Vérifier que l'URL n'est pas undefined ou null
+  if (!url) {
+    console.error('[useApi] URL est undefined ou null')
+    return { 
+      data: ref(null),
+      error: ref(new Error('URL non définie'))
+    }
+  }
+  
   // Construire l'URL complète si nécessaire
   const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
   

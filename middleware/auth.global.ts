@@ -4,10 +4,16 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // Ne rien faire côté serveur (SPA)
   if (process.server) return
 
+  // Vérification de sécurité pour éviter les erreurs avec to undefined
+  if (!to || !to.path) {
+    console.warn('[Auth Middleware] Route ou path non défini, arrêt du middleware')
+    return
+  }
+
   // Vérifier si l'utilisateur est connecté
   if (process.client) {
     const token = localStorage.getItem('access_token')
-    const user = localStorage.getItem('user') // Garder pour la logique de rôle
+    const user = localStorage.getItem('user')
 
     console.log('[Auth Middleware] Route:', to.path)
     console.log('[Auth Middleware] Token:', token ? 'Présent' : 'Absent')
@@ -39,7 +45,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         return navigateTo('/home/accueil')
       }
 
-      const isPublicPage = publicPages.some(page => to.path === page) || to.path.startsWith('/home/')
+      const isPublicPage = publicPages.some(page => to.path === page) || (to.path && to.path.startsWith('/home/'))
 
       if (!isPublicPage) {
         console.log('[Auth Middleware] Page privée sans token, redirection vers /connexion')
@@ -73,7 +79,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
         }
       } catch (e) {
         console.error('[Auth Middleware] Erreur de parsing user data:', e)
-        // En cas d'erreur, rediriger vers l'accueil ou la connexion
         return navigateTo('/connexion')
       }
     }
@@ -88,24 +93,34 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
         if (userRole === 'superadmin') {
           console.log('[Auth Middleware] SuperAdmin détecté')
-          if (to.path.startsWith('/superadmin')) {
+          
+          // SuperAdmin peut accéder à /superadmin
+          if (to.path && to.path.startsWith('/superadmin')) {
             console.log('[Auth Middleware] Accès autorisé à /superadmin')
             return
           }
-          if (to.path.startsWith('/user')) {
+          
+          // SuperAdmin peut accéder à /user (peut sélectionner une boutique)
+          if (to.path && to.path.startsWith('/user')) {
             console.log('[Auth Middleware] SuperAdmin accès à /user autorisé')
-            console.log('[Auth Middleware] Boutique dans localStorage:', localStorage.getItem('boutique'))
-            return // Autoriser l'accès à /user pour les superadmins
+            return
           }
+          
+          // SuperAdmin ne peut pas accéder à la page d'attente (/)
           if (to.path === '/') {
             return navigateTo('/superadmin/dashboard')
           }
+          
+          // Par défaut, rester sur superadmin pour autres cibles interdites
           if (to.path === '/admin') {
             return navigateTo('/superadmin/dashboard')
           }
+          
         } else if (userRole === 'admin' || userRole === 'user') {
           console.log('[Auth Middleware] Admin/User détecté')
-          if (to.path.startsWith('/superadmin')) {
+          
+          // Admin/User ne peut pas accéder à /superadmin
+          if (to.path && to.path.startsWith('/superadmin')) {
             console.log('[Auth Middleware] Accès refusé à /superadmin pour Admin/User')
             const boutique = localStorage.getItem('boutique')
             let hasValidBoutique = false
@@ -119,7 +134,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
             }
             return navigateTo(hasValidBoutique ? '/user' : '/')
           }
+          
+          // Vérifier si l'utilisateur a une boutique assignée
           const boutique = localStorage.getItem('boutique')
+          
+          // Vérifier si la boutique existe et est valide
           let hasValidBoutique = false
           if (boutique && boutique !== 'null' && boutique !== 'undefined') {
             try {
@@ -129,24 +148,33 @@ export default defineNuxtRouteMiddleware(async (to) => {
               hasValidBoutique = false
             }
           }
+          
           console.log('[Auth Middleware] Boutique valide pour Admin/User:', hasValidBoutique)
+          
           if (!hasValidBoutique) {
+            // Pas de boutique assignée, peut seulement accéder à la racine
             if (to.path !== '/') {
               return navigateTo('/')
             }
             return
           } else {
+            // A une boutique assignée, ne peut pas accéder à la page d'attente (/)
             if (to.path === '/') {
               return navigateTo('/user')
             }
           }
-          if (to.path.startsWith('/user')) {
+          
+          // A une boutique, peut accéder à /user
+          if (to.path && to.path.startsWith('/user')) {
             return
           }
+          
+          // Rediriger vers le dashboard user si pas déjà là
           if (to.path === '/admin') {
             return navigateTo('/user')
           }
         }
+        
       } catch (error) {
         console.error('[Auth Middleware] Erreur de parsing des données utilisateur:', error)
         // En cas d'erreur de parsing, rediriger vers la connexion pour re-authentification

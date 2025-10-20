@@ -38,4 +38,41 @@ function handleLogout() {
       </div>
     </div>
   </template>
+
+<style scoped>
+/* Styles personnalisés pour la scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-track-transparent {
+  scrollbar-color: transparent transparent;
+}
+
+.scrollbar-thumb-gray-400 {
+  scrollbar-color: rgb(156 163 175) transparent;
+}
+
+.hover\:scrollbar-thumb-gray-500:hover {
+  scrollbar-color: rgb(107 114 128) transparent;
+}
+
+/* Pour WebKit (Chrome, Safari, Edge) */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgb(156 163 175);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(107 114 128);
+}
+</style>
   
