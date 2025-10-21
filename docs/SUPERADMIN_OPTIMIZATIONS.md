@@ -256,3 +256,4 @@ cache.remove('boutiques')
 4. **Analytics** : Mesurer l'impact des optimisations
 5. **Tests de performance** : Automatiser les tests de charge
 
+
