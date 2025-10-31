@@ -53,9 +53,9 @@ const loading = ref(true);
 const allFactures = ref<FactureUI[]>([]);
 
 // --- API Data - Éviter les appels côté serveur ---
-const { data: produits } = process.server ? { data: ref([]) } : await useApi<Product[]>('http://127.0.0.1:8000/api/produits/', { method: 'GET' });
-const { data: commandesClient } = process.server ? { data: ref([]) } : await useApi<Commande[]>('http://127.0.0.1:8000/api/commandes-client/', { method: 'GET' });
-const { data: commandesPartenaires } = process.server ? { data: ref([]) } : await useApi<Commande[]>('http://127.0.0.1:8000/api/commandes-partenaire/', { method: 'GET' });
+const { data: produits } = process.server ? { data: ref([]) } : await useApi<Product[]>(`/api/produits/`, { method: 'GET' });
+const { data: commandesClient } = process.server ? { data: ref([]) } : await useApi<Commande[]>(`/api/commandes-client/`, { method: 'GET' });
+const { data: commandesPartenaires } = process.server ? { data: ref([]) } : await useApi<Commande[]>(`/api/commandes-partenaire/`, { method: 'GET' });
 
 // --- Computed ---
 const computerCount = computed(() =>
@@ -117,7 +117,7 @@ async function loadFacturesJour() {
   try {
     loading.value = true;
     const today = new Date().toISOString().split('T')[0];
-    const { data, error: apiError } = await useApi<FactureUI[]>(`http://127.0.0.1:8000/api/factures/?created_at=${today}`, { method: 'GET' });
+    const { data, error: apiError } = await useApi<FactureUI[]>(`/api/factures/?created_at=${today}`, { method: 'GET' });
     if (apiError.value) throw new Error(apiError.value);
     factures.value = Array.isArray(data.value)
       ? data.value.map(facture => {
@@ -142,7 +142,7 @@ async function loadFacturesJour() {
 
 async function loadFacturesGlobal() {
   try {
-    const { data, error: err } = await useApi<FactureUI[]>('http://127.0.0.1:8000/api/factures/', { method: 'GET' });
+  const { data, error: err } = await useApi<FactureUI[]>(`/api/factures/`, { method: 'GET' });
     if (err.value) throw new Error(err.value);
     allFactures.value = Array.isArray(data.value)
       ? data.value.map(facture => {

@@ -107,8 +107,63 @@ export default defineNuxtPlugin(() => {
           localStorage.removeItem(key)
         }
       })
+      console.log('[Cache] Tout le cache a été vidé')
     } catch (e) {
       console.warn('Erreur lors du vidage du cache:', e)
+    }
+  }
+  
+  // Fonction pour invalider le cache par pattern (ex: "/api/produits/")
+  const invalidateCacheByPattern = (pattern: string): void => {
+    if (!process.client) return
+    
+    try {
+      const keys = Object.keys(localStorage)
+      let deletedCount = 0
+      
+      keys.forEach(key => {
+        if (key.startsWith(CACHE_PREFIX)) {
+          // Extraire l'URL de la clé de cache
+          // Format: "app_cache_GET:http://127.0.0.1:8000/api/produits/:body"
+          const urlStart = key.indexOf(':')
+          const urlEnd = key.indexOf(':', urlStart + 1)
+          const url = key.substring(urlStart + 1, urlEnd !== -1 ? urlEnd : key.length)
+          
+          if (url.includes(pattern)) {
+            localStorage.removeItem(key)
+            deletedCount++
+          }
+        }
+      })
+      
+      if (deletedCount > 0) {
+        console.log(`[Cache] ${deletedCount} entrées invalidées pour le pattern "${pattern}"`)
+      }
+    } catch (e) {
+      console.warn('Erreur lors de l\'invalidation du cache:', e)
+    }
+  }
+  
+  // Fonction pour invalider le cache d'un endpoint spécifique
+  const invalidateCache = (url: string): void => {
+    if (!process.client) return
+    
+    try {
+      const keys = Object.keys(localStorage)
+      let deletedCount = 0
+      
+      keys.forEach(key => {
+        if (key.startsWith(CACHE_PREFIX) && key.includes(url)) {
+          localStorage.removeItem(key)
+          deletedCount++
+        }
+      })
+      
+      if (deletedCount > 0) {
+        console.log(`[Cache] ${deletedCount} entrées invalidées pour "${url}"`)
+      }
+    } catch (e) {
+      console.warn('Erreur lors de l\'invalidation du cache:', e)
     }
   }
   
@@ -177,10 +232,15 @@ const cachedFetch = async (url: string, options: any = {}): Promise<any> => {
     provide: {
       cachedFetch,
       clearCache: clearAllCache,
+      invalidateCache,
+      invalidateCacheByPattern,
       getCacheSize: () => {
         if (!process.client) return 0
         return Object.keys(localStorage).filter(key => key.startsWith(CACHE_PREFIX)).length
       }
-    }
+    },
+    // Exposer les méthodes d'invalidation pour un accès global
+    $invalidateCacheByPattern: invalidateCacheByPattern,
+    $invalidateCache: invalidateCache
   }
 })

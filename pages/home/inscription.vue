@@ -59,57 +59,68 @@ const formData = ref({
 // Packs disponibles
 const packs = [
   {
-    id: 'basique',
-    nom: 'Basique',
-    prix: 15000,
-    devise: 'Fcfa',
-    duree: 'mois',
-    description: 'Parfait pour les petites entreprises',
+    id: 'free',
+    nom: 'Free',
+    prix: 0,
+    devise: 'XAF',
+    duree: '3 mois',
+    description: 'Plan gratuit pour 3 mois',
     fonctionnalites: [
-      'Gestion de stock basique',
-      'Jusqu\'à 100 produits',
-      'Support par e-mail',
-      'Rapports de base',
-      '1 utilisateur'
+      '1 entreprise, 1 boutique',
+      '2 utilisateurs',
+      '15 produits',
+      '100 factures',
+      'Support Email'
     ],
     populaire: false
   },
   {
-    id: 'professionnel',
-    nom: 'Professionnel',
-    prix: 35000,
-    devise: 'Fcfa',
+    id: 'basic',
+    nom: 'Basic',
+    prix: 9900,
+    devise: 'XAF',
     duree: 'mois',
-    description: 'Idéal pour les entreprises en croissance',
+    description: 'Accès aux fonctionnalités de base',
     fonctionnalites: [
-      'Gestion avancée des stocks',
-      'Produits illimités',
-      'Support prioritaire',
-      'Rapports détaillés',
-      'Jusqu\'à 5 utilisateurs',
-      'API intégration',
-      'Sauvegarde automatique'
+      '2 boutiques, 3 utilisateurs',
+      '100 produits',
+      '500 factures/mois',
+      'Codes-barres',
+      'Import/Export CSV/Excel'
+    ],
+    populaire: false
+  },
+  {
+    id: 'premium',
+    nom: 'Premium',
+    prix: 29000,
+    devise: 'XAF',
+    duree: 'mois',
+    description: 'Accès complet à toutes les fonctionnalités',
+    fonctionnalites: [
+      '5 boutiques, 10 utilisateurs',
+      '500 produits',
+      '2,000 factures/mois',
+      '1 inventaire/mois',
+      'Support prioritaire'
     ],
     populaire: true
   },
   {
-    id: 'entreprise',
-    nom: 'Entreprise',
-    prix: 75000,
-    devise: 'Fcfa',
+    id: 'organisation',
+    nom: 'Organisation',
+    prix: 55000,
+    devise: 'XAF',
     duree: 'mois',
-    description: 'Solutions sur mesure',
+    description: 'Plan personnalisable illimité',
     fonctionnalites: [
-      'Solutions sur mesure',
-      'Assistance dédiée',
-      'Formation personnalisée',
+      'Entreprises, boutiques illimitées',
       'Utilisateurs illimités',
-      'Support 24/7',
-      'Intégrations avancées',
-      'Déploiement sur site'
+      'Produits illimités',
+      'API accès',
+      'Support dédié'
     ],
-    populaire: false,
-    surDevis: true
+    populaire: false
   }
 ]
 
@@ -317,7 +328,7 @@ const submitForm = async () => {
     console.log('Données envoyées au backend:', registrationData)
     
     // Appel à l'API
-    const { data, error: apiError } = await useApi('https://murastorage.pythonanywhere.com/api/inscription/', {
+    const { data, error: apiError } = await useApi(`/api/inscription/`, {
       method: 'POST',
       body: registrationData,
       server: false
@@ -817,13 +828,10 @@ onMounted(() => {
                 </h3>
                 
                 <div class="mb-4">
-                  <span v-if="pack.surDevis" class="text-2xl font-bold text-gray-900 dark:text-white">
-                    Sur devis
-                  </span>
-                  <span v-else class="text-3xl font-bold text-gray-900 dark:text-white">
+                  <span class="text-3xl font-bold text-gray-900 dark:text-white">
                     {{ pack.prix }}{{ pack.devise }}
                   </span>
-                  <span v-if="!pack.surDevis" class="text-gray-600 dark:text-gray-400">
+                  <span class="text-gray-600 dark:text-gray-400">
                     /{{ pack.duree }}
                   </span>
                 </div>

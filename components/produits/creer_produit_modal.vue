@@ -3,9 +3,13 @@ import { z } from "zod";
 import type { FormSubmitEvent } from "#ui/types";
 import { useAuthStore } from '@/stores/auth'
 import { useNotification } from '~/types/useNotification';
+import { useSubscriptionLimits } from '@/composables/useSubscriptionLimits';
 
 // const auth = useAuthStore()
 const { success, error } = useNotification();
+
+// Vérification des limites
+const { isLimitReached, getLimitErrorMessage, loadSubscription, loadLimits, loadUsage, getUpgradeSuggestion } = useSubscriptionLimits()
 
 const isOpen = ref(false);
 const emit = defineEmits(["creer-produit"]);
@@ -118,6 +122,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           productData.annee = null;
         }
       }
+    }
+
+    // Vérifier la limite de produits
+    if (isLimitReached('max_produits')) {
+      error(getLimitErrorMessage('max_produits'))
+      error(getUpgradeSuggestion('produits'))
+      return
     }
 
     console.log('Données envoyées:', productData); // Pour le débogage

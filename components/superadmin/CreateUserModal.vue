@@ -61,7 +61,7 @@
           </div>
         </div>
         <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-          <button @click="createUser" :disabled="loading" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+          <button @click="createUser" :disabled="loading || isLimitReached('max_users')" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
             <span v-if="!loading">Créer</span>
             <span v-else>Création...</span>
           </button>
@@ -79,6 +79,7 @@ import { ref, reactive, watch, onMounted } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import { useAuth } from '@/composables/useAuth'
 import { API_BASE_URL } from '@/constants'
+import { useSubscriptionLimits } from '@/composables/useSubscriptionLimits'
 
 const props = defineProps<{
   isOpen: boolean
@@ -91,6 +92,9 @@ const { error, success } = useNotification()
 const { getAuthHeaders } = useAuth()
 const loading = ref(false)
 
+// Vérification des limites
+const { isLimitReached, getLimitErrorMessage, loadSubscription, loadLimits, loadUsage, getUpgradeSuggestion } = useSubscriptionLimits()
+
 const form = reactive({
   first_name: '',
   last_name: '',
@@ -102,7 +106,7 @@ const form = reactive({
   send_email: true
 })
 
-const boutiques = ref([])
+const boutiques = ref<any[]>([])
 
 // Charger les entrepôts disponibles
 const loadBoutiques = async () => {
@@ -117,7 +121,7 @@ const loadBoutiques = async () => {
       const data = await $fetch(`${API_BASE_URL}/api/boutiques/?entreprise=${entrepriseId}`, {
         headers: getAuthHeaders()
       })
-      boutiques.value = data
+      boutiques.value = Array.isArray(data) ? data : []
     } catch (apiError: any) {
       console.error('Erreur chargement entrepôts:', apiError)
     }
@@ -129,6 +133,13 @@ const loadBoutiques = async () => {
 const createUser = async () => {
   if (!form.first_name || !form.last_name || !form.email) {
     error('Veuillez remplir tous les champs obligatoires')
+    return
+  }
+
+  // Vérifier la limite d'utilisateurs
+  if (isLimitReached('max_users')) {
+    error(getLimitErrorMessage('max_users'))
+    error('Passez au plan supérieur pour ajouter plus d\'utilisateurs!')
     return
   }
 
@@ -192,6 +203,9 @@ const createUser = async () => {
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
+    loadSubscription()
+    loadLimits()
+    loadUsage()
     loadBoutiques()
   }
 })

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { ref, computed, onMounted } from 'vue';
 import table_factures from '@/components/table_factures.vue';
 import { useApi } from '../stores/useApi';
@@ -94,7 +95,7 @@ async function loadFactures() {
     }
 
     // Construire l'URL avec le filtre boutique
-    const url = `https://murastorage.pythonanywhere.com/api/factures/?boutique=${currentBoutique.value.id}`;
+    const url = `/api/factures/?boutique=${currentBoutique.value.id}`;
     
     const { data, error } = await useApi(url, { method: 'GET' });
     
@@ -162,8 +163,8 @@ async function voirFacture(facture: Facture) {
 
   const endpoint =
     facture.type === "partenaire"
-      ? `https://murastorage.pythonanywhere.com/api/commandes-partenaire/?facture=${facture.id}`
-      : `https://murastorage.pythonanywhere.com/api/commandes-client/?facture=${facture.id}`;
+      ? `/api/commandes-partenaire/?facture=${facture.id}`
+      : `/api/commandes-client/?facture=${facture.id}`;
 
   const { data, error } = await useApi(endpoint, { method: 'GET' });
   if (error.value) {
@@ -420,7 +421,7 @@ async function voirHistoriqueVersements(facture: Facture) {
   
   try {
     // Charger l'historique des versements depuis l'API
-    const { data, error } = await useApi(`https://murastorage.pythonanywhere.com/api/versements/?facture=${facture.id}`, { method: 'GET' });
+    const { data, error } = await useApi(`/api/versements/?facture=${facture.id}`, { method: 'GET' });
     
     if (error.value) {
       console.error('Erreur lors du chargement des versements:', error.value);
@@ -463,7 +464,7 @@ async function validerVersement() {
       boutique: currentBoutique.value.id
     };
 
-    const { data: versementResponse, error: versementError } = await useApi('https://murastorage.pythonanywhere.com/api/versements/', {
+    const { data: versementResponse, error: versementError } = await useApi(`/api/versements/`, {
       method: 'POST',
       body: JSON.stringify(versementData)
     });
@@ -479,7 +480,7 @@ async function validerVersement() {
     const nouveauStatut = nouveauReste <= 0 ? 'Payé' : 'Partiellement payé';
 
     // 3. Mettre à jour la facture
-    const { data: factureResponse, error: factureError } = await useApi(`https://murastorage.pythonanywhere.com/api/factures/${facturePourVersement.value.id}/`, {
+    const { data: factureResponse, error: factureError } = await useApi(`/api/factures/${facturePourVersement.value.id}/`, {
         method: 'PATCH',
         body: JSON.stringify({
           reste: nouveauReste,

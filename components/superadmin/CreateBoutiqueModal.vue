@@ -47,7 +47,7 @@
           </div>
         </div>
         <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-          <button @click="createBoutique" :disabled="loading" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+          <button @click="createBoutique" :disabled="loading || isLimitReached('max_boutiques')" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-ausset 2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
             <span v-if="!loading">Créer</span>
             <span v-else>Création...</span>
           </button>
@@ -61,10 +61,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import { useAuth } from '@/composables/useAuth'
 import { API_BASE_URL } from '@/constants'
+import { useSubscriptionLimits } from '@/composables/useSubscriptionLimits'
 
 const props = defineProps<{
   isOpen: boolean
@@ -75,6 +76,9 @@ const emit = defineEmits(['close', 'created'])
 const { error, success } = useNotification()
 const { getAuthHeaders } = useAuth()
 const loading = ref(false)
+
+// Vérification des limites
+const { isLimitReached, getLimitErrorMessage, loadSubscription, loadLimits, loadUsage, getUpgradeSuggestion } = useSubscriptionLimits()
 
 const form = reactive({
   nom: '',
@@ -88,6 +92,13 @@ const form = reactive({
 const createBoutique = async () => {
   if (!form.nom || !form.ville) {
     error('Veuillez remplir au moins le nom et la ville')
+    return
+  }
+
+  // Vérifier la limite de boutiques
+  if (isLimitReached('max_boutiques')) {
+    error(getLimitErrorMessage('max_boutiques'))
+    error(getUpgradeSuggestion('boutiques'))
     return
   }
 
@@ -143,4 +154,10 @@ const createBoutique = async () => {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  loadSubscription()
+  loadLimits()
+  loadUsage()
+})
 </script>

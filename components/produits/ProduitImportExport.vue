@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { API_BASE_URL } from '@/constants'
+
+import { ref, onMounted } from 'vue'
 import { useNotification } from '~/types/useNotification'
+import { useSubscriptionLimits } from '@/composables/useSubscriptionLimits'
 
 const { success, error } = useNotification()
+const { isFeatureAvailable, loadSubscription, loadLimits, loadUsage } = useSubscriptionLimits()
 
 const emit = defineEmits(['imported', 'exported'])
 
@@ -20,13 +24,20 @@ const handleImport = async () => {
     return
   }
 
+  // Vérifier si l'import est autorisé
+  if (!isFeatureAvailable('import_csv')) {
+    error('L\'import CSV n\'est pas disponible sur votre plan actuel.')
+    error('Passez au plan Basic (9,900 XAF/mois) pour utiliser cette fonctionnalité.')
+    return
+  }
+
   importLoading.value = true
   
   try {
     const formData = new FormData()
     formData.append('file', importFile.value)
     
-    const response = await fetch('http://127.0.0.1:8000/api/produits/import_produits/', {
+    const response = await fetch(`${API_BASE_URL}/api/produits/import_produits/`, {
       method: 'POST',
       body: formData,
       headers: {
@@ -58,13 +69,20 @@ const handleImport = async () => {
 
 // Fonction d'export
 const handleExport = async () => {
+  // Vérifier si l'export est autorisé
+  if (!isFeatureAvailable('export_csv') && !isFeatureAvailable('export_excel')) {
+    error('L\'export CSV/Excel n\'est pas disponible sur votre plan actuel.')
+    error('Passez au plan Basic (9,900 XAF/mois) pour utiliser cette fonctionnalité.')
+    return
+  }
+
   exportLoading.value = true
   
   try {
     const entreprise = JSON.parse(localStorage.getItem('entreprise') || '{}')
     
     const response = await fetch(
-      `http://127.0.0.1:8000/api/produits/export_produits/?format=csv&entreprise=${entreprise.id}`,
+      `${API_BASE_URL}/api/produits/export_produits/?format=csv&entreprise=${entreprise.id}`,
       {
         method: 'GET',
         headers: {
@@ -100,6 +118,12 @@ const handleExport = async () => {
 }
 
 // Gestion du fichier d'import
+onMounted(() => {
+  loadSubscription()
+  loadLimits()
+  loadUsage()
+})
+
 const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {

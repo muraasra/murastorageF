@@ -63,11 +63,13 @@ export function useSubscription() {
       organisation: 'Plan entreprise avec toutes les fonctionnalités'
     }
 
-    availablePlans.value = plans.map(p => ({
+    // Préserver un maximum de champs backend pour éviter les incohérences
+    availablePlans.value = plans.map((p: any) => ({
+      ...p,
       id: p.id,
-      name: p.display_name || p.name,
-      display_name: p.display_name,
-      price: p.price_monthly || p.monthly_price || p.price || 0,
+      name: p.name, // garder le slug technique pour comparaisons backend
+      display_name: p.display_name || p.name,
+      price_monthly: p.price_monthly ?? p.monthly_price ?? p.price ?? 0,
       description: p.description || planDescriptions[p.name] || '',
       features: buildPlanFeatures(p)
     }))
@@ -159,11 +161,32 @@ export function useSubscription() {
         server: false
       })
       if (err.value) throw new Error(err.value.message)
-      // Après upgrade, recharger l'état courant
-      await fetchCurrent()
+      // Après upgrade, recharger l'état courant, les limites et l'usage
+      await Promise.all([fetchCurrent(), fetchLimits(), fetchUsage()])
       return { success: true, data: data.value }
     } catch (e: any) {
       error.value = e?.message || 'Échec de la mise à niveau'
+      return { success: false, error: error.value }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const renewSubscription = async (days: number = 30) => {
+    loading.value = true
+    error.value = null
+    try {
+      const { data, error: err } = await useApi(`${API_BASE_URL}/api/subscriptions/extend/`, {
+        method: 'POST',
+        body: { days },
+        server: false
+      })
+      if (err.value) throw new Error(err.value.message)
+      // Après renouvellement, recharger l'état courant et limites
+      await Promise.all([fetchCurrent(), fetchLimits()])
+      return { success: true, data: data.value }
+    } catch (e: any) {
+      error.value = e?.message || 'Échec du renouvellement'
       return { success: false, error: error.value }
     } finally {
       loading.value = false
@@ -250,7 +273,8 @@ export function useSubscription() {
     subscriptionEndDate,
     // actions
     refresh,
-    upgradeSubscription
+    upgradeSubscription,
+    renewSubscription
     ,canCreateResource
   }
 }

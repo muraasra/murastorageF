@@ -156,6 +156,18 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Actions abonnement: Renouveler si plan != free -->
+              <div class="pt-4">
+                <button
+                  v-if="currentLimits && currentLimits.plan_name !== 'free'"
+                  @click="handleRenew"
+                  :disabled="loading"
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                >
+                  Renouveler 30 jours
+                </button>
+              </div>
             </div>
           </div>
           
@@ -260,11 +272,40 @@
       </div>
     </div>
   </div>
+    <!-- Modale confirmation upgrade -->
+    <div v-if="showConfirmUpgrade" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        <h3 class="text-lg font-semibold mb-2">Confirmer le changement de plan</h3>
+        <p class="text-gray-600 mb-6">Voulez-vous vraiment changer de plan maintenant ?</p>
+        <div class="flex justify-end gap-3">
+          <button class="px-4 py-2 rounded border" @click="closeUpgradeConfirm" :disabled="loading">Annuler</button>
+          <button class="px-4 py-2 rounded bg-blue-600 text-white" @click="confirmUpgradeNow" :disabled="loading">
+            {{ loading ? 'Traitement...' : 'Confirmer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale confirmation renouvellement -->
+    <div v-if="showConfirmRenew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        <h3 class="text-lg font-semibold mb-2">Confirmer le renouvellement</h3>
+        <p class="text-gray-600 mb-6">Renouveler l'abonnement de 30 jours ?</p>
+        <div class="flex justify-end gap-3">
+          <button class="px-4 py-2 rounded border" @click="closeRenewConfirm" :disabled="loading">Annuler</button>
+          <button class="px-4 py-2 rounded bg-green-600 text-white" @click="confirmRenewNow" :disabled="loading">
+            {{ loading ? 'Traitement...' : 'Renouveler' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useSubscription, formatLimit } from '~/composables/useSubscription'
+import { API_BASE_URL } from '@/constants'
 
 definePageMeta({
   layout: 'default',
@@ -278,7 +319,8 @@ const {
   availablePlans,
   loading,
   refresh,
-  upgradeSubscription
+  upgradeSubscription,
+  renewSubscription
 } = useSubscription()
 
 // Éviter les appels API côté serveur
@@ -342,6 +384,20 @@ async function handleUpgrade(planId: number) {
   }
 }
 
+async function handleRenew() {
+  if (!confirm("Renouveler l'abonnement de 30 jours ?")) return
+  try {
+    const res = await renewSubscription(30)
+    if (res.success) {
+      alert('Abonnement renouvelé avec succès !')
+    } else {
+      alert(`Erreur: ${res.error || 'Impossible de renouveler'}`)
+    }
+  } catch (e: any) {
+    alert(`Erreur: ${e?.message || 'Impossible de renouveler'}`)
+  }
+}
+
 async function refreshAll() {
   // Éviter les appels API côté serveur
   if (process.server) {
@@ -358,19 +414,17 @@ async function sendNotifications() {
   }
   
   try {
-    const response = await $fetch('/api/subscriptions/send_notifications/', {
+    const token = process.client ? localStorage.getItem('access_token') : null
+    const response = await $fetch(`${API_BASE_URL}/api/subscriptions/send_notifications/`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${useAuthStore().token}`,
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         'Content-Type': 'application/json'
       }
     })
-    
-    if (response.success) {
-      alert(`Notifications envoyées: ${response.notifications_sent.join(', ')}`)
-    }
+    console.log('[Notifications] response:', response)
   } catch (error: any) {
-    alert(`Erreur: ${error.message || 'Impossible d\'envoyer les notifications'}`)
+    console.error('[Notifications] error:', error)
   }
 }
 

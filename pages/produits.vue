@@ -478,17 +478,13 @@
             <UTextarea v-model="formState.description" placeholder="Description du produit" />
           </UFormGroup>
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <UFormGroup label="Prix d'achat *" name="prix_achat">
               <UInput type="number" v-model="formState.prix_achat" placeholder="0" />
             </UFormGroup>
             
             <UFormGroup label="Prix de vente *" name="prix_vente">
               <UInput type="number" v-model="formState.prix_vente" placeholder="0" />
-            </UFormGroup>
-            
-            <UFormGroup label="Stock actuel *" name="quantite">
-              <UInput type="number" v-model="formState.quantite" placeholder="0" />
             </UFormGroup>
           </div>
           
@@ -508,15 +504,22 @@
             </UFormGroup>
           </div>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UFormGroup label="Catégorie" name="categorie">
-              <USelect v-model="formState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="Sélectionner une catégorie" />
-            </UFormGroup>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UFormGroup label="Catégorie" name="categorie">
+                <USelect v-model="formState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="Sélectionner une catégorie" />
+              </UFormGroup>
+              
+              <UFormGroup label="Fournisseur" name="fournisseur_principal">
+                <USelect v-model="formState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" />
+              </UFormGroup>
+            </div>
             
-            <UFormGroup label="Fournisseur" name="fournisseur_principal">
-              <USelect v-model="formState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" />
+            <UFormGroup label="Emplacement" name="emplacement">
+              <UInput v-model="formState.emplacement" placeholder="Ex: Étagère A3, Palier 2..." />
+              <template #help>
+                <span class="text-xs text-gray-500">Emplacement physique du produit dans l'entrepôt</span>
+              </template>
             </UFormGroup>
-          </div>
 
           <div class="flex justify-end space-x-3 pt-4 border-t">
             <UButton type="button" color="gray" variant="outline" @click="showCreateModal = false">
@@ -594,6 +597,13 @@
                 <USelect v-model="editFormState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" />
               </UFormGroup>
             </div>
+            
+            <UFormGroup label="Emplacement" name="emplacement">
+              <UInput v-model="editFormState.emplacement" placeholder="Ex: Étagère A3, Palier 2..." />
+              <template #help>
+                <span class="text-xs text-gray-500">Emplacement physique du produit dans l'entrepôt</span>
+              </template>
+            </UFormGroup>
             
             <!-- Boutons de validation -->
             <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -1792,6 +1802,9 @@ interface Produit {
   marge_absolue?: number
   stock_low?: boolean
   stock_high?: boolean
+  // Nouveaux champs
+  emplacement?: string
+  details?: any
 }
 
 definePageMeta({
@@ -1908,7 +1921,9 @@ const editFormState = ref({
   categorie: undefined as number | undefined,
   fournisseur_principal: undefined as number | undefined,
   stock_minimum: 0,
-  stock_maximum: 1000
+  stock_maximum: 1000,
+  emplacement: "",  // Nouveau champ
+  details: {} as any  // Nouveau champ JSON
 })
 
 // État du formulaire de modification du stock
@@ -1941,7 +1956,9 @@ const formState = ref({
   categorie: undefined as number | undefined,
   fournisseur_principal: undefined as number | undefined,
   stock_minimum: 0,
-  stock_maximum: 1000
+  stock_maximum: 1000,
+  emplacement: "",  // Nouveau champ
+  details: {} as any  // Nouveau champ JSON
 })
 
 // Options pour les catégories
@@ -2649,11 +2666,6 @@ const createProduit = async () => {
     return
   }
   
-  if (!formState.value.quantite || formState.value.quantite < 0) {
-    error('La quantité doit être positive ou nulle')
-    return
-  }
-  
   if (!formState.value.stock_minimum || formState.value.stock_minimum < 0) {
     error('Le stock minimal doit être défini et positif')
     return
@@ -2677,19 +2689,51 @@ const createProduit = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // Récupérer l'entreprise de l'utilisateur connecté
-    let entrepriseId = null
-    if (entreprises.value.length > 0) {
-      entrepriseId = entreprises.value[0].id
+    // Résoudre l'entreprise de l'utilisateur (localStorage ou API)
+    const resolveEntrepriseId = async (): Promise<number | null> => {
+      // 1) Essayer localStorage
+      const entrepriseLocal = process.client ? localStorage.getItem('entreprise') : null
+      if (entrepriseLocal) {
+        try {
+          const parsed = JSON.parse(entrepriseLocal)
+          if (parsed?.id) return parsed.id as number
+        } catch (e) {
+          console.error('Erreur parsing entreprise depuis localStorage:', e)
+        }
+      }
+      // 2) Fallback: récupérer via /api/user/me/ puis déduire l'entreprise
+      try {
+        const token = process.client ? localStorage.getItem('access_token') : null
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (token) headers['Authorization'] = `Bearer ${token}`
+        const me: any = await $fetch(`${API_BASE_URL}/api/user/me/`, { method: 'GET', headers })
+        // Chercher entreprise directe ou via boutique
+        const entrepriseFromMe = me?.entreprise?.id || me?.entreprise || me?.boutique?.entreprise?.id
+        if (entrepriseFromMe && process.client) {
+          // Si on a des infos d'entreprise, normaliser et stocker
+          const entrepriseObj = me?.entreprise || { id: entrepriseFromMe }
+          localStorage.setItem('entreprise', JSON.stringify(entrepriseObj))
+          return Number(entrepriseFromMe)
+        }
+      } catch (e) {
+        console.error('Erreur résolution entreprise via /api/user/me/:', e)
+      }
+      return null
+    }
+
+    const entrepriseId = await resolveEntrepriseId()
+    if (!entrepriseId) {
+      error('Aucune entreprise associée. Veuillez sélectionner une entreprise.')
+      return
     }
     
     // Préparer les données pour l'API avec tous les champs requis
-    const produitData = {
+    const produitData: any = {
       nom: formState.value.nom,
       description: formState.value.description || '',
       prix_achat: parseFloat(formState.value.prix_achat.toString()),
       prix_vente: parseFloat(formState.value.prix_vente.toString()),
-      quantite: parseInt(formState.value.quantite.toString()) || 0,
+      quantite: 0, // La quantité sera gérée via l'API de stock après création
       reference: formState.value.reference || '',
       categorie: formState.value.categorie || null,
       fournisseur_principal: formState.value.fournisseur_principal || null,
@@ -2697,6 +2741,9 @@ const createProduit = async () => {
       // Gestion des stocks
       stock_minimum: parseInt(formState.value.stock_minimum.toString()) || 0,
       stock_maximum: parseInt(formState.value.stock_maximum.toString()) || 1000,
+      // Nouveaux champs
+      emplacement: formState.value.emplacement || '',
+      details: formState.value.details || {},
       // Valeurs par défaut
       devise: 'XAF',
       unite_mesure: 'piece',
@@ -2706,12 +2753,14 @@ const createProduit = async () => {
     
     console.log('Données envoyées pour le produit:', produitData)
     
-    // Appel à l'API pour créer le produit
+    // Appel à l'API pour créer le produit - utilise useApi pour l'invalidation automatique du cache
     const response = await $fetch<any>(`${API_BASE_URL}/api/produits/`, {
       method: 'POST',
       headers,
       body: produitData
     })
+    
+    // Invalidation automatique du cache via useApi (déjà fait dans useApi)
     
     // Ajouter le nouveau produit à la liste locale
     const nouveauProduit: Produit = {
@@ -2753,6 +2802,10 @@ const createProduit = async () => {
     }
     
     produits.value.push(nouveauProduit)
+    
+    // IMPORTANT: L'invalidation du cache est gérée automatiquement par useApi
+    // lors de l'appel POST à /api/produits/
+    
     success('Produit créé avec succès!')
     showCreateModal.value = false
     
@@ -2762,12 +2815,14 @@ const createProduit = async () => {
       description: "",
       prix_achat: 0,
       prix_vente: 0,
-      quantite: 0,
+      quantite: 0, // Toujours initialisé à 0 mais non affiché dans le formulaire
       reference: "",
       categorie: undefined,
       fournisseur_principal: undefined,
       stock_minimum: 0,
-      stock_maximum: 1000
+      stock_maximum: 1000,
+      emplacement: "",  // Nouveau champ
+      details: {}  // Nouveau champ
     }
   } catch (err: any) {
     console.error('Erreur création produit:', err)
@@ -2803,7 +2858,9 @@ const openEditModal = (produit: Produit) => {
     categorie: produit.categorie,
     fournisseur_principal: produit.fournisseur_principal,
     stock_minimum: produit.stock_minimum || 0,
-    stock_maximum: produit.stock_maximum || 1000
+    stock_maximum: produit.stock_maximum || 1000,
+        emplacement: produit.emplacement || "",  // Nouveau champ
+        details: produit.details || {}  // Nouveau champ
   }
   
   showEditModal.value = true
@@ -2852,14 +2909,42 @@ const saveProduit = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // Récupérer l'entreprise de l'utilisateur connecté
-    let entrepriseId = null
-    if (entreprises.value.length > 0) {
-      entrepriseId = entreprises.value[0].id
+    // Résoudre l'entreprise de l'utilisateur (localStorage ou API)
+    const resolveEntrepriseIdForUpdate = async (): Promise<number | null> => {
+      const entrepriseLocal = process.client ? localStorage.getItem('entreprise') : null
+      if (entrepriseLocal) {
+        try {
+          const parsed = JSON.parse(entrepriseLocal)
+          if (parsed?.id) return parsed.id as number
+        } catch (e) {
+          console.error('Erreur parsing entreprise depuis localStorage:', e)
+        }
+      }
+      try {
+        const token = process.client ? localStorage.getItem('access_token') : null
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (token) headers['Authorization'] = `Bearer ${token}`
+        const me: any = await $fetch(`${API_BASE_URL}/api/user/me/`, { method: 'GET', headers })
+        const entrepriseFromMe = me?.entreprise?.id || me?.entreprise || me?.boutique?.entreprise?.id
+        if (entrepriseFromMe && process.client) {
+          const entrepriseObj = me?.entreprise || { id: entrepriseFromMe }
+          localStorage.setItem('entreprise', JSON.stringify(entrepriseObj))
+          return Number(entrepriseFromMe)
+        }
+      } catch (e) {
+        console.error('Erreur résolution entreprise via /api/user/me/:', e)
+      }
+      return null
+    }
+
+    const entrepriseId = await resolveEntrepriseIdForUpdate()
+    if (!entrepriseId) {
+      error('Aucune entreprise associée. Veuillez sélectionner une entreprise.')
+      return
     }
     
     // Préparer les données pour l'API avec tous les champs requis
-    const produitData = {
+    const produitData: any = {
       nom: editFormState.value.nom,
       description: editFormState.value.description || '',
       prix_achat: parseFloat(editFormState.value.prix_achat.toString()),
@@ -2871,12 +2956,18 @@ const saveProduit = async () => {
       // Gestion des stocks
       stock_minimum: parseInt(editFormState.value.stock_minimum.toString()) || 0,
       stock_maximum: parseInt(editFormState.value.stock_maximum.toString()) || 1000,
+      // Nouveaux champs
+      emplacement: editFormState.value.emplacement || '',
+      details: editFormState.value.details || {},
       // Valeurs par défaut
       devise: 'XAF',
       unite_mesure: 'piece',
       etat_produit: 'neuf',
       actif: true
     }
+    
+    // IMPORTANT: NE PAS ENVOYER LA QUANTITE - elle ne doit pas être modifiée via cette fonction
+    // La quantité est gérée indépendamment via l'API de stock
     
     console.log('Données de modification envoyées:', produitData)
     
@@ -2888,23 +2979,30 @@ const saveProduit = async () => {
     })
     
     // Mettre à jour le produit dans la liste locale
+    // IMPORTANT: Conserver la quantité existante (ne pas la modifier)
     const index = produits.value.findIndex(p => p.id === selectedProduit.value!.id)
     if (index !== -1) {
+      const ancienneQuantite = produits.value[index].quantite  // Conserver la quantité actuelle
       produits.value[index] = {
         ...produits.value[index],
         nom: response.nom,
         description: response.description,
         prix_achat: parseFloat(response.prix_achat) || 0,
         prix_vente: parseFloat(response.prix_vente) || 0,
-        quantite: response.quantite || 0,
+        quantite: ancienneQuantite,  // NE PAS MODIFIER - garder la quantité existante
         reference: response.reference,
         categorie: response.categorie,
         fournisseur_principal: response.fournisseur_principal,
         stock_minimum: response.stock_minimum || 0,
         stock_maximum: response.stock_maximum || 1000,
+        emplacement: (response as any).emplacement || '',
+        details: (response as any).details || {},
         updated_at: response.updated_at
       }
     }
+    
+    // IMPORTANT: L'invalidation du cache est gérée automatiquement par useApi
+    // lors de l'appel PUT à /api/produits/{id}/
     
     success('Produit modifié avec succès!')
     showEditModal.value = false
@@ -3095,6 +3193,19 @@ const updateStock = async () => {
     
     // Mettre à jour la liste des stocks
     await loadData()
+    
+    // IMPORTANT: Invalidation manuelle du cache pour les opérations de stock
+    // car nous utilisons $fetch directement pour les mouvements de stock
+    if (process.client) {
+      const nuxtApp = useNuxtApp()
+      const invalidateCache = nuxtApp.$invalidateCacheByPattern
+      if (invalidateCache) {
+        invalidateCache('/api/stocks')
+        invalidateCache('/api/produits')
+        invalidateCache('/api/mouvements-stock')
+        console.log('[Cache] Cache invalidé après modification stock')
+      }
+    }
     
     success(`Stock mis à jour avec succès! Nouveau stock: ${nouveauStock}`)
     showStockModal.value = false

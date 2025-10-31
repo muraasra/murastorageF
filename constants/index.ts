@@ -3,7 +3,7 @@ import type { Produit } from "@/types"
 // Configuration de l'API
 export const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://murastorage.pythonanywhere.com' 
-  : 'https://murastorage.pythonanywhere.com'
+  : 'http://127.0.0.1:8000'
 
 // Configuration des routes
 export const ROUTES = {
@@ -49,6 +49,11 @@ export const NAVIGATION_ITEMS = [
       name: "Mouvements de Stock",
       link: "/mouvements-stock",
       icon: "i-heroicons-chart-bar",
+    },
+    {
+      name: "Inventaires",
+      link: "/inventaire",
+      icon: "i-heroicons-clipboard-document-check",
     },
   ],
   [
@@ -108,6 +113,11 @@ export const NAVIGATION_ITEMS_ADMIN = [
       name: "Mouvements de Stock",
       link: "/mouvements-stock",
       icon: "i-heroicons-chart-bar",
+    },
+    {
+      name: "Inventaires",
+      link: "/inventaire",
+      icon: "i-heroicons-clipboard-document-check",
     },
   ],
     [ 
@@ -173,6 +183,11 @@ export const NAVIGATION_ITEMS_SUPERADMIN = [
       name: "Mouvements de Stock",
       link: "/mouvements-stock",
       icon: "i-heroicons-chart-bar",
+    },
+    {
+      name: "Inventaires",
+      link: "/inventaire",
+      icon: "i-heroicons-clipboard-document-check",
     },
   ],
   [

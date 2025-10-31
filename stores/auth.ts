@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { API_BASE_URL } from '@/constants'
 import { useCookie } from '#app'
 import { ref } from 'vue'
 
@@ -11,7 +12,7 @@ interface User {
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
-  const baseUrl = ref('https://murastorage.pythonanywhere.com')
+  const baseUrl = ref(API_BASE_URL)
 
   const cookieToken = useCookie<string | null>('auth_token', {
     default: () => null,

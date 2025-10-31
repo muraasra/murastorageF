@@ -6,6 +6,45 @@ import { API_BASE_URL } from '@/constants'
 export async function useApi<T = unknown>(url: string, options: any = {}) {
   const auth = useAuthStore()
   
+  // Fonction pour invalider le cache après les mutations
+  const invalidateRelatedCache = (url: string, method: string) => {
+    if (!process.client) return
+    
+    try {
+      const nuxtApp = useNuxtApp()
+      // Accéder aux méthodes d'invalidation via le plugin
+      const invalidateCacheByPattern = nuxtApp.$invalidateCacheByPattern as ((pattern: string) => void) || null
+      
+      // Pour les mutations, invalider les endpoints liés
+      if (method !== 'GET' && method !== 'OPTIONS' && invalidateCacheByPattern) {
+        console.log(`[Cache] Invalidation du cache après ${method} sur ${url}`)
+        
+        // Extraire le pattern de l'URL pour invalider toutes les ressources liées
+        // Ex: /api/produits/123/ → invalider /api/produits/
+        const match = url.match(/\/api\/([^\/]+)/)
+        if (match) {
+          const resource = match[1]
+          invalidateCacheByPattern(`/api/${resource}`)
+          
+          // Invalider aussi les listes génériques
+          if (resource.includes('produit')) {
+            invalidateCacheByPattern('/api/produits')
+            invalidateCacheByPattern('/api/stocks')
+          }
+          if (resource.includes('facture')) {
+            invalidateCacheByPattern('/api/factures')
+            invalidateCacheByPattern('/api/commandes')
+          }
+          if (resource.includes('user')) {
+            invalidateCacheByPattern('/api/users')
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[useApi] Erreur lors de l\'invalidation du cache:', e)
+    }
+  }
+  
   // Vérifier que l'URL n'est pas undefined ou null
   if (!url) {
     console.error('[useApi] URL est undefined ou null')
@@ -48,11 +87,25 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
       return { useCache: true as const, ttl: 5 * 60 * 1000 }
     }
 
+    // PAS DE CACHE pour les inventaires et produits inventaires - temps réel requis
+    if (/\/api\/inventaires(-produits)?/i.test(path)) {
+      return { useCache: false as const, ttl: 0 }
+    }
+
     // Par défaut: 30 min (hérite du plugin)
     return { useCache: true as const, ttl: 30 * 60 * 1000 }
   }
   
   try {
+    // Récupérer le token depuis localStorage ou depuis le store
+    let authToken = auth.token
+    if (process.client && !authToken) {
+      authToken = localStorage.getItem('access_token')
+    }
+    
+    console.log('[useApi] Token utilisé:', authToken ? 'Bearer ***' : 'NONE')
+    console.log('[useApi] URL:', fullUrl)
+    
     // Utiliser $fetch au lieu de useFetch pour éviter les problèmes d'injection
     // utiliser le cache persistant
     const nuxtApp = useNuxtApp()
@@ -71,7 +124,7 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
     const response = await $cachedFetch(fullUrl, {
       headers: {
         'Content-Type': 'application/json',
-        ...(auth.token ? { Authorization: `Bearer ${auth.token}` } : {})
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
       },
       // Application de la stratégie de cache
       ...(finalCacheDisabled ? { cache: false } : {}),
@@ -92,6 +145,11 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
       }
     })
 
+    // Invalider le cache après les mutations réussies
+    if (method !== 'GET' && method !== 'OPTIONS') {
+      invalidateRelatedCache(fullUrl, method)
+    }
+
     return { 
       data: ref(response), 
       error: ref(null) 
@@ -103,10 +161,16 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
       if (refreshSuccess) {
         // Réessayer la requête avec le nouveau token
         try {
-          const response = await $fetch<T>(url, {
+          // Récupérer le nouveau token
+          let authToken = auth.token
+          if (process.client && !authToken) {
+            authToken = localStorage.getItem('access_token')
+          }
+          
+          const response = await $fetch<T>(fullUrl, {
             headers: {
               'Content-Type': 'application/json',
-              ...(auth.token ? { Authorization: `Bearer ${auth.token}` } : {})
+              ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
             },
             ...options
           })

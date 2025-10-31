@@ -106,7 +106,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     try {
       const response = await $fetch(`${API_BASE_URL}/api/subscriptions/current/`, {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${process.client ? localStorage.getItem('access_token') : authStore.token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -125,9 +125,12 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     loading.value = true
     error.value = null
     try {
+      // Récupérer le token depuis localStorage pour s'assurer qu'il est à jour
+      const token = process.client ? localStorage.getItem('access_token') : authStore.token
+      
       const response = await $fetch(`${API_BASE_URL}/api/subscriptions/limits/`, {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -148,7 +151,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     try {
       const response = await $fetch(`${API_BASE_URL}/api/subscriptions/usage/`, {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${process.client ? localStorage.getItem('access_token') : authStore.token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -169,7 +172,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     try {
       const response = await $fetch(`${API_BASE_URL}/api/subscription-plans/`, {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${process.client ? localStorage.getItem('access_token') : authStore.token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -189,7 +192,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
       const response = await $fetch(`${API_BASE_URL}/api/subscriptions/check_limit/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${process.client ? localStorage.getItem('access_token') : authStore.token}`,
           'Content-Type': 'application/json'
         },
         body: {
@@ -211,7 +214,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
       const response = await $fetch(`${API_BASE_URL}/api/subscriptions/check_feature/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${process.client ? localStorage.getItem('access_token') : authStore.token}`,
           'Content-Type': 'application/json'
         },
         body: {
@@ -235,7 +238,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
       const response = await $fetch(`${API_BASE_URL}/api/subscriptions/upgrade/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${process.client ? localStorage.getItem('access_token') : authStore.token}`,
           'Content-Type': 'application/json'
         },
         body: {
@@ -267,7 +270,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
       const response = await $fetch(`${API_BASE_URL}/api/subscriptions/downgrade/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${process.client ? localStorage.getItem('access_token') : authStore.token}`,
           'Content-Type': 'application/json'
         },
         body: {
@@ -297,7 +300,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
       const response = await $fetch(`${API_BASE_URL}/api/subscriptions/send_notifications/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${process.client ? localStorage.getItem('access_token') : authStore.token}`,
           'Content-Type': 'application/json'
         }
       })

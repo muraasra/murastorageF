@@ -117,6 +117,17 @@
                   </div>
                 </div>
               </div>
+              
+              <!-- Bouton renouveler si plan != free -->
+              <div v-if="currentPlan && currentPlan.name !== 'free'" class="pt-4 border-t border-gray-200 mt-4">
+                <button
+                  @click="handleRenew"
+                  :disabled="loading || extending"
+                  class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                >
+                  {{ extending ? 'Renouvellement...' : 'Renouveler 30 jours' }}
+                </button>
+              </div>
             </div>
           </div>
           
@@ -245,7 +256,7 @@
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
-                  50 produits
+                  15 produits
                 </li>
                 <li class="flex items-center">
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -314,7 +325,7 @@
               <p class="text-gray-600 mb-4">Accès aux fonctionnalités de base avec quelques options supplémentaires.</p>
               <div class="mb-6">
                 <span class="text-4xl font-extrabold" :class="isCurrent(staticPlans.basic) ? 'text-gray-600' : 'text-gray-900'">
-                  15,000 XAF
+                  9,900 XAF
                 </span>
                 <span class="text-gray-500">/ mois</span>
               </div>
@@ -329,19 +340,19 @@
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
-                  3 boutiques
+                  2 boutiques
                 </li>
                 <li class="flex items-center">
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
-                  5 utilisateurs
+                  3 utilisateurs
                 </li>
                 <li class="flex items-center">
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
-                  500 produits
+                  100 produits
                 </li>
                 <li class="flex items-center">
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -410,7 +421,7 @@
               <p class="text-gray-600 mb-4">Accès complet à toutes les fonctionnalités standard.</p>
               <div class="mb-6">
                 <span class="text-4xl font-extrabold" :class="isCurrent(staticPlans.premium) ? 'text-gray-600' : 'text-gray-900'">
-                  35,000 XAF
+                  29,000 XAF
                 </span>
                 <span class="text-gray-500">/ mois</span>
               </div>
@@ -425,13 +436,13 @@
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
-                  10 boutiques
+                  5 boutiques
                 </li>
                 <li class="flex items-center">
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
-                  25 utilisateurs
+                  10 utilisateurs
                 </li>
                 <li class="flex items-center">
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -506,7 +517,7 @@
               <p class="text-gray-600 mb-4">Plan entreprise avec toutes les fonctionnalités</p>
               <div class="mb-6">
                 <span class="text-4xl font-extrabold" :class="isCurrent(staticPlans.organisation) ? 'text-gray-600' : 'text-gray-900'">
-                  75,000 XAF
+                  55,000 XAF
                 </span>
                 <span class="text-gray-500">/ mois</span>
               </div>
@@ -607,9 +618,9 @@
               </p>
               <div class="text-sm text-blue-600 mb-3">
                 <p>✅ Plan Free - Gratuit</p>
-                <p>✅ Plan Basic - 15,000 XAF/mois</p>
-                <p>✅ Plan Premium - 35,000 XAF/mois</p>
-                <p>✅ Plan Organisation - 75,000 XAF/mois</p>
+                <p>✅ Plan Basic - 9,900 XAF/mois</p>
+                <p>✅ Plan Premium - 29,000 XAF/mois</p>
+                <p>✅ Plan Organisation - 55,000 XAF/mois</p>
               </div>
               <div class="text-sm text-blue-600">
                 <p><strong>📊 Données d'utilisation :</strong></p>
@@ -622,12 +633,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Modale confirmation upgrade -->
+    <div v-if="showConfirmUpgrade" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        <h3 class="text-lg font-semibold mb-2">Confirmer le changement de plan</h3>
+        <p class="text-gray-600 mb-6">Voulez-vous vraiment changer vers le plan <strong>{{ pendingPlanName }}</strong> maintenant ?</p>
+        <div class="flex justify-end gap-3">
+          <button class="px-4 py-2 rounded border" @click="closeUpgradeConfirm" :disabled="loading">Annuler</button>
+          <button class="px-4 py-2 rounded bg-blue-600 text-white" @click="confirmUpgradeNow" :disabled="loading">
+            {{ loading ? 'Traitement...' : 'Confirmer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale confirmation renouvellement -->
+    <div v-if="showConfirmRenew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        <h3 class="text-lg font-semibold mb-2">Confirmer le renouvellement</h3>
+        <p class="text-gray-600 mb-6">Renouveler l'abonnement de 30 jours ?</p>
+        <div class="flex justify-end gap-3">
+          <button class="px-4 py-2 rounded border" @click="closeRenewConfirm" :disabled="loading">Annuler</button>
+          <button class="px-4 py-2 rounded bg-green-600 text-white" @click="confirmRenewNow" :disabled="loading">
+            {{ loading ? 'Traitement...' : 'Renouveler' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useSubscription } from '@/composables/useSubscription'
+import { useNotification } from '@/types/useNotification'
+
+const { success: showSuccess, error: showError } = useNotification()
 
 definePageMeta({
   layout: 'superadmin'
@@ -648,25 +690,54 @@ const {
   upgradeSubscription
 } = useSubscription()
 
+// Charger les plans depuis l'API
+const apiPlans = ref<any[]>([])
+const extending = ref(false)
+const showConfirmUpgrade = ref(false)
+const showConfirmRenew = ref(false)
+const pendingPlanId = ref<number | null>(null)
+const pendingPlanName = ref('')
+
+// Load plans from API
+const loadPlans = async () => {
+  try {
+    const { API_BASE_URL } = await import('@/constants')
+    const { useApi } = await import('@/stores/useApi')
+    const { data, error: err } = await useApi(`${API_BASE_URL}/api/subscription-plans/`, {
+      method: 'GET',
+      server: false,
+      cacheTTL: 5 * 60 * 1000
+    })
+    if (err.value) {
+      console.error('[LoadPlans] Error:', err.value)
+      throw err.value
+    }
+    apiPlans.value = (data.value as any[]) || []
+    console.log('[LoadPlans] Plans chargés:', apiPlans.value.map(p => ({ id: p.id, name: p.name, display_name: p.display_name })))
+  } catch (e) {
+    console.error('[LoadPlans] Exception:', e)
+  }
+}
+
 // Plans statiques comme fallback
 const staticPlans = ref({
   free: {
     id: 'free',
     name: 'free',
     display_name: 'Free',
-    description: 'Accès limité aux fonctionnalités de base.',
+    description: 'Plan gratuit pour 3 mois - Accès limité aux fonctionnalités de base.',
     price: 0,
     features: [
       { name: '1 entreprise', included: true },
       { name: '1 boutique', included: true },
       { name: '2 utilisateurs', included: true },
-      { name: '50 produits', included: true },
-      { name: '100 factures/mois', included: true },
-      { name: 'Export CSV', included: false },
-      { name: 'Export Excel', included: false },
-      { name: 'Import CSV', included: false },
-      { name: 'Accès API', included: false },
-      { name: 'Support Email', included: true }
+      { name: '15 produits', included: true },
+      { name: '100 factures', included: true },
+      { name: 'Inventaires', included: false },
+      { name: 'Transferts', included: false },
+      { name: 'Codes-barres', included: false },
+      { name: 'Partenaires', included: false },
+      { name: 'Import/Export', included: false }
     ]
   },
   basic: {
@@ -674,18 +745,18 @@ const staticPlans = ref({
     name: 'basic',
     display_name: 'Basic',
     description: 'Accès aux fonctionnalités de base avec quelques options supplémentaires.',
-    price: 15000,
+    price: 9900,
     features: [
       { name: '1 entreprise', included: true },
-      { name: '3 boutiques', included: true },
-      { name: '5 utilisateurs', included: true },
-      { name: '500 produits', included: true },
-      { name: '1,000 factures/mois', included: true },
-      { name: 'Export CSV', included: true },
-      { name: 'Export Excel', included: false },
-      { name: 'Import CSV', included: false },
-      { name: 'Accès API', included: false },
-      { name: 'Support Email', included: true }
+      { name: '2 boutiques', included: true },
+      { name: '3 utilisateurs', included: true },
+      { name: '100 produits', included: true },
+      { name: '500 factures/mois', included: true },
+      { name: '25 transferts/mois', included: true },
+      { name: 'Codes-barres', included: true },
+      { name: 'Alertes', included: true },
+      { name: 'Partenaires', included: true },
+      { name: 'Import/Export CSV/Excel', included: true }
     ]
   },
   premium: {
@@ -693,26 +764,27 @@ const staticPlans = ref({
     name: 'premium',
     display_name: 'Premium',
     description: 'Accès complet à toutes les fonctionnalités standard.',
-    price: 35000,
+    price: 29000,
     features: [
       { name: '1 entreprise', included: true },
-      { name: '10 boutiques', included: true },
-      { name: '25 utilisateurs', included: true },
-      { name: 'Produits illimités', included: true },
-      { name: 'Factures illimitées', included: true },
-      { name: 'Export CSV', included: true },
-      { name: 'Export Excel', included: true },
-      { name: 'Import CSV', included: true },
-      { name: 'Accès API', included: false },
-      { name: 'Support Prioritaire', included: true }
+      { name: '5 boutiques', included: true },
+      { name: '10 utilisateurs', included: true },
+      { name: '500 produits', included: true },
+      { name: '2,000 factures/mois', included: true },
+      { name: '1 inventaire/mois', included: true },
+      { name: '100 transferts/mois', included: true },
+      { name: 'Codes-barres illimités', included: true },
+      { name: 'Alertes avancées', included: true },
+      { name: 'Gestion partenaires avancée', included: true },
+      { name: 'Import/Export complets', included: true }
     ]
   },
   organisation: {
     id: 'organisation',
     name: 'organisation',
     display_name: 'Organisation',
-    description: 'Plan entreprise avec toutes les fonctionnalités',
-    price: 75000,
+    description: 'Plan personnalisable avec accès illimité',
+    price: 55000,
     features: [
       { name: 'Entreprises illimitées', included: true },
       { name: 'Boutiques illimitées', included: true },
@@ -815,29 +887,122 @@ function isCurrent(plan: any) {
 }
 
 async function handleUpgrade(planId: string) {
-  if (!confirm('Êtes-vous sûr de vouloir changer de plan ?')) return
-  
-  try {
-    // Essayer d'utiliser l'API si disponible
-    if (upgradeSubscription && typeof upgradeSubscription === 'function') {
-      // Convertir l'ID du plan en nombre si nécessaire pour l'API
-      const numericPlanId = parseInt(planId) || 1
-      const res = await upgradeSubscription(numericPlanId)
-  if (res.success) {
-    alert('Plan mis à jour avec succès !')
-    await refresh()
-        return
-  } else {
-    alert(`Erreur: ${res.error || 'Impossible de mettre à jour le plan'}`)
-        return
-      }
-    }
-  } catch (err) {
-    console.warn('API non disponible, utilisation du mode statique')
+  // Trouver le plan dans les plans API
+  const plan = apiPlans.value.find(p => p.name === planId || p.display_name?.toLowerCase() === planId.toLowerCase())
+  if (!plan) {
+    console.error('[Upgrade] Plan introuvable dans apiPlans:', planId, 'Plans disponibles:', apiPlans.value.map(p => ({ id: p.id, name: p.name, display_name: p.display_name })))
+    return
   }
   
-  // Mode statique - simulation d'upgrade
-  alert(`Fonctionnalité d'upgrade vers le plan ${planId} en cours de développement.\n\nPour l'instant, cette page affiche tous les plans disponibles comme demandé.`)
+  pendingPlanId.value = plan.id
+  pendingPlanName.value = plan.display_name || plan.name
+  showConfirmUpgrade.value = true
+}
+
+function closeUpgradeConfirm() {
+  showConfirmUpgrade.value = false
+  pendingPlanId.value = null
+  pendingPlanName.value = ''
+}
+
+async function confirmUpgradeNow() {
+  if (!pendingPlanId.value) return
+  loading.value = true
+  try {
+    const { API_BASE_URL } = await import('@/constants')
+    const { useApi } = await import('@/stores/useApi')
+    const { data, error: err } = await useApi(`${API_BASE_URL}/api/subscriptions/upgrade/`, {
+      method: 'POST',
+      body: { plan_id: pendingPlanId.value },
+      server: false
+    })
+    console.log('[Upgrade] Request body:', { plan_id: pendingPlanId.value })
+    console.log('[Upgrade] Response:', data.value)
+    if (err.value) {
+      console.error('[Upgrade] Error:', err.value)
+      showError(err.value.message || 'Erreur lors du changement de plan')
+      throw err.value
+    }
+    
+    // Message de succès
+    const responseData = data.value as any
+    showSuccess(responseData?.message || `Plan changé vers ${pendingPlanName.value} avec succès !`)
+    
+    // Invalider le cache frontend et recharger
+    if (process.client) {
+      const nuxtApp = useNuxtApp()
+      if (nuxtApp.$invalidateCacheByPattern) {
+        nuxtApp.$invalidateCacheByPattern('/api/subscriptions')
+        nuxtApp.$invalidateCacheByPattern('/api/produits')
+      }
+      // Invalider aussi via useApi si disponible
+      try {
+        const { useApi } = await import('@/stores/useApi')
+        // useApi invalide automatiquement lors des appels POST/PUT/DELETE
+      } catch {}
+    }
+    
+    await refresh()
+  } catch (e: any) {
+    console.error('[Upgrade] Exception:', e)
+    if (!e.message || !e.message.includes('Erreur')) {
+      showError('Erreur lors du changement de plan. Vérifiez la console pour plus de détails.')
+    }
+  } finally {
+    showConfirmUpgrade.value = false
+    pendingPlanId.value = null
+    pendingPlanName.value = ''
+    loading.value = false
+  }
+}
+
+function handleRenew() {
+  showConfirmRenew.value = true
+}
+
+function closeRenewConfirm() {
+  showConfirmRenew.value = false
+}
+
+async function confirmRenewNow() {
+  extending.value = true
+  try {
+    const { API_BASE_URL } = await import('@/constants')
+    const { useApi } = await import('@/stores/useApi')
+    const { data, error: err } = await useApi(`${API_BASE_URL}/api/subscriptions/extend/`, {
+      method: 'POST',
+      body: { days: 30 },
+      server: false
+    })
+    console.log('[Renew] Response:', data.value)
+    if (err.value) {
+      console.error('[Renew] Error:', err.value)
+      showError(err.value.message || 'Erreur lors du renouvellement')
+      return
+    }
+    
+    // Message de succès
+    const responseData = data.value as any
+    showSuccess(responseData?.message || 'Abonnement renouvelé de 30 jours avec succès !')
+    
+    // Invalider le cache frontend et recharger
+    if (process.client) {
+      const nuxtApp = useNuxtApp()
+      if (nuxtApp.$invalidateCacheByPattern) {
+        nuxtApp.$invalidateCacheByPattern('subscriptions')
+      }
+    }
+    
+    await refresh()
+  } catch (e: any) {
+    console.error('[Renew] Exception:', e)
+    if (!e.message || !e.message.includes('Erreur')) {
+      showError('Erreur lors du renouvellement. Vérifiez la console pour plus de détails.')
+    }
+  } finally {
+    showConfirmRenew.value = false
+    extending.value = false
+  }
 }
 
 async function refreshData() {
@@ -874,6 +1039,7 @@ async function refreshData() {
 
 onMounted(() => {
   refresh()
+  loadPlans()
 })
 
 function formatDate(d: any) {

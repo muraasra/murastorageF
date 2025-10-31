@@ -1,64 +1,116 @@
-import { useSecureLogging } from '@/composables/useSecureLogging'
-
+// Composable pour gérer et personnaliser les erreurs API
 export const useErrorHandler = () => {
-  const { error } = useNotification()
-  const { maskError, secureError } = useSecureLogging()
-
-  const handleApiError = (apiError: any, context: string = '') => {
-    if (!apiError) return
-
-    // Log sécurisé de l'erreur (masque les URLs)
-    secureError(`API Error in ${context}`, apiError)
-
-    const statusCode = apiError.statusCode || apiError.status || 0
+  
+  // Messages d'erreur personnalisés
+  const errorMessages: Record<string, string> = {
+    // Erreurs d'authentification
+    '401': 'Votre session a expiré. Veuillez vous reconnecter.',
+    '403': 'Vous n\'avez pas l\'autorisation d\'effectuer cette action.',
+    '404': 'La ressource demandée est introuvable.',
+    '500': 'Une erreur serveur est survenue. Veuillez réessayer plus tard.',
     
-    // Messages d'erreur directs selon le code de statut
-    if (statusCode === 0 || 
-        apiError.message?.includes('fetch') || 
-        apiError.message?.includes('network') ||
-        apiError.message?.includes('Failed to fetch') ||
-        apiError.message?.includes('ERR_NETWORK') ||
-        apiError.message?.includes('ERR_CONNECTION_REFUSED')) {
-      error('Problème de connexion réseau. Vérifiez votre connexion internet.')
+    // Erreurs de validation
+    'validation_error': 'Les données fournies ne sont pas valides.',
+    'required_field': 'Ce champ est obligatoire.',
+    
+    // Erreurs de limite
+    'limit_reached': 'Vous avez atteint la limite autorisée par votre plan.',
+    
+    // Erreurs de connexion
+    'network_error': 'Problème de connexion. Vérifiez votre connexion internet.',
+    'timeout': 'Le serveur met trop de temps à répondre. Veuillez réessayer.',
+  }
+  
+  // Fonction pour nettoyer et personnaliser les messages d'erreur
+  const cleanErrorMessage = (error: any): string => {
+    // Si c'est une string, la retourner telle quelle (déjà nettoyée)
+    if (typeof error === 'string') {
+      return error
     }
-    // Erreur d'authentification (serveur répond mais identifiants incorrects)
-    else if (statusCode === 401 || statusCode === 400) {
-      error('Identifiants incorrects')
+    
+    // Gérer les erreurs HTTP
+    if (error.status || error.statusCode) {
+      const statusCode = error.status || error.statusCode
+      return errorMessages[statusCode.toString()] || getErrorMessage(error)
     }
-    // Erreur de permissions
-    else if (statusCode === 403) {
-      error('Accès non autorisé. Vérifiez vos permissions.')
+    
+    // Gérer les erreurs API avec message
+    if (error.message) {
+      // Supprimer les URLs et chemins de fichiers
+      let message = error.message
+      
+      // Supprimer les URLs
+      message = message.replace(/https?:\/\/[^\s]+/g, '[URL]')
+      
+      // Supprimer les chemins de fichiers
+      message = message.replace(/[a-zA-Z]:\\?[^\s]+|[\/][a-zA-Z0-9_\.\/-]+/g, '[Fichier]')
+      
+      // Supprimer les numéros de ligne
+      message = message.replace(/line \d+|:\d+:/g, '')
+      
+      // Supprimer les stack traces
+      if (message.includes('at ')) {
+        message = message.split('at ')[0].trim()
+      }
+      
+      return message
     }
-    // Erreur serveur interne
-    else if (statusCode >= 500) {
-      error('Erreur du serveur. Veuillez réessayer plus tard.')
+    
+    // Message par défaut
+    return 'Une erreur inattendue est survenue.'
+  }
+  
+  // Fonction pour obtenir un message d'erreur depuis l'objet d'erreur
+  const getErrorMessage = (error: any): string => {
+    // Priorité 1: Message personnalisé
+    if (error.error_message) {
+      return error.error_message
     }
-    // Erreur de validation
-    else if (statusCode === 422) {
-      error('Données invalides. Vérifiez les informations saisies.')
+    
+    // Priorité 2: Message de détail
+    if (error.detail) {
+      return cleanErrorMessage({ message: error.detail })
     }
-    // Autres erreurs - message générique
-    else {
-      error('Une erreur est survenue lors de la connexion')
+    
+    // Priorité 3: Message général
+    if (error.message) {
+      return cleanErrorMessage({ message: error.message })
+    }
+    
+    // Priorité 4: Message par défaut selon le code
+    if (error.status || error.statusCode) {
+      const code = error.status || error.statusCode
+      return errorMessages[code.toString()] || 'Une erreur est survenue.'
+    }
+    
+    // Dernier recours
+    return 'Une erreur inattendue est survenue.'
+  }
+  
+  // Fonction pour afficher une notification d'erreur
+  const showError = (error: any, title: string = 'Erreur') => {
+    const message = cleanErrorMessage(error)
+    console.error(`[${title}]`, error)
+    
+    // Utiliser le système de notification de l'app
+    if (process.client) {
+      // Vous pouvez intégrer avec votre système de notification existant
+      // Par exemple: useToast().error(title, message)
+      alert(message) // Fallback basique - à remplacer
     }
   }
-
-  const handleNetworkError = () => {
-    error('Problème de connexion réseau. Vérifiez votre connexion internet.')
+  
+  // Fonction pour logger les erreurs sans les afficher
+  const logError = (error: any, context?: string) => {
+    const message = cleanErrorMessage(error)
+    console.error(context ? `[${context}]` : '[Error]', message, error)
   }
-
-  const handleAuthError = () => {
-    error('Email ou mot de passe incorrect')
-  }
-
-  const handleGenericError = (message?: string) => {
-    error(message || 'Une erreur est survenue')
-  }
-
+  
   return {
-    handleApiError,
-    handleNetworkError,
-    handleAuthError,
-    handleGenericError
+    cleanErrorMessage,
+    getErrorMessage,
+    showError,
+    logError,
+    errorMessages
   }
 }

@@ -164,7 +164,7 @@
               </label>
             </div>
             <div class="text-sm">
-              <a href="#" class="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300">
+              <a href="/home/mot-de-passe-oublie" class="font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300">
                 Mot de passe oublié ?
               </a>
             </div>
@@ -296,7 +296,7 @@ const useAuthStore = () => {
   }
 }
 
-const API_BASE_URL = 'https://murastorage.pythonanywhere.com'
+import { API_BASE_URL } from '@/constants'
 
 // Fonction de test de l'API - Test simple de connectivité
 const testApiConnection = async () => {

@@ -257,3 +257,12 @@ cache.remove('boutiques')
 5. **Tests de performance** : Automatiser les tests de charge
 
 
+
+
+
+
+
+
+
+
+
