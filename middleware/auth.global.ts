@@ -35,7 +35,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
       '/home/verification',
       '/home/about',
       '/home/mot-de-passe-oublie',
-      '/reset-password'
+      '/reset-password',
+      '/sitemap',
+      '/sitemap.xml'
     ]
 
     // Si pas de token, rediriger vers la page d'accueil publique ou connexion
