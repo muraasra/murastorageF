@@ -627,7 +627,34 @@ const onEntrepriseUpdated = async () => {
 
 // Fonction pour accéder au dashboard d'un entrepôt - version optimisée
 const accessBoutiqueDashboard = async (boutique: any) => {
-  await accessWarehouseOptimized(boutique)
+  try {
+    // Vérifier que boutique est valide
+    if (!boutique || !boutique.id) {
+      console.error('[Dashboard] Boutique invalide:', boutique)
+      error('Entrepôt invalide')
+      return
+    }
+    
+    console.log('[Dashboard] Accès au dashboard de l\'entrepôt:', boutique.nom || boutique.id)
+    await accessWarehouseOptimized(boutique)
+  } catch (err: any) {
+    console.error('[Dashboard] Erreur accès entrepôt:', err)
+    error('Erreur lors de l\'accès au dashboard de l\'entrepôt. Veuillez réessayer.')
+    
+    // En cas d'erreur, essayer une redirection manuelle
+    if (process.client) {
+      try {
+        // Sauvegarder l'entrepôt dans localStorage
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('boutique', JSON.stringify(boutique))
+        }
+        // Rediriger manuellement
+        window.location.href = '/user'
+      } catch (fallbackError) {
+        console.error('[Dashboard] Erreur redirection de secours:', fallbackError)
+      }
+    }
+  }
 }
 
 // Fonction pour effacer la sélection d'entrepôt - version optimisée
