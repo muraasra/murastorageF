@@ -3,8 +3,16 @@ definePageMeta({
     layout: "accueil",
 })
 useSeoMeta({
-  title: 'Services - Mura Storage',
-  description: 'Découvrez nos services: gestion de stock, mouvements, analyses, intégrations et support expert par Groupe Mura.',
+  title: 'Services Mura Storage - Gestion Stock, Inventaire, Facturation, Analyses',
+  description: 'Découvrez tous nos services Mura Storage : gestion de stock en temps réel, inventaires, facturation, transferts multi-entrepôts, codes-barres, alertes, analyses et rapports, intégrations API, support expert 24/7 par Groupe Mura.',
+  ogTitle: 'Services Mura Storage - Solutions Complètes de Gestion de Stock',
+  ogDescription: 'Services complets de gestion de stock : suivi temps réel, inventaires, facturation, transferts, codes-barres, alertes, analyses. Support expert Groupe Mura.',
+  ogType: 'website',
+  ogUrl: 'https://murastorage.netlify.app/home/services',
+  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  keywords: 'services gestion stock, fonctionnalités logiciel stock, gestion inventaire services, facturation multi-entrepôts, transferts stock, codes-barres, alertes stock, rapports stock, analyses inventaire, intégrations API stock, support gestion stock, Groupe Mura services',
+  robots: 'index, follow',
+  canonical: 'https://murastorage.netlify.app/home/services'
 });
 
 </script>

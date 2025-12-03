@@ -1,3 +1,14 @@
+<script setup lang="ts">
+import { useSeo } from '@/composables/useSeo'
+
+// Page privée - Noindex
+useSeo({
+  title: 'Produits - Mura Storage',
+  description: 'Gestion des produits et inventaire',
+  noindex: true
+});
+</script>
+
 <template>
   <div>
     <!-- Header de la page -->
@@ -506,11 +517,17 @@
           
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UFormGroup label="Catégorie" name="categorie">
-                <USelect v-model="formState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="Sélectionner une catégorie" />
+                <div class="flex gap-2">
+                  <USelect v-model="formState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="Sélectionner une catégorie" class="flex-1" />
+                  <UButton @click="showCategoriesModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter une catégorie" />
+                </div>
               </UFormGroup>
               
               <UFormGroup label="Fournisseur" name="fournisseur_principal">
-                <USelect v-model="formState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" />
+                <div class="flex gap-2">
+                  <USelect v-model="formState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" class="flex-1" />
+                  <UButton @click="showFournisseursModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter un fournisseur" />
+                </div>
               </UFormGroup>
             </div>
             
@@ -590,11 +607,17 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UFormGroup label="Catégorie" name="categorie">
-                <USelect v-model="editFormState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="Sélectionner une catégorie" />
+                <div class="flex gap-2">
+                  <USelect v-model="editFormState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="Sélectionner une catégorie" class="flex-1" />
+                  <UButton @click="showCategoriesModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter une catégorie" />
+                </div>
               </UFormGroup>
               
               <UFormGroup label="Fournisseur principal" name="fournisseur_principal">
-                <USelect v-model="editFormState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" />
+                <div class="flex gap-2">
+                  <USelect v-model="editFormState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" class="flex-1" />
+                  <UButton @click="showFournisseursModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter un fournisseur" />
+                </div>
               </UFormGroup>
             </div>
             
@@ -1539,11 +1562,18 @@
             <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">
               Catégories existantes ({{ categories.length }})
             </h4>
-            <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+            <div class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
               <div v-for="categorie in categories" :key="categorie.id" 
-                   class="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                <div class="w-4 h-4 rounded" :style="{ backgroundColor: categorie.couleur }"></div>
-                <span class="text-sm text-gray-900 dark:text-white">{{ categorie.nom }}</span>
+                   class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                <div class="flex items-center space-x-2">
+                  <div class="w-4 h-4 rounded" :style="{ backgroundColor: categorie.couleur }"></div>
+                  <UIcon v-if="categorie.icone" :name="categorie.icone" class="h-4 w-4" />
+                  <span class="text-sm text-gray-900 dark:text-white">{{ categorie.nom }}</span>
+                </div>
+                <div class="flex gap-2">
+                  <UButton @click="editCategorie(categorie)" variant="ghost" size="xs" icon="i-heroicons-pencil" />
+                  <UButton @click="deleteCategorie(categorie.id)" variant="ghost" size="xs" color="red" icon="i-heroicons-trash" />
+                </div>
               </div>
             </div>
           </div>
@@ -1563,7 +1593,25 @@
               </UFormGroup>
               
               <UFormGroup label="Icône">
-                <UInput v-model="newCategorie.icone" placeholder="Ex: i-heroicons-device-phone-mobile" />
+                <div class="space-y-2">
+                  <div class="grid grid-cols-5 gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded max-h-32 overflow-y-auto">
+                    <button
+                      v-for="icon in availableIcons"
+                      :key="icon.name"
+                      @click="newCategorie.icone = icon.name"
+                      :class="[
+                        'p-2 rounded border-2 transition-all',
+                        newCategorie.icone === icon.name 
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' 
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      ]"
+                      :title="icon.label"
+                    >
+                      <UIcon :name="icon.name" class="h-5 w-5" />
+                    </button>
+                  </div>
+                  <UInput v-model="newCategorie.icone" placeholder="Ou saisir manuellement" />
+                </div>
               </UFormGroup>
               
               <UFormGroup label="Couleur">
@@ -1571,10 +1619,6 @@
                   <input type="color" v-model="newCategorie.couleur" class="w-12 h-8 rounded border" />
                   <UInput v-model="newCategorie.couleur" placeholder="#3B82F6" />
                 </div>
-              </UFormGroup>
-              
-              <UFormGroup label="Catégorie parente">
-                <USelect v-model="newCategorie.parent" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="Sélectionner une catégorie parente" />
               </UFormGroup>
             </div>
           </div>
@@ -1611,7 +1655,7 @@
             <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">
               Fournisseurs existants ({{ fournisseurs.length }})
             </h4>
-            <div class="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
+            <div class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
               <div v-for="fournisseur in fournisseurs" :key="fournisseur.id" 
                    class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
                 <div class="flex items-center space-x-2">
@@ -1619,7 +1663,11 @@
                   <span class="text-sm text-gray-900 dark:text-white">{{ fournisseur.nom }}</span>
                   <span class="text-xs text-gray-500">{{ fournisseur.code_fournisseur }}</span>
                 </div>
-                <span class="text-xs text-gray-500">{{ fournisseur.email }}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-500">{{ fournisseur.email }}</span>
+                  <UButton @click="editFournisseur(fournisseur)" variant="ghost" size="xs" icon="i-heroicons-pencil" />
+                  <UButton @click="deleteFournisseur(fournisseur.id)" variant="ghost" size="xs" color="red" icon="i-heroicons-trash" />
+                </div>
               </div>
             </div>
           </div>
@@ -1680,6 +1728,139 @@
             </UButton>
             <UButton @click="createFournisseur" color="primary" :disabled="!newFournisseur.nom">
               Créer le fournisseur
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </UModal>
+
+    <!-- Modal d'édition de catégorie -->
+    <UModal v-model="showEditCategorieModal">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Modifier la catégorie
+            </h3>
+            <UButton @click="showEditCategorieModal = false" variant="ghost" icon="i-heroicons-x-mark" />
+          </div>
+        </template>
+
+        <div class="space-y-4" v-if="editingCategorie">
+          <UFormGroup label="Nom de la catégorie" required>
+            <UInput v-model="editingCategorie.nom" placeholder="Ex: Électronique" />
+          </UFormGroup>
+          
+          <UFormGroup label="Description">
+            <UTextarea v-model="editingCategorie.description" placeholder="Description de la catégorie" />
+          </UFormGroup>
+          
+          <UFormGroup label="Icône">
+            <div class="space-y-2">
+              <div class="grid grid-cols-5 gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded max-h-32 overflow-y-auto">
+                <button
+                  v-for="icon in availableIcons"
+                  :key="icon.name"
+                  @click="editingCategorie.icone = icon.name"
+                  :class="[
+                    'p-2 rounded border-2 transition-all',
+                    editingCategorie.icone === icon.name 
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' 
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                  ]"
+                  :title="icon.label"
+                >
+                  <UIcon :name="icon.name" class="h-5 w-5" />
+                </button>
+              </div>
+              <UInput v-model="editingCategorie.icone" placeholder="Ou saisir manuellement" />
+            </div>
+          </UFormGroup>
+          
+          <UFormGroup label="Couleur">
+            <div class="flex items-center space-x-3">
+              <input type="color" v-model="editingCategorie.couleur" class="w-12 h-8 rounded border" />
+              <UInput v-model="editingCategorie.couleur" placeholder="#3B82F6" />
+            </div>
+          </UFormGroup>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end space-x-3">
+            <UButton @click="showEditCategorieModal = false" variant="outline">
+              Annuler
+            </UButton>
+            <UButton @click="updateCategorie" color="primary" :disabled="!editingCategorie?.nom">
+              Enregistrer
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </UModal>
+
+    <!-- Modal d'édition de fournisseur -->
+    <UModal v-model="showEditFournisseurModal">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Modifier le fournisseur
+            </h3>
+            <UButton @click="showEditFournisseurModal = false" variant="ghost" icon="i-heroicons-x-mark" />
+          </div>
+        </template>
+
+        <div class="space-y-4" v-if="editingFournisseur">
+          <div class="grid grid-cols-2 gap-4">
+            <UFormGroup label="Nom du fournisseur" required>
+              <UInput v-model="editingFournisseur.nom" placeholder="Ex: Samsung Electronics" />
+            </UFormGroup>
+            
+            <UFormGroup label="Code fournisseur">
+              <UInput v-model="editingFournisseur.code_fournisseur" placeholder="Ex: SAM001" />
+            </UFormGroup>
+            
+            <UFormGroup label="Email">
+              <UInput v-model="editingFournisseur.email" type="email" placeholder="contact@fournisseur.com" />
+            </UFormGroup>
+            
+            <UFormGroup label="Téléphone">
+              <UInput v-model="editingFournisseur.telephone" placeholder="+237 6XX XX XX XX" />
+            </UFormGroup>
+            
+            <UFormGroup label="Adresse" class="col-span-2">
+              <UInput v-model="editingFournisseur.adresse" placeholder="Adresse complète" />
+            </UFormGroup>
+            
+            <UFormGroup label="Ville">
+              <UInput v-model="editingFournisseur.ville" placeholder="Ex: Douala" />
+            </UFormGroup>
+            
+            <UFormGroup label="Pays">
+              <UInput v-model="editingFournisseur.pays" placeholder="Ex: Cameroun" />
+            </UFormGroup>
+            
+            <UFormGroup label="Site web">
+              <UInput v-model="editingFournisseur.site_web" placeholder="https://www.fournisseur.com" />
+            </UFormGroup>
+            
+            <UFormGroup label="Contact principal">
+              <UInput v-model="editingFournisseur.contact_principal" placeholder="Nom du contact" />
+            </UFormGroup>
+            
+            <UFormGroup label="Notes" class="col-span-2">
+              <UTextarea v-model="editingFournisseur.notes" placeholder="Notes supplémentaires" />
+            </UFormGroup>
+          </div>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end space-x-3">
+            <UButton @click="showEditFournisseurModal = false" variant="outline">
+              Annuler
+            </UButton>
+            <UButton @click="updateFournisseur" color="primary" :disabled="!editingFournisseur?.nom">
+              Enregistrer
             </UButton>
           </div>
         </template>
@@ -1875,9 +2056,35 @@ const newCategorie = ref({
   nom: '',
   description: '',
   icone: '',
-  couleur: '#3B82F6',
-  parent: undefined as number | undefined
+  couleur: '#3B82F6'
 })
+
+// État pour l'édition de catégorie
+const editingCategorie = ref<any>(null)
+const showEditCategorieModal = ref(false)
+
+// État pour l'édition de fournisseur
+const editingFournisseur = ref<any>(null)
+const showEditFournisseurModal = ref(false)
+
+// Liste d'icônes disponibles pour les catégories
+const availableIcons = [
+  { name: 'i-heroicons-device-phone-mobile', label: 'Téléphone' },
+  { name: 'i-heroicons-computer-desktop', label: 'Ordinateur' },
+  { name: 'i-heroicons-cube', label: 'Produit' },
+  { name: 'i-heroicons-tag', label: 'Tag' },
+  { name: 'i-heroicons-shopping-bag', label: 'Sac' },
+  { name: 'i-heroicons-gift', label: 'Cadeau' },
+  { name: 'i-heroicons-bolt', label: 'Électronique' },
+  { name: 'i-heroicons-wrench-screwdriver', label: 'Outils' },
+  { name: 'i-heroicons-home', label: 'Maison' },
+  { name: 'i-heroicons-building-office-2', label: 'Bureau' },
+  { name: 'i-heroicons-truck', label: 'Transport' },
+  { name: 'i-heroicons-camera', label: 'Photo' },
+  { name: 'i-heroicons-musical-note', label: 'Musique' },
+  { name: 'i-heroicons-book', label: 'Livre' },
+  { name: 'i-heroicons-heart', label: 'Santé' }
+]
 
 const newFournisseur = ref({
   nom: '',
@@ -2292,7 +2499,8 @@ const loadData = async () => {
     
     entreprises.value = entreprisesResponse
     entrepots.value = entrepotsResponse
-    categories.value = categoriesResponse
+    // Filtrer la catégorie "elec" par défaut
+    categories.value = categoriesResponse.filter((c: any) => c.nom?.toLowerCase() !== 'elec')
     fournisseurs.value = fournisseursResponse
     stocks.value = stocksResponse
     
@@ -2484,6 +2692,55 @@ const loadData = async () => {
 // Fonction de chargement des produits (pour compatibilité)
 const loadProduits = loadData
 
+// Fonctions pour recharger uniquement les catégories (sans fermer la popup produit)
+const fetchCategories = async () => {
+  try {
+    const token = process.client ? localStorage.getItem('access_token') : null
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    }
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    const { data: catRes } = await useApi<any[]>(`${API_BASE_URL}/api/categories/`, { 
+      method: 'GET', 
+      server: false, 
+      headers, 
+      cacheTTL: 0 // Pas de cache pour forcer le rechargement
+    })
+    const categoriesResponse = (catRes.value as any[]) || []
+    // Filtrer la catégorie "elec" par défaut
+    categories.value = categoriesResponse.filter((c: any) => c.nom?.toLowerCase() !== 'elec')
+    console.log('Catégories rechargées:', categories.value.length)
+  } catch (err: any) {
+    console.error('Erreur lors du rechargement des catégories:', err)
+  }
+}
+
+// Fonctions pour recharger uniquement les fournisseurs (sans fermer la popup produit)
+const fetchFournisseurs = async () => {
+  try {
+    const token = process.client ? localStorage.getItem('access_token') : null
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    }
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    const { data: fourRes } = await useApi<any[]>(`${API_BASE_URL}/api/fournisseurs/`, { 
+      method: 'GET', 
+      server: false, 
+      headers, 
+      cacheTTL: 0 // Pas de cache pour forcer le rechargement
+    })
+    const fournisseursResponse = (fourRes.value as any[]) || []
+    fournisseurs.value = fournisseursResponse
+    console.log('Fournisseurs rechargés:', fournisseurs.value.length)
+  } catch (err: any) {
+    console.error('Erreur lors du rechargement des fournisseurs:', err)
+  }
+}
+
 // Fonctions pour gérer les catégories
 const createCategorie = async () => {
   try {
@@ -2519,7 +2776,6 @@ const createCategorie = async () => {
       description: newCategorie.value.description || '',
       icone: newCategorie.value.icone || '',
       couleur: newCategorie.value.couleur,
-      parent: newCategorie.value.parent || null,
       entreprise: entrepriseId, // Ajouter l'ID de l'entreprise
       actif: true
     }
@@ -2533,13 +2789,112 @@ const createCategorie = async () => {
     })
     
     success('Catégorie créée avec succès!')
-    showCategoriesModal.value = false
-    newCategorie.value = { nom: '', description: '', icone: '', couleur: '#3B82F6', parent: undefined }
-    loadData() // Recharger les données
+    // Ne pas fermer la popup, juste vider le formulaire
+    newCategorie.value = { nom: '', description: '', icone: '', couleur: '#3B82F6' }
+    
+    // Invalider le cache et recharger uniquement les catégories (sans fermer la popup produit)
+    const nuxtApp = useNuxtApp()
+    if (nuxtApp.$invalidateCacheByPattern) {
+      nuxtApp.$invalidateCacheByPattern('/api/categories')
+      nuxtApp.$invalidateCacheByPattern('/api/produits')
+    }
+    // Recharger uniquement les catégories sans fermer la popup produit
+    await fetchCategories()
   } catch (err: any) {
     console.error('Erreur création catégorie:', err)
     console.error('Détails de l\'erreur:', err.data)
     error('Erreur lors de la création de la catégorie: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+  }
+}
+
+// Fonctions pour éditer et supprimer les catégories
+const editCategorie = (categorie: any) => {
+  editingCategorie.value = { ...categorie }
+  showEditCategorieModal.value = true
+}
+
+const updateCategorie = async () => {
+  if (!editingCategorie.value) return
+  
+  try {
+    const token = process.client ? localStorage.getItem('access_token') : null
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    }
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    // Récupérer l'entreprise de l'utilisateur connecté
+    const entreprise = process.client ? localStorage.getItem('entreprise') : null
+    let entrepriseId = null
+    if (entreprise) {
+      try {
+        const entrepriseData = JSON.parse(entreprise)
+        entrepriseId = entrepriseData.id
+      } catch (e) {
+        console.error('Erreur parsing entreprise:', e)
+      }
+    }
+    
+    const categorieData = {
+      nom: editingCategorie.value.nom,
+      description: editingCategorie.value.description || '',
+      icone: editingCategorie.value.icone || '',
+      couleur: editingCategorie.value.couleur,
+      actif: editingCategorie.value.actif !== false,
+      ...(entrepriseId && { entreprise: entrepriseId })
+    }
+    
+    console.log('Données envoyées pour la modification de catégorie:', categorieData)
+    
+    await $fetch(`${API_BASE_URL}/api/categories/${editingCategorie.value.id}/`, {
+      method: 'PUT',
+      headers,
+      body: categorieData
+    })
+    
+    success('Catégorie modifiée avec succès!')
+    showEditCategorieModal.value = false
+    editingCategorie.value = null
+    
+    // Invalider le cache et recharger les données
+    const nuxtApp = useNuxtApp()
+    if (nuxtApp.$invalidateCacheByPattern) {
+      nuxtApp.$invalidateCacheByPattern('/api/categories')
+      nuxtApp.$invalidateCacheByPattern('/api/produits')
+    }
+    await loadData()
+  } catch (err: any) {
+    console.error('Erreur modification catégorie:', err)
+    error('Erreur lors de la modification de la catégorie: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+  }
+}
+
+const deleteCategorie = async (id: number) => {
+  if (!confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ? Cette action est irréversible.')) return
+  
+  try {
+    const token = process.client ? localStorage.getItem('access_token') : null
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    }
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    await $fetch(`${API_BASE_URL}/api/categories/${id}/`, {
+      method: 'DELETE',
+      headers
+    })
+    
+    success('Catégorie supprimée avec succès!')
+    loadData()
+  } catch (err: any) {
+    console.error('Erreur suppression catégorie:', err)
+    error('Erreur lors de la suppression de la catégorie: ' + (err.data?.message || err.message || 'Erreur inconnue'))
   }
 }
 
@@ -2595,13 +2950,116 @@ const createFournisseur = async () => {
     })
     
     success('Fournisseur créé avec succès!')
-    showFournisseursModal.value = false
+    // Ne pas fermer la popup, juste vider le formulaire
     newFournisseur.value = { nom: '', code_fournisseur: '', email: '', telephone: '', adresse: '', ville: '', pays: '', site_web: '', contact_principal: '', notes: '' }
-    loadData() // Recharger les données
+    
+    // Invalider le cache et recharger uniquement les fournisseurs (sans fermer la popup produit)
+    const nuxtApp = useNuxtApp()
+    if (nuxtApp.$invalidateCacheByPattern) {
+      nuxtApp.$invalidateCacheByPattern('/api/fournisseurs')
+      nuxtApp.$invalidateCacheByPattern('/api/produits')
+    }
+    // Recharger uniquement les fournisseurs sans fermer la popup produit
+    await fetchFournisseurs()
   } catch (err: any) {
     console.error('Erreur création fournisseur:', err)
     console.error('Détails de l\'erreur:', err.data)
     error('Erreur lors de la création du fournisseur: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+  }
+}
+
+// Fonctions pour éditer et supprimer les fournisseurs
+const editFournisseur = (fournisseur: any) => {
+  editingFournisseur.value = { ...fournisseur }
+  showEditFournisseurModal.value = true
+}
+
+const updateFournisseur = async () => {
+  if (!editingFournisseur.value) return
+  
+  try {
+    const token = process.client ? localStorage.getItem('access_token') : null
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    }
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    // Récupérer l'entreprise de l'utilisateur connecté
+    const entreprise = process.client ? localStorage.getItem('entreprise') : null
+    let entrepriseId = null
+    if (entreprise) {
+      try {
+        const entrepriseData = JSON.parse(entreprise)
+        entrepriseId = entrepriseData.id
+      } catch (e) {
+        console.error('Erreur parsing entreprise:', e)
+      }
+    }
+    
+    const fournisseurData = {
+      nom: editingFournisseur.value.nom,
+      code_fournisseur: editingFournisseur.value.code_fournisseur || `FOUR${Date.now()}`,
+      description: editingFournisseur.value.notes || editingFournisseur.value.description || '',
+      email: editingFournisseur.value.email || '',
+      telephone: editingFournisseur.value.telephone || '',
+      adresse: editingFournisseur.value.adresse || '',
+      ville: editingFournisseur.value.ville || '',
+      pays: editingFournisseur.value.pays || 'Cameroun',
+      actif: editingFournisseur.value.actif !== false,
+      ...(entrepriseId && { entreprise: entrepriseId })
+    }
+    
+    console.log('Données envoyées pour la modification de fournisseur:', fournisseurData)
+    
+    await $fetch(`${API_BASE_URL}/api/fournisseurs/${editingFournisseur.value.id}/`, {
+      method: 'PUT',
+      headers,
+      body: fournisseurData
+    })
+    
+    success('Fournisseur modifié avec succès!')
+    showEditFournisseurModal.value = false
+    editingFournisseur.value = null
+    
+    // Invalider le cache et recharger les données
+    const nuxtApp = useNuxtApp()
+    if (nuxtApp.$invalidateCacheByPattern) {
+      nuxtApp.$invalidateCacheByPattern('/api/fournisseurs')
+      nuxtApp.$invalidateCacheByPattern('/api/produits')
+    }
+    await loadData()
+  } catch (err: any) {
+    console.error('Erreur modification fournisseur:', err)
+    error('Erreur lors de la modification du fournisseur: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+  }
+}
+
+const deleteFournisseur = async (id: number) => {
+  if (!confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur ? Cette action est irréversible.')) return
+  
+  try {
+    const token = process.client ? localStorage.getItem('access_token') : null
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    }
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    await $fetch(`${API_BASE_URL}/api/fournisseurs/${id}/`, {
+      method: 'DELETE',
+      headers
+    })
+    
+    success('Fournisseur supprimé avec succès!')
+    loadData()
+  } catch (err: any) {
+    console.error('Erreur suppression fournisseur:', err)
+    error('Erreur lors de la suppression du fournisseur: ' + (err.data?.message || err.message || 'Erreur inconnue'))
   }
 }
 

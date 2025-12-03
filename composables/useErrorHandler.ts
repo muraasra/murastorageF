@@ -1,13 +1,16 @@
 // Composable pour gérer et personnaliser les erreurs API
 export const useErrorHandler = () => {
   
-  // Messages d'erreur personnalisés
+  // Messages d'erreur personnalisés (messages propres pour utilisateurs finaux)
   const errorMessages: Record<string, string> = {
     // Erreurs d'authentification
-    '401': 'Votre session a expiré. Veuillez vous reconnecter.',
-    '403': 'Vous n\'avez pas l\'autorisation d\'effectuer cette action.',
-    '404': 'La ressource demandée est introuvable.',
-    '500': 'Une erreur serveur est survenue. Veuillez réessayer plus tard.',
+    '400': 'Requête invalide.',
+    '401': 'Veuillez vous connecter.',
+    '403': 'Vous n\'avez pas les permissions nécessaires pour cette action.',
+    '404': 'Ressource introuvable.',
+    '500': 'Erreur interne, veuillez réessayer.',
+    '502': 'Service temporairement indisponible. Veuillez réessayer plus tard.',
+    '503': 'Service temporairement indisponible. Veuillez réessayer plus tard.',
     
     // Erreurs de validation
     'validation_error': 'Les données fournies ne sont pas valides.',
@@ -39,19 +42,25 @@ export const useErrorHandler = () => {
       // Supprimer les URLs et chemins de fichiers
       let message = error.message
       
-      // Supprimer les URLs
-      message = message.replace(/https?:\/\/[^\s]+/g, '[URL]')
+      // Supprimer les URLs complètes (http://, https://)
+      message = message.replace(/https?:\/\/[^\s\)]+/g, '')
       
-      // Supprimer les chemins de fichiers
-      message = message.replace(/[a-zA-Z]:\\?[^\s]+|[\/][a-zA-Z0-9_\.\/-]+/g, '[Fichier]')
+      // Supprimer les chemins de fichiers (Windows et Unix)
+      message = message.replace(/[a-zA-Z]:\\?[^\s\)]+|[\/][a-zA-Z0-9_\.\/-]+/g, '')
       
-      // Supprimer les numéros de ligne
-      message = message.replace(/line \d+|:\d+:/g, '')
+      // Supprimer les numéros de ligne et références techniques
+      message = message.replace(/line \d+|:\d+:|@\d+|#\d+/g, '')
       
-      // Supprimer les stack traces
+      // Supprimer les stack traces complètes
       if (message.includes('at ')) {
         message = message.split('at ')[0].trim()
       }
+      
+      // Supprimer les références à des fichiers techniques
+      message = message.replace(/\.(vue|ts|js|py|html):\d+/g, '')
+      
+      // Nettoyer les espaces multiples
+      message = message.replace(/\s+/g, ' ').trim()
       
       return message
     }

@@ -13,9 +13,17 @@ import { Body } from "#components";
 import { boolean } from "zod";
 import { useAuthStore } from '@/stores/auth'
 import { API_BASE_URL } from '@/constants'
+import { useSeo } from '@/composables/useSeo'
 // Corriger l'import de jsPDF
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+
+// Page privée - Noindex
+useSeo({
+  title: 'Facturation - Mura Storage',
+  description: 'Gestion de facturation et commandes clients',
+  noindex: true
+});
 
 const auth = useAuthStore()
 const { error, success } = useNotification();
@@ -348,12 +356,31 @@ const fetchUserAndBoutiqueData = async () => {
 
 // Récupération des produits depuis l'API avec stock par entrepôt
 const products = ref<Product[]>([]);
-const fetchProducts = async () => {
+const fetchProducts = async (forceReload: boolean = false) => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null;
     
+    // Invalider le cache si on force le rechargement
+    if (forceReload && process.client) {
+      const nuxtApp = useNuxtApp();
+      if (nuxtApp.$invalidateCacheByPattern) {
+        nuxtApp.$invalidateCacheByPattern('/api/produits');
+        nuxtApp.$invalidateCacheByPattern('/api/stocks');
+        console.log('[fetchProducts] Cache invalidé pour forcer le rechargement');
+      }
+    }
+    
     // Récupérer les produits de l'entreprise avec leurs stocks
-    const data = await $fetch(`${API_BASE_URL}/api/produits/`, {
+    // Ajouter un timestamp pour éviter le cache si forceReload
+    const timestamp = forceReload ? `?t=${Date.now()}` : '';
+    const produitsUrl = `${API_BASE_URL}/api/produits/${timestamp}`;
+    console.log('[fetchProducts] URL produits:', produitsUrl, 'forceReload:', forceReload);
+    
+    // Vérifier que l'URL est correcte
+    if (forceReload && !produitsUrl.includes('?t=')) {
+      console.warn('[fetchProducts] ATTENTION: Timestamp non ajouté correctement à l\'URL');
+    }
+    const data = await $fetch(produitsUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -368,7 +395,10 @@ const fetchProducts = async () => {
       return;
     }
 
-    const stocksData = await $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueId}`, {
+    // Ajouter un timestamp pour éviter le cache si forceReload
+    const stocksTimestamp = forceReload ? `&t=${Date.now()}` : '';
+    const stocksUrl = `${API_BASE_URL}/api/stocks/?entrepot=${boutiqueId}${stocksTimestamp}`;
+    const stocksData = await $fetch(stocksUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -406,6 +436,13 @@ const fetchProducts = async () => {
       : [];
 
     console.log(`✅ ${products.value.length} produits avec stock disponible chargés`);
+    if (forceReload) {
+      console.log('[fetchProducts] Stocks mis à jour après rechargement forcé');
+      // Afficher quelques exemples de stocks pour vérification
+      if (products.value.length > 0) {
+        console.log('[fetchProducts] Exemples de stocks:', products.value.slice(0, 3).map(p => ({ nom: p.nom, stock: p.quantite })));
+      }
+    }
 
   } catch (err) {
     console.error("Erreur lors de la récupération des produits:", err);
@@ -424,7 +461,24 @@ const fetchClients = async () => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null;
     
-    const data = await $fetch<Client[]>(`${API_BASE_URL}/api/clients/`, {
+    // Récupérer l'entreprise de l'utilisateur connecté
+    const entreprise = process.client ? localStorage.getItem('entreprise') : null;
+    let entrepriseId = null;
+    if (entreprise) {
+      try {
+        const entrepriseData = JSON.parse(entreprise);
+        entrepriseId = entrepriseData.id;
+      } catch (e) {
+        console.error('Erreur parsing entreprise:', e);
+      }
+    }
+    
+    // Filtrer les clients par entreprise
+    const url = entrepriseId 
+      ? `${API_BASE_URL}/api/clients/?entreprise=${entrepriseId}`
+      : `${API_BASE_URL}/api/clients/`;
+    
+    const data = await $fetch<Client[]>(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -434,7 +488,7 @@ const fetchClients = async () => {
     
     clients.value = data;
     allClients.value = data; // Stocker tous les clients pour la recherche locale
-    console.log('Clients récupérés:', data);
+    console.log('Clients récupérés (filtrés par entreprise):', data);
   } catch (err) {
     console.error("Erreur lors de la récupération des clients:", err);
   }
@@ -473,7 +527,24 @@ const searchClientByPhone = async (phone: string) => {
     isSearchingClient.value = true;
     const token = process.client ? localStorage.getItem('access_token') : null;
     
-    const data = await $fetch<Client[]>(`${API_BASE_URL}/api/clients/search_by_phone/?phone=${phone}`, {
+    // Récupérer l'entreprise de l'utilisateur connecté
+    const entreprise = process.client ? localStorage.getItem('entreprise') : null;
+    let entrepriseId = null;
+    if (entreprise) {
+      try {
+        const entrepriseData = JSON.parse(entreprise);
+        entrepriseId = entrepriseData.id;
+      } catch (e) {
+        console.error('Erreur parsing entreprise:', e);
+      }
+    }
+    
+    // Filtrer par entreprise dans la recherche par téléphone
+    const url = entrepriseId 
+      ? `${API_BASE_URL}/api/clients/search_by_phone/?phone=${phone}&entreprise=${entrepriseId}`
+      : `${API_BASE_URL}/api/clients/search_by_phone/?phone=${phone}`;
+    
+    const data = await $fetch<Client[]>(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -482,7 +553,7 @@ const searchClientByPhone = async (phone: string) => {
     });
     
     clients.value = data;
-    console.log('Clients trouvés:', data);
+    console.log('Clients trouvés (filtrés par entreprise):', data);
   } catch (err) {
     console.error("Erreur lors de la recherche de clients:", err);
   } finally {
@@ -800,8 +871,9 @@ const selectProduct = async (product: Product) => {
       return;
     }
     
-    // Vérifier le stock disponible dans l'entrepôt
-    const stockData = await $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueId}&produit=${product.id}`, {
+    // Vérifier le stock disponible dans l'entrepôt (forcer le rechargement sans cache)
+    const timestamp = `&t=${Date.now()}`;
+    const stockData = await $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueId}&produit=${product.id}${timestamp}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -814,6 +886,13 @@ const selectProduct = async (product: Product) => {
     if (stockDisponible < 1) {
       alert(`Stock insuffisant pour ${product.nom}. Stock disponible: ${stockDisponible}`);
       return;
+    }
+    
+    // Mettre à jour le stock dans la liste locale des produits
+    const productIndex = products.value.findIndex(p => p.id === product.id);
+    if (productIndex !== -1) {
+      products.value[productIndex].quantite = stockDisponible;
+      console.log(`[selectProduct] Stock mis à jour pour ${product.nom}: ${stockDisponible}`);
     }
 
     invoice.value.items.push({
@@ -1023,37 +1102,40 @@ const generatePDF = async () => {
     
     let currentY = 5;
     
-    // Logo de l'entreprise (si disponible)
+    // Logo de l'entreprise (si disponible) - chargement synchrone pour éviter les problèmes
     try {
-      // Charger le logo depuis le dossier public
       const logoUrl = '/img/logo.jpg';
-      
-      // Utiliser fetch pour charger l'image
       const response = await fetch(logoUrl);
       if (response.ok) {
         const blob = await response.blob();
         const reader = new FileReader();
         
-        reader.onload = () => {
-          const img = new Image();
-          img.onload = () => {
-            // Le logo existe, l'ajouter au PDF
-            const logoWidth = 12; // Largeur du logo en mm (réduite)
-            const logoHeight = 8; // Hauteur du logo en mm (réduite)
-            const logoX = (pageWidth - logoWidth) / 2; // Centrer le logo
-            
-            // Ajouter le logo au PDF
-            doc.addImage(img, 'JPEG', logoX, currentY, logoWidth, logoHeight);
-            currentY += logoHeight + 2; // Espace réduit après le logo
+        // Attendre que le logo soit chargé avant de continuer
+        await new Promise<void>((resolve, reject) => {
+          reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+              try {
+                const logoWidth = 12;
+                const logoHeight = 8;
+                const logoX = (pageWidth - logoWidth) / 2;
+                doc.addImage(img, 'JPEG', logoX, currentY, logoWidth, logoHeight);
+                currentY += logoHeight + 2;
+                resolve();
+              } catch (err) {
+                console.log('Erreur ajout logo au PDF:', err);
+                resolve(); // Continuer même si le logo échoue
+              }
+            };
+            img.onerror = () => resolve(); // Continuer sans logo
+            img.src = reader.result as string;
           };
-          img.src = reader.result as string;
-        };
-        
-        reader.readAsDataURL(blob);
+          reader.onerror = () => resolve(); // Continuer sans logo
+          reader.readAsDataURL(blob);
+        });
       } else {
         console.log('Logo non disponible, génération sans logo');
       }
-      
     } catch (logoError) {
       console.log('Erreur lors du chargement du logo:', logoError);
       // Continuer sans logo
@@ -1069,10 +1151,42 @@ const generatePDF = async () => {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     
-    // Nom de l'entreprise
-    const entrepriseNom = boutique.value?.entreprise?.nom || user.value?.entreprise?.nom || 'Entreprise';
-    centerText(entrepriseNom, currentY, 9);
-    currentY += 4;
+    // Nom de l'entreprise - récupérer depuis plusieurs sources
+    let entrepriseNom = '';
+    
+    // 1. Essayer depuis la boutique
+    if (boutique.value?.entreprise?.nom) {
+      entrepriseNom = boutique.value.entreprise.nom;
+    }
+    // 2. Essayer depuis l'utilisateur
+    else if (user.value?.entreprise?.nom) {
+      entrepriseNom = user.value.entreprise.nom;
+    }
+    // 3. Essayer depuis localStorage
+    else if (process.client) {
+      try {
+        const entrepriseData = localStorage.getItem('entreprise');
+        if (entrepriseData) {
+          const entreprise = JSON.parse(entrepriseData);
+          if (entreprise?.nom) {
+            entrepriseNom = entreprise.nom;
+          }
+        }
+      } catch (e) {
+        console.error('Erreur parsing entreprise depuis localStorage:', e);
+      }
+    }
+    
+    // Si toujours pas de nom, utiliser le nom de la boutique comme fallback
+    if (!entrepriseNom && boutique.value?.nom) {
+      entrepriseNom = boutique.value.nom;
+    }
+    
+    // Afficher le nom de l'entreprise (ne jamais afficher "Entreprise" par défaut)
+    if (entrepriseNom) {
+      centerText(entrepriseNom, currentY, 9);
+      currentY += 4;
+    }
     
     // Construction de l'adresse complète
     const adresseParts = [];
@@ -1170,18 +1284,24 @@ const generatePDF = async () => {
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     
-    // En-tête du tableau optimisé
+    // En-tête du tableau optimisé - colonnes décalées pour plus d'espace référence
     doc.text('REF', margin, currentY);
-    doc.text('PRODUIT', margin + 6, currentY);
-    doc.text('Q', margin + 20, currentY);
-    doc.text('PRIX', margin + 24, currentY);
-    doc.text('TOTAL', margin + 40, currentY);
+    doc.text('PRODUIT', margin + 10, currentY);
+    doc.text('Q', margin + 25, currentY);
+    doc.text('PRIX', margin + 30, currentY);
+    doc.text('TOTAL', margin + 45, currentY);
     currentY += 3;
     
     drawLine(currentY);
     currentY += 3;
     
-    // Produits
+    // Produits - Vérifier que les items existent
+    if (!invoice.value.items || invoice.value.items.length === 0) {
+      console.error('Aucun produit dans la facture');
+      error('Aucun produit dans la facture. Impossible de générer le PDF.');
+      return false;
+    }
+    
     doc.setFont('helvetica', 'normal');
     invoice.value.items.forEach(item => {
       // Nom du produit (tronqué si trop long)
@@ -1192,14 +1312,16 @@ const generatePDF = async () => {
       const quantity = Number(item.quantity) || 0;
       const total = price * quantity;
       
-      // Référence (tronquée si nécessaire)
-      const ref = (item.reference || 'N/A').length > 4 ? (item.reference || 'N/A').substring(0, 4) : (item.reference || 'N/A');
+      // Référence (plus d'espace, moins de troncature)
+      const ref = (item.reference || 'N/A').length > 8 ? (item.reference || 'N/A').substring(0, 8) : (item.reference || 'N/A');
       
+      // Ajuster les positions: plus d'espace pour référence, colonnes décalées
+      doc.setFontSize(7); // Réduire la taille de police
       doc.text(ref, margin, currentY);
-      doc.text(productName, margin + 6, currentY);
-      doc.text(quantity.toString(), margin + 20, currentY);
-      doc.text(`${price.toFixed(0)}`, margin + 24, currentY);
-      doc.text(`${total.toFixed(0)}`, margin + 40, currentY);
+      doc.text(productName, margin + 10, currentY);
+      doc.text(quantity.toString(), margin + 25, currentY);
+      doc.text(`${price.toFixed(0)}`, margin + 30, currentY);
+      doc.text(`${total.toFixed(0)}`, margin + 45, currentY);
       currentY += 3;
     });
     
@@ -1499,43 +1621,127 @@ const submitInvoice = async () => {
       }
     }
     
+    // S'assurer que les valeurs numériques sont valides
+    const totalValue = Number(total.value) || 0;
+    const resteValue = Number(reste.value) || 0;
+    
+    // Validation des valeurs
+    if (isNaN(totalValue) || totalValue < 0) {
+      error('Le total de la facture est invalide');
+      return;
+    }
+    
+    if (isNaN(resteValue) || resteValue < 0) {
+      error('Le reste à payer est invalide');
+      return;
+    }
+    
+    // Déterminer le statut selon le reste
+    let statusValue = 'En attente';
+    if (resteValue === 0) {
+      statusValue = 'Payé';
+    } else if (resteValue < totalValue) {
+      statusValue = 'Partiellement payé';
+    }
+    
+    // Vérifier que la boutique et l'utilisateur sont valides
+    if (!boutique.value?.id) {
+      error('Boutique invalide. Veuillez vous reconnecter.');
+      return;
+    }
+    
+    if (!userIdValue) {
+      error('Utilisateur invalide. Veuillez vous reconnecter.');
+      return;
+    }
+    
+    // Vérifier que client ou partenaire est défini selon le type
+    if (invoice.value.recipientType === 'client' && !clientId) {
+      error('Client requis pour une facture client');
+      return;
+    }
+    
+    if (invoice.value.recipientType === 'partenaire' && !partenaireId) {
+      error('Partenaire requis pour une facture partenaire');
+      return;
+    }
+    
     const factureData = {
       type: invoice.value.recipientType,
-      total: Number(total.value),
-      reste: Number(reste.value),
-      status: reste.value > 0 ? 'En attente' : 'Payé',
-      // Le numéro sera généré automatiquement par le backend
-      boutique: boutique.value.id, // Utiliser l'ID de la boutique récupéré
+      total: totalValue,
+      reste: resteValue,
+      status: statusValue,
+      boutique: boutique.value.id,
       created_by: userIdValue,
-      // Ajouter les IDs du client ou partenaire
-      ...(clientId && { client: clientId }),
-      ...(partenaireId && { partenaire: partenaireId })
+      // Ajouter les IDs du client ou partenaire selon le type
+      ...(invoice.value.recipientType === 'client' && clientId && { client: clientId }),
+      ...(invoice.value.recipientType === 'partenaire' && partenaireId && { partenaire: partenaireId })
     };
 
     console.log('Données de facture envoyées:', factureData);
+    console.log('Validation - Boutique ID:', boutique.value.id);
+    console.log('Validation - User ID:', userIdValue);
+    console.log('Validation - Client ID:', clientId);
+    console.log('Validation - Partenaire ID:', partenaireId);
 
-    const facture = await $fetch<FactureResponse>(`${API_BASE_URL}/api/factures/`, {
+    let facture: FactureResponse | null = null;
+    
+    try {
+      facture = await $fetch<FactureResponse>(`${API_BASE_URL}/api/factures/`, {
         method: 'POST',
         body: factureData,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
-      }
-    }).catch(async (err) => {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        }
+      });
+    } catch (err: any) {
       console.error('Erreur détaillée:', err);
-      if (err.response) {
-        try {
-          const errorData = await err.response.json();
-          console.error('Détails de l\'erreur du serveur:', errorData);
-          error(`Erreur serveur: ${errorData.detail || errorData.message || 'Données invalides'}`);
-        } catch (parseErr) {
-          const errorText = await err.response.text();
-          console.error('Réponse du serveur (texte):', errorText);
-          error(`Erreur serveur: ${errorText}`);
+      console.error('Type d\'erreur:', typeof err);
+      console.error('Erreur data:', err.data);
+      console.error('Erreur message:', err.message);
+      console.error('Erreur status:', err.status || err.statusCode);
+      console.error('Erreur response:', err.response);
+      
+      // Gérer l'erreur - $fetch met généralement les données dans err.data
+      let errorMessage = 'Erreur lors de la création de la facture';
+      let errorData: any = null;
+      
+      // Avec $fetch de Nuxt, les erreurs sont généralement dans err.data
+      if (err.data) {
+        errorData = err.data;
+        console.error('Détails de l\'erreur du serveur (err.data):', errorData);
+      } else if (err.response?.data) {
+        errorData = err.response.data;
+        console.error('Détails de l\'erreur du serveur (err.response.data):', errorData);
+      } else if (err.message) {
+        errorMessage = `Erreur: ${err.message}`;
+      }
+      
+      // Extraire le message d'erreur
+      if (errorData) {
+        if (typeof errorData === 'string') {
+          errorMessage = `Erreur serveur: ${errorData}`;
+        } else if (errorData.detail) {
+          errorMessage = `Erreur serveur: ${errorData.detail}`;
+        } else if (errorData.message) {
+          errorMessage = `Erreur serveur: ${errorData.message}`;
+        } else if (errorData.non_field_errors) {
+          errorMessage = `Erreur: ${Array.isArray(errorData.non_field_errors) ? errorData.non_field_errors.join(', ') : errorData.non_field_errors}`;
+        } else {
+          // Afficher toutes les erreurs de validation
+          const validationErrors = Object.entries(errorData)
+            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+            .join('; ');
+          errorMessage = `Erreur de validation: ${validationErrors || JSON.stringify(errorData)}`;
         }
       }
-      throw err;
-    });
+      
+      error(errorMessage);
+      console.error('Données envoyées qui ont causé l\'erreur:', factureData);
+      isSubmitting.value = false; // Réinitialiser l'état de soumission
+      return; // Arrêter l'exécution en cas d'erreur
+    }
 
     if (!facture?.id) {
       error("Erreur lors de la création de la facture");
@@ -1546,6 +1752,25 @@ const submitInvoice = async () => {
     // Mettre à jour le numéro de facture avec celui retourné par le backend
     invoice.value.number = facture.numero;
     console.log('Numéro de facture généré:', facture.numero);
+    
+    // Annuler le cache après création de facture
+    if (process.client) {
+      const nuxtApp = useNuxtApp()
+      if (nuxtApp.$invalidateCacheByPattern) {
+        nuxtApp.$invalidateCacheByPattern('/api/factures')
+        nuxtApp.$invalidateCacheByPattern('/api/commandes-client')
+        nuxtApp.$invalidateCacheByPattern('/api/commandes-partenaire')
+        nuxtApp.$invalidateCacheByPattern('/api/stocks')
+        nuxtApp.$invalidateCacheByPattern('/api/produits')
+        nuxtApp.$invalidateCacheByPattern('/api/mouvements-stock')
+        console.log('[Cache] Cache invalidé après création de facture')
+      }
+      // Invalider aussi via useApi si disponible
+      try {
+        const { useApi } = await import('@/stores/useApi')
+        // useApi invalide automatiquement lors des appels POST/PUT/DELETE
+      } catch {}
+    }
 
     if (invoice.value.recipientType === 'client') {
       const endpoint = `${API_BASE_URL}/api/commandes-client/`;
@@ -1623,13 +1848,24 @@ const submitInvoice = async () => {
           console.error(`Erreur pour l'article ${item.id}:`, err);
           console.error('Données envoyées:', commandeData);
           
-          if (err.response) {
+          // Gérer l'erreur sans lire le body deux fois
+          if (err.data) {
+            console.error('Détails de l\'erreur du serveur (err.data):', err.data);
+          } else if (err.response?.data) {
+            console.error('Détails de l\'erreur du serveur (err.response.data):', err.response.data);
+          } else if (err.response) {
             try {
-              const errorData = await err.response.json();
-              console.error('Détails de l\'erreur du serveur:', errorData);
-            } catch (parseErr) {
-              const errorText = await err.response.text();
-              console.error('Réponse du serveur (texte):', errorText);
+              // Lire le body une seule fois
+              const contentType = err.response.headers?.get('content-type') || '';
+              if (contentType.includes('application/json')) {
+                const errorData = await err.response.json();
+                console.error('Détails de l\'erreur du serveur:', errorData);
+              } else {
+                const errorText = await err.response.text();
+                console.error('Réponse du serveur (texte):', errorText);
+              }
+            } catch (readErr) {
+              console.error('Impossible de lire la réponse d\'erreur:', readErr);
             }
           }
           
@@ -1649,7 +1885,25 @@ const submitInvoice = async () => {
         error("Erreur lors de la génération du PDF");
       }
       
-        // Réinitialiser le formulaire
+      // IMPORTANT: Recharger les produits pour mettre à jour les stocks (forcer le rechargement sans cache)
+      console.log('[Facture] Rechargement des produits après création de facture...');
+      try {
+        // Attendre un peu pour que le backend mette à jour les stocks
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await fetchProducts(true); // true = forceReload pour éviter le cache
+        console.log('[Facture] Produits rechargés avec succès, stocks mis à jour');
+        
+        // Forcer la réactivité de Vue en recréant la liste
+        const updatedProducts = [...products.value];
+        products.value = [];
+        await nextTick();
+        products.value = updatedProducts;
+        console.log('[Facture] Liste des produits mise à jour pour la réactivité');
+      } catch (err) {
+        console.error('[Facture] Erreur lors du rechargement des produits:', err);
+      }
+      
+      // Réinitialiser le formulaire
       invoice.value = {
         number: generateInvoiceNumber(),
         date: new Date().toISOString().split("T")[0],
@@ -1659,6 +1913,22 @@ const submitInvoice = async () => {
         items: [],
         montantVerse: 0,
       };
+      
+      // Réinitialiser l'état de soumission
+      isSubmitting.value = false;
+      
+      // Actualiser la page après un court délai pour s'assurer que tout est à jour
+      if (process.client) {
+        console.log('[Facture] Planification du rechargement de la page dans 1.5 secondes...');
+        setTimeout(() => {
+          console.log('[Facture] Rechargement de la page maintenant...');
+          // Utiliser window.location.href pour forcer un rechargement complet
+          window.location.href = window.location.href;
+        }, 1500); // Attendre 1.5 secondes pour que l'utilisateur voie le message de succès
+      }
+      } else {
+        // En cas d'échec, réinitialiser aussi
+        isSubmitting.value = false;
       }
 
     } else {
@@ -1743,13 +2013,24 @@ const submitInvoice = async () => {
           console.error(`Erreur pour l'article ${item.id}:`, err);
           console.error('Données envoyées:', commandeData);
           
-          if (err.response) {
+          // Gérer l'erreur sans lire le body deux fois
+          if (err.data) {
+            console.error('Détails de l\'erreur du serveur (err.data):', err.data);
+          } else if (err.response?.data) {
+            console.error('Détails de l\'erreur du serveur (err.response.data):', err.response.data);
+          } else if (err.response) {
             try {
-              const errorData = await err.response.json();
-              console.error('Détails de l\'erreur du serveur:', errorData);
-            } catch (parseErr) {
-              const errorText = await err.response.text();
-              console.error('Réponse du serveur (texte):', errorText);
+              // Lire le body une seule fois
+              const contentType = err.response.headers?.get('content-type') || '';
+              if (contentType.includes('application/json')) {
+                const errorData = await err.response.json();
+                console.error('Détails de l\'erreur du serveur:', errorData);
+              } else {
+                const errorText = await err.response.text();
+                console.error('Réponse du serveur (texte):', errorText);
+              }
+            } catch (readErr) {
+              console.error('Impossible de lire la réponse d\'erreur:', readErr);
             }
           }
           
@@ -1769,6 +2050,24 @@ const submitInvoice = async () => {
           error("Erreur lors de la génération du PDF");
         }
 
+        // IMPORTANT: Recharger les produits pour mettre à jour les stocks (forcer le rechargement sans cache)
+        console.log('[Facture] Rechargement des produits après création de facture partenaire...');
+        try {
+          // Attendre un peu pour que le backend mette à jour les stocks
+          await new Promise(resolve => setTimeout(resolve, 300));
+          await fetchProducts(true); // true = forceReload pour éviter le cache
+          console.log('[Facture] Produits rechargés avec succès, stocks mis à jour');
+          
+          // Forcer la réactivité de Vue en recréant la liste
+          const updatedProducts = [...products.value];
+          products.value = [];
+          await nextTick();
+          products.value = updatedProducts;
+          console.log('[Facture] Liste des produits mise à jour pour la réactivité');
+        } catch (err) {
+          console.error('[Facture] Erreur lors du rechargement des produits:', err);
+        }
+
         // Réinitialiser le formulaire
         invoice.value = {
           number: generateInvoiceNumber(),
@@ -1779,6 +2078,22 @@ const submitInvoice = async () => {
           items: [],
           montantVerse: 0,
         };
+        
+        // Réinitialiser l'état de soumission
+        isSubmitting.value = false;
+        
+        // Actualiser la page après un court délai pour s'assurer que tout est à jour
+        if (process.client) {
+          console.log('[Facture] Planification du rechargement de la page dans 1.5 secondes...');
+          setTimeout(() => {
+            console.log('[Facture] Rechargement de la page maintenant...');
+            // Utiliser window.location.href pour forcer un rechargement complet
+            window.location.href = window.location.href;
+          }, 1500); // Attendre 1.5 secondes pour que l'utilisateur voie le message de succès
+        }
+      } else {
+        // En cas d'échec, réinitialiser aussi
+        isSubmitting.value = false;
       }
     }
 
@@ -1970,21 +2285,43 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                   
                   <!-- Suggestions de clients trouvés -->
                   <div v-if="clients.length > 0 && (invoice.client.nom || invoice.client.telephone)" class="mt-3">
-                    <div class="text-sm text-gray-600 mb-2">Clients trouvés :</div>
-                    <div class="max-h-32 overflow-y-auto border border-gray-200 rounded-md">
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Clients trouvés :</div>
+                    <div class="max-h-32 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md">
                       <div 
                         v-for="client in clients.slice(0, 5)" 
                         :key="client.id"
                         @click="selectClient(client)"
-                        class="p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        class="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                       >
-                        <div class="font-medium">{{ client.nom_complet }}</div>
-                        <div class="text-sm text-gray-500">{{ client.telephone }}</div>
+                        <div class="font-medium text-gray-900 dark:text-white">{{ client.nom_complet }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ client.telephone }}</div>
                       </div>
                     </div>
                   </div>
                   
-                  <div class="mt-3 text-sm text-gray-600">
+                  <!-- Liste complète des clients de l'entreprise -->
+                  <div class="mt-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Liste des clients ({{ allClients.length }})</div>
+                      <UButton @click="fetchClients" variant="ghost" size="xs" icon="i-heroicons-arrow-path" />
+                    </div>
+                    <div v-if="allClients.length > 0" class="max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md">
+                      <div 
+                        v-for="client in allClients" 
+                        :key="client.id"
+                        @click="selectClient(client)"
+                        class="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                      >
+                        <div class="font-medium text-gray-900 dark:text-white">{{ client.nom }} {{ client.prenom }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ client.telephone }} <span v-if="client.email">• {{ client.email }}</span></div>
+                      </div>
+                    </div>
+                    <div v-else class="text-sm text-gray-500 dark:text-gray-400 p-2 text-center">
+                      Aucun client enregistré
+                    </div>
+                  </div>
+                  
+                  <div class="mt-3 text-sm text-gray-600 dark:text-gray-400">
                     <UIcon name="i-heroicons-information-circle" class="h-4 w-4 inline mr-1" />
                     Le client sera créé automatiquement lors de la validation de la facture
                   </div>

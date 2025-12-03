@@ -4,8 +4,16 @@ definePageMeta({
     layout: "accueil",
 })
 useSeoMeta({
-  title: 'FAQ - Mura Storage',
-  description: 'Questions fréquentes sur les offres, la sécurité, la facturation et l’essai gratuit de Mura Storage.'
+  title: 'FAQ Mura Storage - Questions Fréquentes sur la Gestion de Stock',
+  description: 'Trouvez les réponses aux questions fréquentes sur Mura Storage : essai gratuit, sécurité des données, tarification, facturation, fonctionnalités, support, conformité RGPD, gestion multi-entrepôts, codes-barres, inventaires.',
+  ogTitle: 'FAQ Mura Storage - Questions Fréquentes',
+  ogDescription: 'Réponses aux questions fréquentes sur Mura Storage : essai gratuit, sécurité, tarification, fonctionnalités, support.',
+  ogType: 'website',
+  ogUrl: 'https://murastorage.netlify.app/home/faq',
+  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  keywords: 'FAQ Mura Storage, questions fréquentes gestion stock, aide logiciel stock, FAQ gestion inventaire, questions Mura Storage, support FAQ, assistance utilisateur stock, guide utilisation stock',
+  robots: 'index, follow',
+  canonical: 'https://murastorage.netlify.app/home/faq'
 });
 
 const faqs = [

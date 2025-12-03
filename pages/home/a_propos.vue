@@ -2,6 +2,20 @@
 definePageMeta({
   layout: "accueil",
 });
+
+// Métadonnées SEO optimisées
+useSeoMeta({
+  title: 'À Propos de Mura Storage - Groupe Mura | Notre Mission et Vision',
+  description: 'Découvrez Mura Storage et Groupe Mura : notre mission, notre vision et notre engagement à révolutionner la gestion de stock pour les entreprises modernes. Solutions innovantes et fiables pour optimiser vos opérations.',
+  ogTitle: 'À Propos de Mura Storage - Groupe Mura',
+  ogDescription: 'Mura Storage par Groupe Mura : révolutionner la gestion de stock avec des solutions innovantes et fiables pour entreprises modernes.',
+  ogType: 'website',
+  ogUrl: 'https://murastorage.netlify.app/home/a_propos',
+  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  keywords: 'à propos Mura Storage, Groupe Mura, mission Mura Storage, vision gestion stock, histoire Mura Storage, équipe Groupe Mura, valeurs entreprise, innovation gestion stock, wilfried tayou',
+  robots: 'index, follow',
+  canonical: 'https://murastorage.netlify.app/home/a_propos'
+});
 </script>
 
 <template>

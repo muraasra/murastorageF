@@ -70,13 +70,6 @@ export const NAVIGATION_ITEMS = [
   ],
   [
     {
-      name: "Transfert",
-      link: "/transfert",
-      icon: "i-heroicons-arrows-right-left",
-    },
-  ],
-  [
-    {
       name: "Logout",
       link: "",
       icon: "i-heroicons-power",
@@ -139,13 +132,6 @@ export const NAVIGATION_ITEMS_ADMIN = [
       icon: "i-heroicons-clipboard-document-list",
     },
   ],
-  [
-    {
-      name: "Transfert",
-      link: "/transfert",
-      icon: "i-heroicons-arrows-right-left",
-    },
-  ],
   // [
   //   {
   //     name: "Guide",
@@ -190,18 +176,6 @@ export const NAVIGATION_ITEMS_SUPERADMIN = [
       icon: "i-heroicons-clipboard-document-check",
     },
   ],
-  [
-    {
-      name: "Utilisateurs",
-      link: "/utilisateurs",
-      icon: "i-heroicons-user",
-    },
-    {
-      name: "Journal",
-      link: "/journal",
-      icon: "i-heroicons-clipboard-document-list",
-    },
-  ],
   [ 
     {
       name: "Partenaires",
@@ -219,13 +193,6 @@ export const NAVIGATION_ITEMS_SUPERADMIN = [
       name: "Liste des factures",
       link: "/listes-factures",
       icon: "i-heroicons-clipboard-document-list",
-    },
-  ],
-  [
-    {
-      name: "Transfert",
-      link: "/transfert",
-      icon: "i-heroicons-arrows-right-left",
     },
   ],
   // [

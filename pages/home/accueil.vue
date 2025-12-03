@@ -5,26 +5,28 @@ definePageMeta({
 import Avis from "~/components/home/Avis.vue";
 import { useMuraTracking } from '@/composables/useMuraTracking'
 
-// Métadonnées SEO optimisées
-useSeoMeta({
-  title: 'Mura Storage - Logiciel de Gestion de Stock Professionnel',
-  ogTitle: 'Mura Storage - Logiciel de Gestion de Stock Professionnel',
-  description: 'Optimisez vos inventaires, suivez les mouvements et accélérez vos opérations avec Mura Storage. Essai gratuit 14 jours.',
-  ogDescription: 'Plateforme complète de gestion de stock propulsée par Groupe Mura, avec tarification flexible, sécurité RGPD et support 24/7.',
-  ogType: 'website',
-  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
-  twitterCard: 'summary_large_image',
-  keywords: 'gestion stock, inventaire, logiciel stock, Mura Storage, entreprise, optimisation, RGPD, gestion entrepôt , wilfried tayou',
-  author: 'Groupe Mura',
-  'google-site-verification': '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA'
+// Métadonnées SEO optimisées avec composable
+import { useSeo, createWebPageStructuredData, createWebSiteStructuredData } from '@/composables/useSeo'
+
+useSeo({
+  title: 'Mura Storage - Gestion Stock Multi-Entrepôts | Essai Gratuit',
+  description: 'Solution complète de gestion de stock, inventaire et facturation pour entreprises. Multi-entrepôts, codes-barres, alertes. Essai gratuit 14 jours. Sécurité RGPD, support 24/7.',
+  keywords: 'gestion de stock, logiciel stock, inventaire, facturation, gestion entrepôt, multi-entrepôts, codes-barres, transfert stock, alertes stock, Mura Storage, Groupe Mura, ERP stock, suivi stock, gestion inventaire, logiciel facturation, gestion produits, stock management, inventory management, warehouse management, point de vente, POS, Cameroun, Afrique, logiciel stock Cameroun, gestion stock Afrique',
+  canonical: 'https://murastorage.netlify.app/home/accueil',
+  structuredData: createWebPageStructuredData(
+    'Mura Storage - Gestion Stock Multi-Entrepôts',
+    'Solution complète de gestion de stock, inventaire et facturation pour entreprises',
+    'https://murastorage.netlify.app/home/accueil'
+  )
 });
 
-// Balise de vérification Google Search Console
+// Structured Data WebSite
+const websiteStructuredData = createWebSiteStructuredData()
 useHead({
-  meta: [
+  script: [
     {
-      name: 'google-site-verification',
-      content: '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA'
+      type: 'application/ld+json',
+      children: JSON.stringify(websiteStructuredData)
     }
   ]
 });

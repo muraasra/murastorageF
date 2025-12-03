@@ -2,6 +2,20 @@
 definePageMeta({
   layout: "accueil",
 })
+
+// Métadonnées SEO optimisées
+useSeoMeta({
+  title: 'Conditions Générales d\'Utilisation Mura Storage - CGU',
+  description: 'Conditions générales d\'utilisation (CGU) de Mura Storage : droits et obligations, utilisation du service, tarification, responsabilités, propriété intellectuelle, résiliation. Lisez nos conditions avant d\'utiliser notre plateforme de gestion de stock.',
+  ogTitle: 'Conditions Générales d\'Utilisation Mura Storage',
+  ogDescription: 'CGU complètes de Mura Storage. Droits, obligations, utilisation du service, tarification, responsabilités.',
+  ogType: 'website',
+  ogUrl: 'https://murastorage.netlify.app/home/conditions',
+  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  keywords: 'conditions générales utilisation Mura Storage, CGU Mura Storage, termes utilisation stock, conditions service gestion stock, contrat Mura Storage',
+  robots: 'index, follow',
+  canonical: 'https://murastorage.netlify.app/home/conditions'
+});
 </script>
 
 <template>

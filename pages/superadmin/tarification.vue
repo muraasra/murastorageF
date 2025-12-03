@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Header -->
       <div class="mb-8">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900">Tarification & Abonnement</h1>
-            <p class="mt-2 text-gray-600">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Tarification & Abonnement</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
               Gérez votre plan d'abonnement et surveillez votre utilisation
             </p>
           </div>
@@ -52,9 +52,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           <!-- Carte du plan actuel -->
-          <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-bold text-gray-900">Plan actuel</h2>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white">Plan actuel</h2>
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 {{ currentPlan ? (currentPlan.display_name || currentPlan.name) : 'Free' }}
               </span>
@@ -62,16 +62,16 @@
             
             <div class="space-y-4">
               <div class="flex justify-between items-baseline">
-                <span class="text-3xl font-bold text-gray-900">
+                <span class="text-3xl font-bold text-gray-900 dark:text-white">
                   {{ !currentPlan ? 'Gratuit' : (currentPlan.price === 0 ? 'Gratuit' : `${formatPrice ? formatPrice(currentPlan.price) : currentPlan.price} XAF`) }}
                 </span>
-                <span v-if="currentPlan && currentPlan.price > 0" class="text-gray-600">/mois</span>
+                <span v-if="currentPlan && currentPlan.price > 0" class="text-gray-600 dark:text-gray-400">/mois</span>
               </div>
               
               <!-- Informations d'abonnement -->
-              <div class="bg-gray-50 rounded-lg p-4">
-                <h3 class="text-sm font-medium text-gray-700 mb-2">Informations d'abonnement</h3>
-                <div class="space-y-2 text-sm text-gray-600">
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Informations d'abonnement</h3>
+                <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   <div class="flex justify-between">
                     <span>Statut:</span>
                     <span class="font-medium text-green-600">Actif</span>
@@ -88,9 +88,9 @@
               </div>
               
               <!-- Fonctionnalités -->
-              <div class="pt-4 border-t border-gray-200">
-                <h3 class="text-sm font-medium text-gray-700 mb-3">Fonctionnalités incluses</h3>
-                <div class="space-y-2 text-sm text-gray-600">
+              <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Fonctionnalités incluses</h3>
+                <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   <div v-for="feature in (currentPlan?.features || staticPlans.free.features)" :key="feature.name" class="flex items-center">
                     <svg 
                       class="w-4 h-4 mr-2" 
@@ -111,7 +111,7 @@
                         clip-rule="evenodd"
                       />
                     </svg>
-                    <span :class="feature.included ? 'text-gray-700' : 'text-red-500 line-through'">
+                    <span :class="feature.included ? 'text-gray-700 dark:text-gray-300' : 'text-red-500 line-through'">
                       {{ feature.name }}
                     </span>
                   </div>
@@ -132,9 +132,9 @@
           </div>
           
           <!-- Utilisation -->
-          <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-bold text-gray-900">Utilisation actuelle</h2>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white">Utilisation actuelle</h2>
               <div class="flex items-center space-x-2">
                 <div v-if="usageData.length > 0" class="flex items-center text-green-600">
                   <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -154,8 +154,8 @@
             <div v-if="displayUsageData.length" class="space-y-6">
               <div v-for="usage in displayUsageData" :key="usage.name" class="mb-4">
                 <div class="flex justify-between items-center mb-1">
-                  <span class="text-sm font-medium text-gray-700">{{ usage.name }}</span>
-                  <span class="text-sm text-gray-500">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ usage.name }}</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">
                     {{ usage.current }} / {{ usage.limit === 'unlimited' ? 'Illimité' : usage.limit }}
                     <span v-if="usage.isLimitReached" class="text-red-500 ml-1">(Limite atteinte)</span>
                   </span>
@@ -169,11 +169,11 @@
                 </div>
               </div>
             </div>
-            <div v-else class="text-sm text-gray-500">
+            <div v-else class="text-sm text-gray-500 dark:text-gray-400">
               <div class="mb-4">
                 <div class="flex justify-between items-center mb-1">
-                  <span class="text-sm font-medium text-gray-700">Utilisateurs</span>
-                  <span class="text-sm text-gray-500">Chargement...</span>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Utilisateurs</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Chargement...</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5">
                   <div class="h-2.5 rounded-full bg-gray-400 animate-pulse" style="width: 30%"></div>
@@ -211,29 +211,29 @@
         </div>
         
         <!-- Plans disponibles -->
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Plans disponibles</h2>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Plans disponibles</h2>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Plan Free -->
-            <div class="rounded-lg shadow-md p-6 flex flex-col border-2" :class="isCurrent(staticPlans.free) ? 'bg-gray-100 border-gray-400' : 'bg-white border-gray-200'">
+            <div class="rounded-lg shadow-md p-6 flex flex-col border-2" :class="isCurrent(staticPlans.free) ? 'bg-gray-100 dark:bg-gray-700 border-gray-400 dark:border-gray-600' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'">
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-2xl font-bold" :class="isCurrent(staticPlans.free) ? 'text-gray-600' : 'text-gray-900'">
+                <h3 class="text-2xl font-bold" :class="isCurrent(staticPlans.free) ? 'text-gray-600 dark:text-gray-300' : 'text-gray-900 dark:text-white'">
                   Free
                 </h3>
                 <span v-if="isCurrent(staticPlans.free)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
                   Plan actuel
                 </span>
               </div>
-              <p class="text-gray-600 mb-4">Accès limité aux fonctionnalités de base.</p>
+              <p class="text-gray-600 dark:text-gray-400 mb-4">Accès limité aux fonctionnalités de base.</p>
               <div class="mb-6">
-                <span class="text-4xl font-extrabold" :class="isCurrent(staticPlans.free) ? 'text-gray-600' : 'text-gray-900'">
+                <span class="text-4xl font-extrabold" :class="isCurrent(staticPlans.free) ? 'text-gray-600 dark:text-gray-300' : 'text-gray-900 dark:text-white'">
                   Gratuit
                 </span>
               </div>
-              <ul class="space-y-2 text-gray-700 flex-grow mb-6">
+              <ul class="space-y-2 text-gray-700 dark:text-gray-300 flex-grow mb-6">
                 <li class="flex items-center">
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
@@ -448,13 +448,37 @@
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
-                  Produits illimités
+                  500 produits
                 </li>
                 <li class="flex items-center">
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
-                  Factures illimitées
+                  2,000 factures/mois
+                </li>
+                <li class="flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  1 inventaire/mois
+                </li>
+                <li class="flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  100 transferts/mois
+                </li>
+                <li class="flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Codes-barres illimités
+                </li>
+                <li class="flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Alertes avancées
                 </li>
                 <li class="flex items-center">
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -484,7 +508,7 @@
                   <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
-                  Support Prioritaire
+                  Support prioritaire
                 </li>
               </ul>
               <button

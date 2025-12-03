@@ -194,10 +194,55 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
       }
     }
     
-    console.error('API Error:', e)
+    // Gestion des erreurs avec messages propres pour les utilisateurs
+    let userFriendlyMessage = 'Une erreur est survenue. Veuillez réessayer.';
+    let statusCode = e?.status || e?.statusCode || 500;
+    
+    // Messages d'erreur propres selon le code de statut
+    switch (statusCode) {
+      case 400:
+        userFriendlyMessage = 'Requête invalide. Veuillez vérifier les informations saisies.';
+        break;
+      case 401:
+        userFriendlyMessage = 'Veuillez vous connecter pour accéder à cette ressource.';
+        // Ne pas logger l'erreur 401 car elle est gérée par handleTokenRefresh
+        break;
+      case 403:
+        userFriendlyMessage = 'Vous n\'avez pas les permissions nécessaires pour cette action.';
+        break;
+      case 404:
+        userFriendlyMessage = 'Ressource introuvable.';
+        break;
+      case 500:
+        userFriendlyMessage = 'Erreur interne du serveur. Veuillez réessayer plus tard.';
+        break;
+      case 502:
+      case 503:
+        userFriendlyMessage = 'Service temporairement indisponible. Veuillez réessayer plus tard.';
+        break;
+      default:
+        // Pour les autres erreurs, utiliser un message générique
+        userFriendlyMessage = 'Une erreur est survenue. Veuillez réessayer.';
+    }
+    
+    // Logger l'erreur technique uniquement en développement
+    if (process.dev) {
+      console.error('[useApi] Erreur API:', {
+        url: fullUrl,
+        status: statusCode,
+        message: e?.message || 'Erreur inconnue',
+        error: e
+      });
+    }
+    
+    // Créer une erreur avec le message propre
+    const friendlyError = new Error(userFriendlyMessage);
+    (friendlyError as any).status = statusCode;
+    (friendlyError as any).originalError = e;
+    
     return { 
       data: ref(null),
-      error: ref(e instanceof Error ? e : new Error('Une erreur est survenue'))
+      error: ref(friendlyError)
     }
   }
 }

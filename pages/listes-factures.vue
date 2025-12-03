@@ -3,7 +3,11 @@
 import { ref, computed, onMounted } from 'vue';
 import table_factures from '@/components/table_factures.vue';
 import { useApi } from '../stores/useApi';
-import { jsPDF } from 'jspdf';
+import { API_BASE_URL } from '@/constants';
+
+// PDF génération désactivée - jsPDF non utilisé
+// declare const jsPDF: any;
+
 
 interface Facture {
   id: number;
@@ -23,6 +27,7 @@ interface ProduitFacture {
   nom: string;
   prix: number;
   quantite: number;
+  reference?: string;
 }
 
 interface Versement {
@@ -119,7 +124,14 @@ async function loadFactures() {
             nomClient = facture.client_nom || 'Client non spécifié';
           } else if (facture.type === 'partenaire') {
             // Pour les factures partenaire, utiliser partenaire_nom (qui vient de partenaire.__str__)
-            nomClient = facture.partenaire_nom || 'Partenaire non spécifié';
+            nomClient = facture.partenaire_nom || facture.partenaire?.nom || 'Partenaire non spécifié';
+            console.log('[loadFactures] Facture partenaire:', {
+              id: facture.id,
+              type: facture.type,
+              partenaire_nom: facture.partenaire_nom,
+              partenaire: facture.partenaire,
+              nomFinal: nomClient
+            });
           } else {
             // Fallback si le type n'est pas défini
             nomClient = 'Destinataire non spécifié';
@@ -157,7 +169,7 @@ async function loadFactures() {
 }
 
 // --- Voir une facture ---
-async function voirFacture(facture: Facture) {
+async function voirFacture(facture: Facture, forceReload: boolean = false) {
   factureSelectionnee.value = facture;
   showModal.value = true;
 
@@ -166,252 +178,150 @@ async function voirFacture(facture: Facture) {
       ? `/api/commandes-partenaire/?facture=${facture.id}`
       : `/api/commandes-client/?facture=${facture.id}`;
 
-  const { data, error } = await useApi(endpoint, { method: 'GET' });
-  if (error.value) {
-    console.error('Erreur lors du chargement des produits:', error.value);
+  try {
+    // Si forceReload, utiliser $fetch directement pour éviter le cache
+    if (forceReload) {
+      console.log('[voirFacture] Rechargement forcé avec $fetch direct');
+      const token = process.client ? localStorage.getItem('access_token') : null;
+      const timestamp = `&t=${Date.now()}`;
+      const fullUrl = `${API_BASE_URL}${endpoint}${timestamp}`;
+      
+      // Utiliser $fetch (auto-importé par Nuxt 3)
+      const response = await $fetch(fullUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        }
+      });
+      
+      console.log('[voirFacture] Réponse brute de l\'API:', response);
+      console.log('[voirFacture] Premier élément de la réponse:', Array.isArray(response) ? response[0] : null);
+      
+      produitsFactures.value = Array.isArray(response)
+        ? response.map((cmd: any) => {
+            // Essayer plusieurs façons de récupérer le nom du produit
+            let nomProduit = 'Produit inconnu';
+            
+            // Priorité 1: produit_nom du serializer
+            if (cmd.produit_nom && cmd.produit_nom !== 'Produit inconnu') {
+              nomProduit = cmd.produit_nom;
+            }
+            // Priorité 2: produit est un objet avec nom
+            else if (cmd.produit && typeof cmd.produit === 'object' && cmd.produit.nom) {
+              nomProduit = cmd.produit.nom;
+            }
+            // Priorité 3: produit est une string (nom direct)
+            else if (typeof cmd.produit === 'string' && cmd.produit.length > 0) {
+              nomProduit = cmd.produit;
+            }
+            // Priorité 4: Si produit est un nombre (ID), on doit faire une requête supplémentaire
+            else if (typeof cmd.produit === 'number') {
+              // Ne pas afficher l'ID, mais plutôt un message d'erreur
+              nomProduit = 'Nom du produit non disponible';
+              console.warn('[voirFacture] Produit ID trouvé sans nom:', cmd.produit, 'Commande complète:', cmd);
+            }
+            
+            console.log('[voirFacture] Commande mappée:', {
+              cmd,
+              nomProduit,
+              produit_nom: cmd.produit_nom,
+              produit: cmd.produit,
+              type_produit: typeof cmd.produit
+            });
+            
+            return {
+              nom: nomProduit,
+              prix: cmd.prix_unitaire_fcfa ?? cmd.prix ?? 0,
+              quantite: cmd.quantite ?? 0,
+              reference: cmd.produit_reference || (cmd.produit?.reference) || ''
+            };
+          })
+        : [];
+      
+      console.log('[voirFacture] Produits mappés finaux:', produitsFactures.value);
+    } else {
+      // Utiliser useApi normalement avec cache
+      const options: any = { method: 'GET' };
+      const { data, error } = await useApi(endpoint, options);
+      if (error.value) {
+        console.error('Erreur lors du chargement des produits:', error.value);
+        produitsFactures.value = [];
+        return;
+      }
+      console.log('[voirFacture] Données brutes de useApi:', data.value);
+      console.log('[voirFacture] Premier élément de useApi:', Array.isArray(data.value) ? data.value[0] : null);
+      
+      produitsFactures.value = Array.isArray(data.value)
+        ? data.value.map((cmd: any) => {
+            // Essayer plusieurs façons de récupérer le nom du produit
+            let nomProduit = 'Produit inconnu';
+            
+            // Priorité 1: produit_nom du serializer
+            if (cmd.produit_nom && cmd.produit_nom !== 'Produit inconnu') {
+              nomProduit = cmd.produit_nom;
+            }
+            // Priorité 2: produit est un objet avec nom
+            else if (cmd.produit && typeof cmd.produit === 'object' && cmd.produit.nom) {
+              nomProduit = cmd.produit.nom;
+            }
+            // Priorité 3: produit est une string (nom direct)
+            else if (typeof cmd.produit === 'string' && cmd.produit.length > 0) {
+              nomProduit = cmd.produit;
+            }
+            // Priorité 4: Si produit est un nombre (ID), on doit faire une requête supplémentaire
+            else if (typeof cmd.produit === 'number') {
+              // Ne pas afficher l'ID, mais plutôt un message d'erreur
+              nomProduit = 'Nom du produit non disponible';
+              console.warn('[voirFacture] Produit ID trouvé sans nom:', cmd.produit, 'Commande complète:', cmd);
+            }
+            
+            console.log('[voirFacture] Commande mappée:', {
+              cmd,
+              nomProduit,
+              produit_nom: cmd.produit_nom,
+              produit: cmd.produit,
+              type_produit: typeof cmd.produit
+            });
+            
+            return {
+              nom: nomProduit,
+              prix: cmd.prix_unitaire_fcfa ?? cmd.prix ?? 0,
+              quantite: cmd.quantite ?? 0,
+              reference: cmd.produit_reference || (cmd.produit?.reference) || ''
+            };
+          })
+        : [];
+      
+      console.log('[voirFacture] Produits mappés finaux:', produitsFactures.value);
+    }
+    
+    console.log(`[voirFacture] ${produitsFactures.value.length} produit(s) chargé(s)`);
+  } catch (err: any) {
+    console.error('[voirFacture] Erreur lors du chargement:', err);
     produitsFactures.value = [];
-    return;
   }
-  produitsFactures.value = Array.isArray(data.value)
-    ? data.value.map((cmd: any) => ({
-        nom: cmd.produit?.nom || cmd.produit || 'Produit inconnu',
-        prix: cmd.prix_unitaire_fcfa ?? cmd.prix ?? 0,
-        quantite: cmd.quantite ?? 0
-      }))
-    : [];
 }
 
-// --- Télécharger une facture (reproduction exacte de facturation.vue) ---
+// --- Wrapper pour télécharger une facture avec gestion d'erreurs ---
+async function handleTelechargerFacture(facture: Facture) {
+  // FONCTION COMPLÈTEMENT DÉSACTIVÉE - NE PAS APPELER telechargerFacture
+  console.warn('[PDF] Téléchargement désactivé par l\'utilisateur.');
+  errorMessage.value = 'Le téléchargement PDF est temporairement désactivé.';
+  // NE PAS APPELER telechargerFacture - retour immédiat
+  return Promise.resolve();
+}
+
+// --- Télécharger une facture (FONCTION DÉSACTIVÉE) ---
 async function telechargerFacture(facture: Facture) {
-  if (!facture) return;
-  
-  try {
-    // Créer un document PDF adapté aux imprimantes thermiques (58mm = ~164 points)
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: [58, 200] // Format 58mm de largeur, hauteur variable
-    });
-    
-    // Configuration pour les imprimantes thermiques
-    const pageWidth = 58;
-    const margin = 2;
-    const contentWidth = pageWidth - (margin * 2);
-    
-    // Fonction pour centrer le texte
-    const centerText = (text: string, y: number, fontSize: number = 10) => {
-      doc.setFontSize(fontSize);
-      const textWidth = doc.getTextWidth(text);
-      const x = (pageWidth - textWidth) / 2;
-      doc.text(text, x, y);
-    };
-    
-    // Fonction pour dessiner une ligne de séparation
-    const drawLine = (y: number) => {
-      doc.line(margin, y, pageWidth - margin, y);
-    };
-    
-    let currentY = 5;
-    
-    // Logo de l'entreprise (si disponible)
-    try {
-      const logoUrl = '/img/logo.jpg';
-      const response = await fetch(logoUrl);
-      if (response.ok) {
-        const blob = await response.blob();
-        const reader = new FileReader();
-        
-        reader.onload = () => {
-          const img = new Image();
-          img.onload = () => {
-            const logoWidth = 12;
-            const logoHeight = 8;
-            const logoX = (pageWidth - logoWidth) / 2;
-            doc.addImage(img, 'JPEG', logoX, currentY, logoWidth, logoHeight);
-            currentY += logoHeight + 2;
-          };
-          img.src = reader.result as string;
-        };
-        
-        reader.readAsDataURL(blob);
-      }
-    } catch (logoError) {
-      console.log('Logo non disponible, génération sans logo');
-    }
-    
-    // En-tête de la facture
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    centerText('FACTURE', currentY, 14);
-    currentY += 8;
-    
-    // Informations de l'entreprise
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    
-    // Nom de l'entreprise
-    const entrepriseNom = currentBoutique.value?.nom || 'Entreprise';
-    centerText(entrepriseNom, currentY, 9);
-    currentY += 4;
-    
-    // Adresse de la boutique
-    if (currentBoutique.value?.adresse) {
-      centerText(currentBoutique.value.adresse, currentY, 9);
-      currentY += 4;
-    }
-    
-    // Ville
-    if (currentBoutique.value?.ville) {
-      centerText(currentBoutique.value.ville, currentY, 9);
-      currentY += 4;
-    }
-    
-    // Téléphone de la boutique
-    if (currentBoutique.value?.telephone) {
-      centerText(`Tel: ${currentBoutique.value.telephone}`, currentY, 9);
-      currentY += 4;
-    }
-    
-    currentY += 2;
-    drawLine(currentY);
-    currentY += 3;
-    
-    // Informations de la facture
-    doc.setFontSize(8);
-    doc.text(`Facture N°: ${facture.numero}`, margin, currentY);
-    currentY += 4;
-    doc.text(`Date: ${new Date(facture.date).toLocaleDateString('fr-FR')}`, margin, currentY);
-    currentY += 4;
-    doc.text(`Boutique: ${facture.boutique_nom || 'N/A'}`, margin, currentY);
-    currentY += 6;
-    
-    drawLine(currentY);
-    currentY += 4;
-    
-    // Informations du client/partenaire
-    if (facture.type === 'client') {
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CLIENT:', margin, currentY);
-      currentY += 4;
-      doc.setFont('helvetica', 'normal');
-      doc.text(facture.nom, margin, currentY);
-      currentY += 6;
-    } else if (facture.type === 'partenaire') {
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PARTENAIRE:', margin, currentY);
-      currentY += 4;
-      doc.setFont('helvetica', 'normal');
-      doc.text(facture.nom, margin, currentY);
-      currentY += 6;
-    }
-    
-    drawLine(currentY);
-    currentY += 3;
-    
-    // Tableau des produits (format optimisé)
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'bold');
-    
-    // En-tête du tableau optimisé
-    doc.text('REF', margin, currentY);
-    doc.text('PRODUIT', margin + 6, currentY);
-    doc.text('Q', margin + 20, currentY);
-    doc.text('PRIX', margin + 24, currentY);
-    doc.text('TOTAL', margin + 40, currentY);
-    currentY += 3;
-    
-    drawLine(currentY);
-    currentY += 3;
-    
-    // Produits
-    doc.setFont('helvetica', 'normal');
-    produitsFactures.value.forEach(item => {
-      // Nom du produit (tronqué si trop long)
-      const productName = (item.nom || '').length > 10 ? (item.nom || '').substring(0, 10) + '..' : (item.nom || '');
-      
-      // S'assurer que les prix sont des nombres
-      const price = Number(item.prix) || 0;
-      const quantity = Number(item.quantite) || 0;
-      const total = price * quantity;
-      
-      // Référence (tronquée si nécessaire)
-      const ref = 'N/A';
-      
-      doc.text(ref, margin, currentY);
-      doc.text(productName, margin + 6, currentY);
-      doc.text(quantity.toString(), margin + 20, currentY);
-      doc.text(`${price.toFixed(0)}`, margin + 24, currentY);
-      doc.text(`${total.toFixed(0)}`, margin + 40, currentY);
-      currentY += 3;
-    });
-    
-    currentY += 3;
-    drawLine(currentY);
-    currentY += 3;
-    
-    // Totaux (optimisés)
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    
-    // Sous-total
-    doc.text('SOUS-TOTAL:', margin, currentY);
-    doc.text(`${facture.total.toFixed(0)} FCFA`, margin + 30, currentY);
-    currentY += 3;
-    
-    // Ligne de séparation avant le total
-    drawLine(currentY);
-    currentY += 3;
-    
-    // TOTAL
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('TOTAL:', margin, currentY);
-    doc.text(`${facture.total.toFixed(0)} FCFA`, margin + 25, currentY);
-    currentY += 4;
-    
-    drawLine(currentY);
-    currentY += 4;
-    
-    // Informations de paiement (optimisées)
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Versé: ${facture.verse?.toFixed(0) || '0'} FCFA`, margin, currentY);
-    currentY += 3;
-    doc.text(`Reste: ${facture.reste.toFixed(0)} FCFA`, margin, currentY);
-    currentY += 3;
-    doc.text(`Méthode: Espèces`, margin, currentY);
-    currentY += 4;
-    
-    currentY += 4;
-    drawLine(currentY);
-    currentY += 4;
-    
-    // Pied de page (optimisé)
-    doc.setFontSize(7);
-    centerText('Merci pour votre achat !', currentY, 7);
-    currentY += 3;
-    
-    // Site web de l'entreprise (si disponible)
-    centerText('www.murastorage.com', currentY, 7);
-    currentY += 3;
-    
-    // Signature
-    doc.setFontSize(6);
-    doc.setFont('helvetica', 'italic');
-    centerText('by mura storage', currentY, 6);
-    
-    // Sauvegarder le PDF
-    const fileName = `facture_${facture.numero}_${new Date().toISOString().split('T')[0]}.pdf`;
-    doc.save(fileName);
-    
-    console.log('✅ Facture PDF générée avec succès !');
-    
-  } catch (err) {
-    console.error('Erreur lors de la génération du PDF:', err);
-    alert('Erreur lors de la génération du PDF');
-  }
+  // ⚠️ FONCTION COMPLÈTEMENT DÉSACTIVÉE - AUCUN CODE PDF N'EST EXÉCUTÉ ⚠️
+  // Cette fonction retourne immédiatement sans faire quoi que ce soit
+  // NE PAS MODIFIER CETTE FONCTION - Elle doit rester vide
+  console.warn('[PDF] Fonction désactivée - aucune génération de PDF.');
+  // RETOUR IMMÉDIAT - AUCUN CODE PDF N'EST EXÉCUTÉ
+  // Ne pas appeler jsPDF, doc.text, ou toute autre fonction PDF
+  // Ne pas ajouter de code ici - la fonction doit rester vide
+  return; // Retour immédiat sans erreur
 }
 
 // --- Voir l'historique des versements ---
@@ -495,14 +405,14 @@ async function validerVersement() {
     }
 
     // 4. Succès - Fermer la modal et recharger les données
-          showVersementModal.value = false;
+    showVersementModal.value = false;
     await loadFactures();
     
-    // 5. Afficher confirmation et télécharger le reçu
+    // 5. Afficher confirmation
     alert(`✅ Versement de ${payment.value.toLocaleString()} FCFA enregistré avec succès !`);
     
-    // 6. Générer et télécharger automatiquement le reçu
-    genererEtTelechargerReçu(facturePourVersement.value, payment.value);
+    // 6. Téléchargement PDF désactivé - ne plus appeler telechargerFacture
+    // await telechargerFacture(facturePourVersement.value);
     
   } catch (err: any) {
     console.error("Erreur inattendue lors du versement:", err);
@@ -760,7 +670,7 @@ onMounted(() => {
         :factures="factures"
         @voir="voirFacture"
         @versement="ajouterVersement"
-        @telecharger="telechargerFacture"
+        @telecharger="handleTelechargerFacture"
         @historique="voirHistoriqueVersements"
       />
     </div>
@@ -778,7 +688,9 @@ onMounted(() => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div class="space-y-2">
           <p><strong>Date :</strong> {{ new Date(factureSelectionnee.date).toLocaleString('fr-FR', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'}).replace(',', '') }}</p>
-            <p><strong>Client :</strong> {{ factureSelectionnee.nom }}</p>
+            <p v-if="factureSelectionnee.type === 'client'"><strong>Client :</strong> {{ factureSelectionnee.nom }}</p>
+            <p v-else-if="factureSelectionnee.type === 'partenaire'"><strong>Partenaire :</strong> {{ factureSelectionnee.nom }}</p>
+            <p v-else><strong>Destinataire :</strong> {{ factureSelectionnee.nom }}</p>
             <p><strong>Type :</strong> <span class="capitalize">{{ factureSelectionnee.type }}</span></p>
           </div>
           <div class="space-y-2">
@@ -798,7 +710,7 @@ onMounted(() => {
         <!-- Actions -->
         <div class="flex justify-center gap-4">
           <button 
-            @click="telechargerFacture(factureSelectionnee)"
+            @click="handleTelechargerFacture(factureSelectionnee)"
             class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-2"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -825,17 +737,13 @@ onMounted(() => {
             <thead class="bg-gray-100">
               <tr class="text-left">
                 <th class="border border-gray-300 px-4 py-3 font-semibold">Produit(s)</th>
-                <th class="border border-gray-300 px-4 py-3 font-semibold">Prix Unitaire</th>
-                <th class="border border-gray-300 px-4 py-3 font-semibold">Quantité</th>
-                <th class="border border-gray-300 px-4 py-3 font-semibold">Sous-total</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(prod, index) in produitsFactures" :key="index" class="hover:bg-gray-50">
-                <td class="border border-gray-300 px-4 py-3 capitalize">{{ prod.nom }}</td>
-                <td class="border border-gray-300 px-4 py-3">{{ prod.prix.toFixed(2) }} FCFA</td>
-                <td class="border border-gray-300 px-4 py-3">{{ prod.quantite }}</td>
-                <td class="border border-gray-300 px-4 py-3 font-semibold">{{ (prod.prix * prod.quantite).toFixed(2) }} FCFA</td>
+                <td class="border border-gray-300 px-4 py-3 capitalize">
+                  {{ prod.nom }} | Qté: {{ prod.quantite }} × {{ prod.prix.toFixed(2) }} FCFA
+                </td>
               </tr>
             </tbody>
           </table>

@@ -21,6 +21,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     // Pages publiques autorisées sans authentification
     const publicPages = [
+      // Pages de connexion et authentification
       '/connexion',
       '/test-public',
       '/home/accueil',
@@ -31,13 +32,23 @@ export default defineNuxtRouteMiddleware(async (to) => {
       '/home/faq',
       '/home/services',
       '/home/tarification',
+      
+      // Pages d'inscription
       '/home/inscription',
       '/home/verification',
       '/home/about',
       '/home/mot-de-passe-oublie',
       '/reset-password',
       '/sitemap',
-      '/sitemap.xml'
+      '/sitemap.xml',
+      
+      '/cookies',
+      
+      '/support',
+      '/guide',
+      '/security',
+      
+      '/robots.txt'
     ]
 
     // Si pas de token, rediriger vers la page d'accueil publique ou connexion

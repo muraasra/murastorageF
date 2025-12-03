@@ -3,8 +3,16 @@ definePageMeta({
     layout: "accueil",
 })
 useSeoMeta({
-  title: 'Tarification - Mura Storage',
-  description: 'Des offres adaptées à chaque besoin : Gratuit, Basic, Premium et Organisation. Sans engagement.',
+  title: 'Tarification Mura Storage - Plans Gratuit, Basic, Premium | Essai 3 Mois Gratuit',
+  description: 'Découvrez nos plans de tarification Mura Storage : Gratuit (3 mois), Basic, Premium et Organisation. Plans adaptés à chaque entreprise. Sans engagement, essai gratuit 3 mois. Gestion de stock multi-entrepôts, facturation, inventaires, transferts.',
+  ogTitle: 'Tarification Mura Storage - Plans et Prix',
+  ogDescription: 'Plans de tarification flexibles pour la gestion de stock : Gratuit, Basic, Premium, Organisation. Essai gratuit 3 mois sans engagement.',
+  ogType: 'website',
+  ogUrl: 'https://murastorage.netlify.app/home/tarification',
+  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  keywords: 'tarification Mura Storage, prix logiciel stock, tarif gestion stock, plan gratuit stock, essai gratuit gestion stock, logiciel stock prix, abonnement gestion stock, plan Basic Premium, logiciel inventaire prix, solution stock entreprise prix, gestion stock Cameroun prix, logiciel stock Afrique tarif',
+  robots: 'index, follow',
+  canonical: 'https://murastorage.netlify.app/home/tarification'
 });
 </script>
 <template>

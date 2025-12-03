@@ -11,8 +11,9 @@ interface Facture {
   verse: number;
   reste: number;
   type: string;
-  status:string;
-
+  status: string;
+  boutique_nom?: string;
+  created_by_username?: string;
 }
 
 const props = defineProps<{ factures: Facture[] }>();
@@ -28,7 +29,7 @@ const columns =
 [
   { key: "numero", label: "N° Facture" },
   { key: "date", label: "Date" },
-  { key: "nom", label: "Client" },
+  { key: "nom", label: "Client/Partenaire" },
   { key: "status", label: "Statut" },
   { key: "total", label: "Total" },
   { key: "verse", label: "Versé" },
@@ -98,7 +99,10 @@ watch([q, plageDatesSelectionnee], () => {
         </div>
       </template>
       <template #nom-data="{ row }">
-        <div class="max-w-32 truncate" :title="row.nom">{{ row.nom }}</div>
+        <div class="max-w-32 truncate" :title="row.nom">
+          <span v-if="row.type === 'partenaire'" class="text-purple-600 font-medium">{{ row.nom }}</span>
+          <span v-else>{{ row.nom }}</span>
+        </div>
       </template>
       <template #status-data="{ row }">
         <span

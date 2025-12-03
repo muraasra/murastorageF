@@ -7,8 +7,16 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: 'Contact - Mura Storage',
-  description: 'Contactez notre équipe pour obtenir plus d\'informations sur Mura Storage. Nous sommes là pour vous aider.',
+  title: 'Contactez Mura Storage - Support et Assistance | Groupe Mura',
+  description: 'Contactez l\'équipe Mura Storage pour obtenir de l\'aide, des informations sur nos solutions de gestion de stock, support technique, questions commerciales. Support expert Groupe Mura disponible pour vous accompagner.',
+  ogTitle: 'Contact Mura Storage - Support et Assistance',
+  ogDescription: 'Contactez notre équipe Mura Storage pour obtenir de l\'aide et des informations sur nos solutions de gestion de stock. Support expert disponible.',
+  ogType: 'website',
+  ogUrl: 'https://murastorage.netlify.app/home/contact_accueil',
+  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  keywords: 'contact Mura Storage, support gestion stock, assistance logiciel stock, aide Mura Storage, support technique stock, contact Groupe Mura, service client stock, support 24/7, assistance entreprise',
+  robots: 'index, follow',
+  canonical: 'https://murastorage.netlify.app/home/contact_accueil'
 });
 
 const form = ref({

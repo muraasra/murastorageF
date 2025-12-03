@@ -7,6 +7,20 @@ definePageMeta({
     layout: "accueil",
 })
 
+// Métadonnées SEO optimisées
+useSeoMeta({
+  title: 'Inscription Mura Storage - Créez votre Compte Gratuit | Essai 14 Jours',
+  description: 'Inscrivez-vous gratuitement à Mura Storage et commencez votre essai de 14 jours. Créez votre compte entreprise, gérez vos stocks, inventaires et factures. Sans engagement, sans carte bancaire requise.',
+  ogTitle: 'Inscription Mura Storage - Créez votre Compte Gratuit',
+  ogDescription: 'Inscrivez-vous gratuitement à Mura Storage. Essai 14 jours sans engagement. Gestion de stock, inventaires, facturation.',
+  ogType: 'website',
+  ogUrl: 'https://murastorage.netlify.app/home/inscription',
+  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  keywords: 'inscription Mura Storage, créer compte gestion stock, inscription gratuite stock, essai gratuit stock, compte entreprise stock, s\'inscrire Mura Storage, inscription logiciel stock, créer compte inventaire',
+  robots: 'index, follow',
+  canonical: 'https://murastorage.netlify.app/home/inscription'
+});
+
 const { error, success } = useNotification()
 
 // État du formulaire

@@ -52,19 +52,21 @@ async function chargerDonnees() {
   }
 
   const partenairesList = Array.isArray(partenairesData.value)
-    ? partenairesData.value.map(p => ({
-        id: p.id,
-        nomPartenaire: p.nom,
-        prenomPartenaire: p.prenom,
-        telephone: p.telephone,
-        // Le statut sera calculé plus tard
-        status: "", // Initialise avec une chaîne vide
-        boutique: !!p.boutique,
-        localisationBoutique: p.localisation,
-        dateAdhesion: p.dateadhesion,
-      }))
+    ? partenairesData.value
+        .filter(p => p.nom?.toLowerCase() !== 'tayou') // Filtrer le partenaire Tayou par défaut
+        .map(p => ({
+          id: p.id,
+          nomPartenaire: p.nom,
+          prenomPartenaire: p.prenom,
+          telephone: p.telephone,
+          // Le statut sera calculé plus tard
+          status: "", // Initialise avec une chaîne vide
+          boutique: !!p.boutique,
+          localisationBoutique: p.localisation,
+          dateAdhesion: p.dateadhesion,
+        }))
     : [];
-    console.log('Partenaires chargés:', partenairesList);
+    console.log('Partenaires chargés (Tayou filtré):', partenairesList);
 
   // 2. Charger toutes les factures
   const { data: facturesData, error: facturesError } = await useApi(`${API_BASE_URL}/api/factures/`, { method: 'GET', server: false, cacheTTL: 5 * 60 * 1000 });
@@ -244,6 +246,31 @@ const enregistrerModifications = async () => {
   }
 };
 
+// Fonction pour supprimer un partenaire
+const supprimerPartenaire = async (partenaire: Partenaire) => {
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer le partenaire ${partenaire.nomPartenaire} ${partenaire.prenomPartenaire} ? Cette action est irréversible.`)) {
+    return;
+  }
+
+  try {
+    const { data, error } = await useApi(`${API_BASE_URL}/api/partenaires/${partenaire.id}/`, {
+      method: "DELETE",
+      server: false,
+    });
+
+    if (!error.value) {
+      // Après la suppression, recharge toutes les données
+      await chargerDonnees();
+    } else {
+      console.error("Erreur lors de la suppression du partenaire:", error.value);
+      alert("Erreur lors de la suppression du partenaire: " + (error.value.message || "Erreur inconnue"));
+    }
+  } catch (err: any) {
+    console.error("Erreur inattendue lors de la suppression:", err);
+    alert("Une erreur inattendue est survenue lors de la suppression.");
+  }
+};
+
 // Colonnes (utiliseront le champ status calculé)
 const columns = [
   { key: "nomPartenaire", label: "Nom" },
@@ -261,12 +288,12 @@ const columns = [
 <template>
   <div class="mt-5 px-6">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl md:text-3xl font-bold text-blue-400">Partenaires</h2>
+      <h2 class="text-xl md:text-3xl font-bold text-blue-400 dark:text-blue-500">Partenaires</h2>
       <UButton @click="showModal = true" color="blue"> + Ajouter Un Partenaire </UButton>
     </div>
 
     <!-- Tableau des partenaires -->
-    <div class="bg-white shadow-md rounded-lg border p-4">
+    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg border border-gray-200 dark:border-gray-700 p-4">
       <UTable :rows="partenaires" :columns="columns">
         <!-- Colonne personnalisée pour "Boutique" -->
         <template #boutique-data="{ row }">
@@ -290,16 +317,18 @@ const columns = [
 
         <!-- Colonne personnalisée pour les actions -->
         <template #actions-data="{ row }">
-          <UButton color="blue" @click="ouvrirModaleModification(row)">Modifier</UButton>
-          <!-- Ajoute ici un bouton ou une action pour supprimer si nécessaire -->
+          <div class="flex gap-2">
+            <UButton color="blue" @click="ouvrirModaleModification(row)" size="sm">Modifier</UButton>
+            <UButton color="red" @click="supprimerPartenaire(row)" size="sm" variant="outline">Supprimer</UButton>
+          </div>
         </template>
       </UTable>
     </div>
 
     <!-- Modale pour ajouter un partenaire -->
     <UModal v-model="showModal">
-      <div class="p-5">
-        <h2 class="text-lg font-bold mb-4 text-blue-400">Ajouter un Partenaire</h2>
+      <div class="p-5 bg-white dark:bg-gray-800">
+        <h2 class="text-lg font-bold mb-4 text-blue-400 dark:text-blue-500">Ajouter un Partenaire</h2>
         <UInput color="blue" variant="outline" v-model="nouveauPartenaire.nomPartenaire" placeholder="Nom"
           class="mb-2" />
         <UInput color="blue" variant="outline" v-model="nouveauPartenaire.prenomPartenaire" placeholder="Prénom"
@@ -320,8 +349,8 @@ const columns = [
 
     <!-- Modale pour modifier un partenaire -->
     <UModal v-model="showEditModal">
-      <div class="p-5" v-if="partenaireToEdit">
-        <h2 class="text-lg font-bold mb-4 text-blue-400">Modifier un Partenaire</h2>
+      <div class="p-5 bg-white dark:bg-gray-800" v-if="partenaireToEdit">
+        <h2 class="text-lg font-bold mb-4 text-blue-400 dark:text-blue-500">Modifier un Partenaire</h2>
         <UInput color="blue" variant="outline" v-model="partenaireToEdit.nomPartenaire" placeholder="Nom"
           class="mb-2" />
         <UInput color="blue" variant="outline" v-model="partenaireToEdit.prenomPartenaire" placeholder="Prénom"
