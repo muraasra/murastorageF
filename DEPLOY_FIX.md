@@ -57,3 +57,22 @@ Si le build fonctionne localement, le déploiement Netlify devrait aussi fonctio
 - La transpilation de `@nuxt/kit` garantit que le code ESM est correctement transformé pour le build
 - La mise à jour de Nuxt vers 3.17.5 assure la compatibilité avec les dernières versions des modules
 
+---
+
+## Fix supplémentaire : Version Node.js
+
+### Problème
+Netlify utilisait Node.js v18.20.8, mais `unplugin-utils` nécessite Node >= 20.19.0, causant une erreur avec `oxc-parser` (binding natif manquant).
+
+### Solution appliquée
+1. **Création de `.nvmrc`** à la racine du projet avec `20.19.0`
+2. **Ajout de `engines` dans `package.json`** :
+   ```json
+   "engines": {
+     "node": ">=20.19.0",
+     "npm": ">=10.0.0"
+   }
+   ```
+
+Netlify utilisera maintenant Node.js 20.19.0 pour le build, ce qui résout le problème des bindings natifs manquants.
+
