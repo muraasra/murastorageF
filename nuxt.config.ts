@@ -34,7 +34,7 @@ export default defineNuxtConfig({
 
   // Configuration de build optimisée
   build: {
-    transpile: ['@nuxt/ui']
+    transpile: ['@nuxt/ui', '@nuxt/kit']
   },
 
   // Configuration Vite simplifiée

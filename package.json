@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@iconify-json/heroicons": "^1.2.1",
-    "@nuxt/ui": "^2.19.2",
+    "@nuxt/ui": "^2.20.0",
     "@pinia/nuxt": "^0.11.0",
     "@types/jszip": "^3.4.0",
     "autotable": "^1.0.0",
@@ -22,7 +22,7 @@
     "jspdf-autotable": "^5.0.2",
     "jsqr": "^1.4.0",
     "jszip": "^3.10.1",
-    "nuxt": "^3.14.159",
+    "nuxt": "^3.17.5",
     "nuxt-icon": "^1.0.0-beta.7",
     "pinia": "^3.0.2",
     "qrcode": "^1.5.4",
@@ -42,7 +42,7 @@
     "autoprefixer": "^10.4.20",
     "canvas": "^2.11.2",
     "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.14"
+    "tailwindcss": "^3.4.17"
   },
   "scripts": {
     "build": "nuxt build",
@@ -53,6 +53,9 @@
     "generate:og": "node scripts/generate-og-image-svg.js",
     "clean:cache": "node scripts/clean-cache.js",
     "clean:unused": "node scripts/cleanup-unused-files.js"
+  },
+  "overrides": {
+    "@nuxt/kit": "^3.17.5"
   },
   "version": "1.0.0",
   "description": "- **Frontend Framework**: Vue.js 3 (Composition API)\r - **Meta Framework**: Nuxt.js 3\r - **Styling**: Tailwind CSS\r - **UI Component Library**: NextUI\r - **Package Manager**: pnpm",
