@@ -1,13 +1,3 @@
-<script setup lang="ts">
-import { useSeo } from '@/composables/useSeo'
-
-// Page privée - Noindex
-useSeo({
-  title: 'Produits - Mura Storage',
-  description: 'Gestion des produits et inventaire',
-  noindex: true
-});
-</script>
 
 <template>
   <div>
@@ -1870,6 +1860,15 @@ useSeo({
 </template>
 
 <script setup lang="ts">
+import { useSeo } from '@/composables/useSeo'
+
+// Page privée - Noindex
+useSeo({
+  title: 'Produits - Mura Storage',
+  description: 'Gestion des produits et inventaire',
+  noindex: true
+});
+
 import { computed } from 'vue'
 import { useSubscription } from '@/composables/useSubscription'
 
