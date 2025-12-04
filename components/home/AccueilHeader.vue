@@ -109,7 +109,6 @@ onUnmounted(() => {
     
     <!-- Navigation -->
     <nav
-      v-show="navIsOpen || !$device.isMobile"
       :class="navIsOpen ? 'block' : 'hidden md:flex'"
       class="absolute top-14 left-0 w-full bg-emerald-500 dark:bg-black md:static md:flex md:space-x-6 md:w-auto md:bg-transparent md:dark:bg-transparent z-[9998]"
       @click.stop
