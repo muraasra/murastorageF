@@ -16,7 +16,7 @@ const route = useRoute();
 watch(() => route.path, () => {
   // Fermer le menu à chaque changement de route
   navIsOpen.value = false;
-}, { immediate: true });
+}, { immediate: false });
 
 // Fermer le menu lors d'un clic en dehors (uniquement sur mobile)
 const handleClickOutside = (event: MouseEvent) => {
@@ -26,9 +26,13 @@ const handleClickOutside = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
     const header = document.querySelector('header');
     const nav = document.querySelector('nav');
+    const button = document.querySelector('button.md\\:hidden');
     
-    // Vérifier si le clic est en dehors du header et de la navigation
-    if (header && nav && !header.contains(target) && !nav.contains(target)) {
+    // Vérifier si le clic est en dehors du header, de la navigation et du bouton burger
+    if (header && nav && button && 
+        !header.contains(target) && 
+        !nav.contains(target) && 
+        !button.contains(target)) {
       navIsOpen.value = false;
     }
   }
