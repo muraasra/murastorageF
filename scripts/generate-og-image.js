@@ -14,14 +14,15 @@
 const fs = require('fs');
 const path = require('path');
 
-// Vérifier si canvas est disponible
+// Vérifier si canvas est disponible (optionnel)
 let Canvas;
 try {
   Canvas = require('canvas');
 } catch (e) {
-  console.error('❌ Erreur: Le module "canvas" n\'est pas installé.');
-  console.log('📦 Installation: npm install canvas --save-dev');
-  process.exit(1);
+  console.warn('⚠️  Avertissement: Le module "canvas" n\'est pas installé.');
+  console.log('📦 Pour générer l\'image OG, installez: npm install canvas --save-dev');
+  console.log('📝 Note: Ce script est optionnel. L\'image OG existe déjà dans public/img/');
+  process.exit(0); // Sortir sans erreur car c'est optionnel
 }
 
 // Configuration

@@ -4,24 +4,28 @@
 Erreur `Cannot use 'import.meta' outside a module` lors du build sur Netlify.
 
 ## Cause
-Conflit de versions entre `@nuxt/ui`, `@nuxtjs/tailwindcss` (dépendance transitive) et `@nuxt/kit` qui utilise `import.meta` dans un contexte CommonJS.
+Conflit de versions entre `@nuxt/ui`, `@nuxtjs/tailwindcss` (dépendance transitive) et `@nuxt/kit` qui utilise `import.meta` dans un contexte CommonJS via jiti.
 
 ## Solutions appliquées
 
 ### 1. Mise à jour des versions
 - **Nuxt** : `^3.14.159` → `^3.17.5` (version stable compatible)
 - **@nuxt/ui** : `^2.19.2` → `^2.20.0` (dernière version)
-- **tailwindcss** : `^3.4.14` → `^3.4.17` (dernière version)
+- **tailwindcss** : `^3.4.14` → `3.3.2` (version pré-ESM qui évite le problème `import.meta`)
 
-### 2. Résolution de dépendances
-Ajout de `overrides` dans `package.json` pour forcer une version compatible de `@nuxt/kit` :
+### 2. Ajout de @nuxtjs/tailwindcss comme dépendance directe
+- Ajout de `@nuxtjs/tailwindcss@^6.12.2` dans `devDependencies` pour forcer une version compatible
+
+### 3. Résolution de dépendances
+Ajout de `overrides` dans `package.json` pour forcer des versions compatibles :
 ```json
 "overrides": {
-  "@nuxt/kit": "^3.17.5"
+  "@nuxt/kit": "^3.17.5",
+  "@nuxtjs/tailwindcss": "^6.12.2"
 }
 ```
 
-### 3. Configuration de build
+### 4. Configuration de build
 Ajout de `@nuxt/kit` dans `build.transpile` dans `nuxt.config.ts` pour forcer la transpilation :
 ```typescript
 build: {
