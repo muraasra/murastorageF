@@ -14,7 +14,7 @@ interface CacheStore {
 export const useSmartCache = () => {
   const cache = reactive<CacheStore>({})
   const maxSize = ref(100) // Taille maximale du cache
-  const defaultTTL = ref(5 * 60 * 1000) // 5 minutes par défaut
+  const defaultTTL = ref(15 * 1000) // 15 secondes par défaut
 
   // Nettoyer le cache expiré
   const cleanExpiredCache = () => {

@@ -70,22 +70,22 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
       return { useCache: false as const, ttl: 0 }
     }
 
-    // TTL par familles
+    // TTL par familles (en millisecondes, très courts pour quasi temps réel)
     const path = endpoint
-
-    // Données temps réel critiques → PAS DE CACHE
+    
+    // Données critiques (produits, stocks, factures, mouvements) → cache 10s max
     if (/\/api\/(produits|stocks|factures|mouvements-stock)\/?/i.test(path)) {
-      return { useCache: false as const, ttl: 0 }
+      return { useCache: true as const, ttl: 10 * 1000 }
     }
 
-    // Abonnement: plans, current, limits, usage → 5 min
+    // Abonnement: plans, current, limits, usage → 30s
     if (/\/api\/(subscription-plans|subscriptions\/(current|limits|usage))\/?/i.test(path)) {
-      return { useCache: true as const, ttl: 5 * 60 * 1000 }
+      return { useCache: true as const, ttl: 30 * 1000 }
     }
 
-    // Listes: categories, fournisseurs, partenaires → 10 min
+    // Listes: categories, fournisseurs, partenaires → 20s
     if (/\/api\/(categories|fournisseurs|partenaires)\/?/i.test(path)) {
-      return { useCache: true as const, ttl: 10 * 60 * 1000 }
+      return { useCache: true as const, ttl: 20 * 1000 }
     }
 
     // PAS DE CACHE pour les inventaires et produits inventaires - temps réel requis
@@ -93,8 +93,8 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
       return { useCache: false as const, ttl: 0 }
     }
 
-    // Par défaut: 30 min (hérite du plugin)
-    return { useCache: true as const, ttl: 30 * 60 * 1000 }
+    // Par défaut: 30s
+    return { useCache: true as const, ttl: 30 * 1000 }
   }
   
   try {

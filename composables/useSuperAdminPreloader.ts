@@ -17,7 +17,7 @@ export const useSuperAdminPreloader = () => {
 
   const cache = reactive({
     lastUpdate: null as Date | null,
-    ttl: 5 * 60 * 1000, // 5 minutes
+    ttl: 30 * 1000, // 30 secondes max pour le dashboard superadmin
     isValid: false
   })
 
