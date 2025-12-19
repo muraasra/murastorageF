@@ -57,10 +57,44 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
   // Construire l'URL complète si nécessaire
   const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
   
-  // Stratégie de cache : désactivée globalement pour données en temps réel
-  // Cette fonction est conservée pour compatibilité mais retourne toujours "pas de cache"
-  const resolveCachePolicy = (_endpoint: string, _method: string) => {
-    return { useCache: false as const, ttl: 0 }
+  // Déterminer un TTL de cache par type d'endpoint et méthode
+  const resolveCachePolicy = (endpoint: string, method: string) => {
+    // Pas de cache pour non-GET
+    if (method && method.toUpperCase() !== 'GET') {
+      return { useCache: false as const, ttl: 0 }
+    }
+
+    // Pas de cache pour les endpoints de détail du type /api/ressource/:id/
+    const isDetail = /\/api\/[^/]+\/(\d+)(\/)?(\?.*)?$/i.test(endpoint)
+    if (isDetail) {
+      return { useCache: false as const, ttl: 0 }
+    }
+
+    // TTL par familles
+    const path = endpoint
+
+    // Données temps réel critiques → PAS DE CACHE
+    if (/\/api\/(produits|stocks|factures|mouvements-stock)\/?/i.test(path)) {
+      return { useCache: false as const, ttl: 0 }
+    }
+
+    // Abonnement: plans, current, limits, usage → 5 min
+    if (/\/api\/(subscription-plans|subscriptions\/(current|limits|usage))\/?/i.test(path)) {
+      return { useCache: true as const, ttl: 5 * 60 * 1000 }
+    }
+
+    // Listes: categories, fournisseurs, partenaires → 10 min
+    if (/\/api\/(categories|fournisseurs|partenaires)\/?/i.test(path)) {
+      return { useCache: true as const, ttl: 10 * 60 * 1000 }
+    }
+
+    // PAS DE CACHE pour les inventaires et produits inventaires - temps réel requis
+    if (/\/api\/inventaires(-produits)?/i.test(path)) {
+      return { useCache: false as const, ttl: 0 }
+    }
+
+    // Par défaut: 30 min (hérite du plugin)
+    return { useCache: true as const, ttl: 30 * 60 * 1000 }
   }
   
   try {
@@ -73,17 +107,28 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
     console.log('[useApi] Token utilisé:', authToken ? 'Bearer ***' : 'NONE')
     console.log('[useApi] URL:', fullUrl)
     
-    // Utiliser $fetch direct, sans cache nuxt-app persistant
+    // Utiliser $fetch avec cache nuxt (désactivé sélectivement via policy)
     const nuxtApp = useNuxtApp()
+    const $cachedFetch = (nuxtApp?.$cachedFetch as any) || $fetch
     const method = (options?.method || 'GET').toUpperCase()
-    // Politique de cache désactivée
-    const response = await $fetch(fullUrl, {
+    const policy = resolveCachePolicy(fullUrl, method)
+
+    // Calculer les options de cache finales
+    const explicitCacheTTL = options?.cacheTTL
+    const explicitDisableCache = options?.cache === false
+
+    // Si l'appelant a précisé, on respecte; sinon on applique la policy
+    const finalCacheDisabled = explicitDisableCache || (!explicitCacheTTL && !policy.useCache)
+    const finalTTL = explicitCacheTTL ?? (policy.useCache ? policy.ttl : undefined)
+
+    const response = await $cachedFetch(fullUrl, {
       headers: {
         'Content-Type': 'application/json',
         ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
       },
-      // Forcer l'absence de cache pour toutes les requêtes
-      cache: false,
+      // Application de la stratégie de cache
+      ...(finalCacheDisabled ? { cache: false } : {}),
+      ...(finalTTL ? { cacheTTL: finalTTL } : {}),
       ...options,
       onResponseError({ response }: { response?: { status?: number } }) {
         if (response?.status === 401) {
@@ -99,12 +144,12 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
         }
       }
     })
-
+    
     // Invalider le cache après les mutations réussies
     if (method !== 'GET' && method !== 'OPTIONS') {
       invalidateRelatedCache(fullUrl, method)
     }
-
+    
     return { 
       data: ref(response), 
       error: ref(null) 
