@@ -83,6 +83,11 @@ export default defineNuxtConfig({
         { name: 'google-site-verification', content: '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA' }
       ],
       link: [
+        // Favicon / Logos
+        { rel: 'icon', type: 'image/png', href: '/img/og-image-MuraSrorage.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/img/og-image-MuraSrorage.png' },
+        { rel: 'shortcut icon', href: '/favicon.ico' },
+        // Canonical URL
         { rel: 'canonical', href: 'https://murastorage.netlify.app' }
       ]
     }
