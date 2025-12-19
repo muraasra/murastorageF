@@ -1718,22 +1718,37 @@ const submitInvoice = async () => {
         errorMessage = `Erreur: ${err.message}`;
       }
       
-      // Extraire le message d'erreur
-      if (errorData) {
-        if (typeof errorData === 'string') {
-          errorMessage = `Erreur serveur: ${errorData}`;
-        } else if (errorData.detail) {
-          errorMessage = `Erreur serveur: ${errorData.detail}`;
-        } else if (errorData.message) {
-          errorMessage = `Erreur serveur: ${errorData.message}`;
-        } else if (errorData.non_field_errors) {
-          errorMessage = `Erreur: ${Array.isArray(errorData.non_field_errors) ? errorData.non_field_errors.join(', ') : errorData.non_field_errors}`;
-        } else {
-          // Afficher toutes les erreurs de validation
-          const validationErrors = Object.entries(errorData)
-            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
-            .join('; ');
-          errorMessage = `Erreur de validation: ${validationErrors || JSON.stringify(errorData)}`;
+      // Détecter spécifiquement l'erreur de transaction/duplicate entry
+      const isTransactionError = err.status === 500 && (
+        err.message?.includes('TransactionManagementError') ||
+        err.message?.includes('atomic') ||
+        errorData?.includes('Duplicate entry') ||
+        errorData?.includes('core_sequencefacture.boutique_id') ||
+        (typeof errorData === 'string' && errorData.includes('TransactionManagementError'))
+      );
+      
+      if (isTransactionError) {
+        errorMessage = 'Erreur de base de données lors de la génération du numéro de facture. Veuillez réessayer dans quelques instants.';
+        console.error('⚠️ Erreur de transaction détectée - problème d\'index unique sur SequenceFacture');
+        console.error('💡 Solution: Exécuter la migration 0035_fix_sequence_facture_unique_index.py sur le serveur');
+      } else {
+        // Extraire le message d'erreur normal
+        if (errorData) {
+          if (typeof errorData === 'string') {
+            errorMessage = `Erreur serveur: ${errorData}`;
+          } else if (errorData.detail) {
+            errorMessage = `Erreur serveur: ${errorData.detail}`;
+          } else if (errorData.message) {
+            errorMessage = `Erreur serveur: ${errorData.message}`;
+          } else if (errorData.non_field_errors) {
+            errorMessage = `Erreur: ${Array.isArray(errorData.non_field_errors) ? errorData.non_field_errors.join(', ') : errorData.non_field_errors}`;
+          } else {
+            // Afficher toutes les erreurs de validation
+            const validationErrors = Object.entries(errorData)
+              .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+              .join('; ');
+            errorMessage = `Erreur de validation: ${validationErrors || JSON.stringify(errorData)}`;
+          }
         }
       }
       
