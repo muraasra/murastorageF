@@ -22,119 +22,263 @@ const chartData = ref({
   values: [] as number[]
 })
 
-// Computed properties pour les graphiques
+// Computed properties pour les graphiques (protégées contre les erreurs)
 const topProductsByQuantity = computed(() => {
-  if (!produits.value) return []
-  return (produits.value as any[])
-    .sort((a, b) => (b.quantiteStock || 0) - (a.quantiteStock || 0))
-    .slice(0, 5)
+  try {
+    if (!produits.value || !Array.isArray(produits.value)) return []
+    return (produits.value as any[])
+      .filter(p => p != null)
+      .sort((a, b) => (b.quantiteStock || 0) - (a.quantiteStock || 0))
+      .slice(0, 5)
+  } catch (err) {
+    console.error('[User Page] Erreur topProductsByQuantity:', err)
+    return []
+  }
 })
 
 const topProductsByValue = computed(() => {
-  if (!produits.value) return []
-  return (produits.value as any[])
-    .sort((a, b) => ((b.quantiteStock || 0) * (b.prixUnitaire || 0)) - ((a.quantiteStock || 0) * (a.prixUnitaire || 0)))
-    .slice(0, 5)
+  try {
+    if (!produits.value || !Array.isArray(produits.value)) return []
+    return (produits.value as any[])
+      .filter(p => p != null)
+      .sort((a, b) => {
+        const valueA = (a.quantiteStock || 0) * (a.prixUnitaire || 0)
+        const valueB = (b.quantiteStock || 0) * (b.prixUnitaire || 0)
+        return valueB - valueA
+      })
+      .slice(0, 5)
+  } catch (err) {
+    console.error('[User Page] Erreur topProductsByValue:', err)
+    return []
+  }
 })
 
 const stockDistribution = computed(() => {
-  if (!produits.value) return { low: 0, medium: 0, high: 0 }
-  
-  const total = produits.value.length
-  const low = (produits.value as any[]).filter(p => (p.quantiteStock || 0) < 10).length
-  const medium = (produits.value as any[]).filter(p => (p.quantiteStock || 0) >= 10 && (p.quantiteStock || 0) < 50).length
-  const high = (produits.value as any[]).filter(p => (p.quantiteStock || 0) >= 50).length
-  
-  return { low, medium, high, total }
+  try {
+    if (!produits.value || !Array.isArray(produits.value)) {
+      return { low: 0, medium: 0, high: 0, total: 0 }
+    }
+    
+    const total = produits.value.length
+    const low = (produits.value as any[]).filter(p => (p?.quantiteStock || 0) < 10).length
+    const medium = (produits.value as any[]).filter(p => {
+      const qty = p?.quantiteStock || 0
+      return qty >= 10 && qty < 50
+    }).length
+    const high = (produits.value as any[]).filter(p => (p?.quantiteStock || 0) >= 50).length
+    
+    return { low, medium, high, total }
+  } catch (err) {
+    console.error('[User Page] Erreur stockDistribution:', err)
+    return { low: 0, medium: 0, high: 0, total: 0 }
+  }
 })
 
 onMounted(async () => {
-  if (process.client) {
-    console.log('[User Page] Début du chargement')
-    
-    // Charger les données utilisateur
+  if (!process.client) return
+  
+  console.log('[User Page] Début du chargement')
+  
+  // Charger les données utilisateur (opérations synchrones, rapides)
+  try {
     const user = localStorage.getItem('user')
     const entreprise = localStorage.getItem('entreprise')
     const boutique = localStorage.getItem('boutique')
     
     console.log('[User Page] Données localStorage:', { user: !!user, entreprise: !!entreprise, boutique: !!boutique })
     
-    if (user) userData.value = JSON.parse(user)
-    if (entreprise) entrepriseData.value = JSON.parse(entreprise)
-    if (boutique) boutiqueData.value = JSON.parse(boutique)
+    if (user) {
+      try {
+        userData.value = JSON.parse(user)
+      } catch (e) {
+        console.warn('[User Page] Erreur parsing user:', e)
+      }
+    }
+    
+    if (entreprise) {
+      try {
+        entrepriseData.value = JSON.parse(entreprise)
+      } catch (e) {
+        console.warn('[User Page] Erreur parsing entreprise:', e)
+      }
+    }
+    
+    if (boutique) {
+      try {
+        boutiqueData.value = JSON.parse(boutique)
+      } catch (e) {
+        console.warn('[User Page] Erreur parsing boutique:', e)
+      }
+    }
     
     console.log('[User Page] Données parsées:', { 
       userData: userData.value?.role, 
       entrepriseData: entrepriseData.value?.nom, 
       boutiqueData: boutiqueData.value?.nom 
     })
-    
-    // Charger les stocks de l'entrepôt connecté
-    if (boutiqueData.value?.id) {
+  } catch (err) {
+    console.error('[User Page] Erreur chargement données localStorage:', err)
+    // Continuer même en cas d'erreur pour ne pas bloquer la page
+  }
+  
+  // Charger les stocks de l'entrepôt connecté (avec timeout pour éviter les blocages)
+  if (boutiqueData.value?.id) {
+    // Utiliser un timeout pour éviter que la page reste bloquée
+    const loadStocksWithTimeout = async () => {
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout chargement stocks')), 10000) // 10 secondes max
+      })
+      
       try {
         // Récupérer les stocks de l'entrepôt
-        const { data: stocksData, error: stocksError } = await useApi(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueData.value.id}`)
+        const stocksPromise = useApi(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueData.value.id}`)
+        const { data: stocksData, error: stocksError } = await Promise.race([stocksPromise, timeoutPromise]) as any
         
-        if (!stocksError.value && stocksData.value && Array.isArray(stocksData.value)) {
-          // Filtrer seulement les stocks avec quantité > 0
-          const stocksAvecQuantite = stocksData.value.filter((stock: any) => stock.quantite > 0)
+        if (stocksError?.value) {
+          console.warn('[User Page] Erreur chargement stocks:', stocksError.value)
+          // Initialiser avec des valeurs par défaut
+          produits.value = []
+          produitsEnStock.value = 0
+          totalValeurStock.value = 0
+          return
+        }
+        
+        if (!stocksData?.value || !Array.isArray(stocksData.value)) {
+          console.warn('[User Page] Données stocks invalides')
+          produits.value = []
+          produitsEnStock.value = 0
+          totalValeurStock.value = 0
+          return
+        }
+        
+        // Filtrer seulement les stocks avec quantité > 0
+        const stocksAvecQuantite = stocksData.value.filter((stock: any) => (stock.quantite || 0) > 0)
+        
+        // Si aucun stock, initialiser avec des valeurs par défaut
+        if (stocksAvecQuantite.length === 0) {
+          produits.value = []
+          produitsEnStock.value = 0
+          totalValeurStock.value = 0
+          return
+        }
+        
+        // Récupérer les détails des produits (avec timeout aussi)
+        try {
+          const productIds = stocksAvecQuantite.map((stock: any) => stock.produit).filter(Boolean).join(',')
           
-          // Récupérer les détails des produits
-          if (stocksAvecQuantite.length > 0) {
-            const productIds = stocksAvecQuantite.map((stock: any) => stock.produit).join(',')
-            const { data: productsData, error: productsError } = await useApi(`${API_BASE_URL}/api/produits/?id__in=${productIds}`)
-            
-            if (!productsError.value && productsData.value && Array.isArray(productsData.value)) {
-              // Combiner les données de stock et de produits
-              const produitsAvecStock = productsData.value.map((produit: any) => {
-                const stock = stocksAvecQuantite.find((s: any) => s.produit === produit.id)
-                return {
-                  ...produit,
-                  quantiteStock: stock?.quantite || 0,
-                  prixUnitaire: produit.prix_vente || produit.prix || 0
-                }
-              })
-              
-              produits.value = produitsAvecStock
-              produitsEnStock.value = stocksAvecQuantite.reduce((acc: number, stock: any) => acc + stock.quantite, 0)
-              
-              // Calculer la valeur totale de manière optimisée
-              totalValeurStock.value = stocksAvecQuantite.reduce((acc: number, stock: any) => {
-                const produit = (productsData.value as any[]).find((p: any) => p.id === stock.produit)
-                const prix = produit?.prix_vente || produit?.prix || 0
-                const quantite = stock.quantite || 0
-                return acc + (quantite * prix)
-              }, 0)
-              
-              // Préparer les données pour les graphiques
-              prepareChartData()
-            }
-          } else {
-            // Aucun stock disponible
+          if (!productIds) {
             produits.value = []
             produitsEnStock.value = 0
             totalValeurStock.value = 0
+            return
           }
+          
+          const productsTimeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Timeout chargement produits')), 10000)
+          })
+          
+          const productsPromise = useApi(`${API_BASE_URL}/api/produits/?id__in=${productIds}`)
+          const { data: productsData, error: productsError } = await Promise.race([productsPromise, productsTimeoutPromise]) as any
+          
+          if (productsError?.value) {
+            console.warn('[User Page] Erreur chargement produits:', productsError.value)
+            produits.value = []
+            produitsEnStock.value = 0
+            totalValeurStock.value = 0
+            return
+          }
+          
+          if (!productsData?.value || !Array.isArray(productsData.value)) {
+            console.warn('[User Page] Données produits invalides')
+            produits.value = []
+            produitsEnStock.value = 0
+            totalValeurStock.value = 0
+            return
+          }
+          
+          // Combiner les données de stock et de produits
+          const produitsAvecStock = productsData.value.map((produit: any) => {
+            const stock = stocksAvecQuantite.find((s: any) => s.produit === produit.id)
+            return {
+              ...produit,
+              quantiteStock: stock?.quantite || 0,
+              prixUnitaire: produit.prix_vente || produit.prix || 0
+            }
+          })
+          
+          produits.value = produitsAvecStock
+          produitsEnStock.value = stocksAvecQuantite.reduce((acc: number, stock: any) => acc + (stock.quantite || 0), 0)
+          
+          // Calculer la valeur totale de manière optimisée
+          totalValeurStock.value = stocksAvecQuantite.reduce((acc: number, stock: any) => {
+            const produit = (productsData.value as any[]).find((p: any) => p.id === stock.produit)
+            const prix = produit?.prix_vente || produit?.prix || 0
+            const quantite = stock.quantite || 0
+            return acc + (quantite * prix)
+          }, 0)
+          
+          // Préparer les données pour les graphiques
+          prepareChartData()
+        } catch (productsErr: any) {
+          console.error('[User Page] Erreur chargement produits:', productsErr)
+          // Initialiser avec des valeurs par défaut
+          produits.value = []
+          produitsEnStock.value = 0
+          totalValeurStock.value = 0
         }
-      } catch (err) {
-        console.error('Erreur lors du chargement des stocks:', err)
+      } catch (err: any) {
+        console.error('[User Page] Erreur chargement stocks:', err)
+        // Initialiser avec des valeurs par défaut pour ne pas bloquer la page
+        produits.value = []
+        produitsEnStock.value = 0
+        totalValeurStock.value = 0
       }
     }
+    
+    // Lancer le chargement en arrière-plan (non-bloquant)
+    loadStocksWithTimeout().catch((err) => {
+      console.error('[User Page] Erreur fatale chargement:', err)
+      // Même en cas d'erreur fatale, initialiser avec des valeurs par défaut
+      produits.value = []
+      produitsEnStock.value = 0
+      totalValeurStock.value = 0
+    })
+  } else {
+    // Pas de boutique sélectionnée, initialiser avec des valeurs par défaut
+    produits.value = []
+    produitsEnStock.value = 0
+    totalValeurStock.value = 0
   }
 })
 
 // Fonction pour préparer les données des graphiques
 const prepareChartData = () => {
-  if (!produits.value) return
-  
-  const categories = (produits.value as any[]).map(p => p.nom || 'Produit sans nom')
-  const quantities = (produits.value as any[]).map(p => p.quantiteStock || 0)
-  const values = (produits.value as any[]).map(p => (p.quantiteStock || 0) * (p.prixUnitaire || 0))
-  
-  chartData.value = {
-    categories: categories.slice(0, 10), // Limiter à 10 pour la lisibilité
-    quantities: quantities.slice(0, 10),
-    values: values.slice(0, 10)
+  try {
+    if (!produits.value || !Array.isArray(produits.value) || produits.value.length === 0) {
+      chartData.value = {
+        categories: [],
+        quantities: [],
+        values: []
+      }
+      return
+    }
+    
+    const categories = (produits.value as any[]).map(p => p.nom || 'Produit sans nom')
+    const quantities = (produits.value as any[]).map(p => p.quantiteStock || 0)
+    const values = (produits.value as any[]).map(p => (p.quantiteStock || 0) * (p.prixUnitaire || 0))
+    
+    chartData.value = {
+      categories: categories.slice(0, 10), // Limiter à 10 pour la lisibilité
+      quantities: quantities.slice(0, 10),
+      values: values.slice(0, 10)
+    }
+  } catch (err) {
+    console.error('[User Page] Erreur préparation données graphiques:', err)
+    chartData.value = {
+      categories: [],
+      quantities: [],
+      values: []
+    }
   }
 }
 
@@ -262,7 +406,11 @@ const logout = () => {
                 <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                    :style="{ width: `${Math.min(100, (produit.quantiteStock / Math.max(...topProductsByQuantity.map(p => p.quantiteStock))) * 100)}%` }"
+                    :style="{ width: `${(() => {
+                      const quantities = topProductsByQuantity.map(p => p.quantiteStock || 0)
+                      const maxQty = quantities.length > 0 ? Math.max(...quantities) : 1
+                      return Math.min(100, maxQty > 0 ? (produit.quantiteStock / maxQty) * 100 : 0)
+                    })()}%` }"
                   ></div>
                 </div>
               </div>
@@ -288,7 +436,12 @@ const logout = () => {
                 <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     class="bg-green-600 h-2 rounded-full transition-all duration-300" 
-                    :style="{ width: `${Math.min(100, (((produit.quantiteStock || 0) * (produit.prixUnitaire || 0)) / Math.max(...topProductsByValue.map(p => (p.quantiteStock || 0) * (p.prixUnitaire || 0)))) * 100)}%` }"
+                    :style="{ width: `${(() => {
+                      const values = topProductsByValue.map(p => (p.quantiteStock || 0) * (p.prixUnitaire || 0))
+                      const maxValue = values.length > 0 ? Math.max(...values) : 1
+                      const produitValue = (produit.quantiteStock || 0) * (produit.prixUnitaire || 0)
+                      return Math.min(100, maxValue > 0 ? (produitValue / maxValue) * 100 : 0)
+                    })()}%` }"
                   ></div>
                 </div>
               </div>
@@ -333,7 +486,10 @@ const logout = () => {
             <div v-for="(quantity, index) in chartData.quantities" :key="index" class="flex flex-col items-center flex-1">
               <div 
                 class="bg-blue-500 rounded-t transition-all duration-500 hover:bg-blue-600 cursor-pointer"
-                :style="{ height: `${Math.max(10, (quantity / Math.max(...chartData.quantities)) * 180)}px` }"
+                :style="{ height: `${(() => {
+                  const maxQty = chartData.quantities.length > 0 ? Math.max(...chartData.quantities) : 1
+                  return Math.max(10, maxQty > 0 ? (quantity / maxQty) * 180 : 10)
+                })()}px` }"
                 :title="`${chartData.categories[index]}: ${quantity} unités`"
               ></div>
               <div class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center truncate w-full" :title="chartData.categories[index]">
