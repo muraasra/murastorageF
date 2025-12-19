@@ -117,3 +117,5 @@ Le middleware garantit que :
 2. Les utilisateurs non authentifiés sont redirigés vers `/connexion` pour les pages privées
 3. Les utilisateurs authentifiés sont redirigés vers leur dashboard approprié selon leur rôle
 
+
+

@@ -208,3 +208,5 @@ Toutes les améliorations demandées ont été appliquées avec succès :
 
 Le projet est maintenant prêt pour la production avec une meilleure expérience utilisateur et un code plus propre.
 
+
+

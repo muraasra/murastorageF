@@ -196,3 +196,5 @@ curl -I https://murastorage.netlify.app/img/og-image-MuraSrorage.png
 - Les pages privées doivent avoir `noindex, nofollow`
 - Les structured data doivent être valides selon schema.org
 
+
+

@@ -137,7 +137,25 @@
           <div v-for="boutique in (boutiques || [])" :key="boutique.id" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ boutique.nom }}</h3>
-              <button @click="accessBoutiqueDashboard(boutique)" class="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">Accéder</button>
+              <button 
+                @click="accessBoutiqueDashboard(boutique)" 
+                :disabled="isAccessingBoutique"
+                :class="[
+                  'px-3 py-1 text-white text-sm rounded-lg transition-colors',
+                  isAccessingBoutique 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-green-600 hover:bg-green-700 cursor-pointer'
+                ]"
+              >
+                <span v-if="isAccessingBoutique" class="flex items-center gap-1">
+                  <svg class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Redirection...
+                </span>
+                <span v-else>Accéder</span>
+              </button>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
@@ -268,7 +286,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import { useAuth } from '@/composables/useAuth'
 import { useApi } from '@/stores/useApi'
@@ -290,7 +308,6 @@ const {
   preloader, 
   warehouseRedirect, 
   initializeOptimizations,
-  accessWarehouseOptimized,
   refreshAllData,
   getPerformanceStats
 } = useSuperAdminOptimizerSafe()
@@ -625,35 +642,96 @@ const onEntrepriseUpdated = async () => {
   await loadStats()
 }
 
-// Fonction pour accéder au dashboard d'un entrepôt - version optimisée
+// État pour éviter les double-clics
+const isAccessingBoutique = ref(false)
+
+// Fonction pour accéder au dashboard d'un entrepôt - version sécurisée et non-bloquante
 const accessBoutiqueDashboard = async (boutique: any) => {
+  // Éviter les double-clics
+  if (isAccessingBoutique.value) {
+    console.log('[Dashboard] Accès déjà en cours, ignoré')
+    return
+  }
+
+  // Vérifier que boutique est valide
+  if (!boutique || !boutique.id) {
+    console.error('[Dashboard] Boutique invalide:', boutique)
+    error('Entrepôt invalide')
+    return
+  }
+
+  // Vérifier que nous sommes côté client
+  if (!process.client) {
+    console.warn('[Dashboard] Accès entrepôt appelé côté serveur, ignoré')
+    return
+  }
+
+  isAccessingBoutique.value = true
+  const boutiqueNom = boutique.nom || 'Entrepôt'
+
   try {
-    // Vérifier que boutique est valide
-    if (!boutique || !boutique.id) {
-      console.error('[Dashboard] Boutique invalide:', boutique)
-      error('Entrepôt invalide')
-      return
+    console.log('[Dashboard] Accès au dashboard de l\'entrepôt:', boutiqueNom)
+
+    // 1. Sauvegarder l'entrepôt dans localStorage (opération synchrone, rapide)
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('boutique', JSON.stringify(boutique))
+        console.log('[Dashboard] Entrepôt sauvegardé dans localStorage')
+      }
+    } catch (storageError) {
+      console.warn('[Dashboard] Erreur sauvegarde localStorage:', storageError)
+      // Continuer même si la sauvegarde échoue
     }
-    
-    console.log('[Dashboard] Accès au dashboard de l\'entrepôt:', boutique.nom || boutique.id)
-    await accessWarehouseOptimized(boutique)
-  } catch (err: any) {
-    console.error('[Dashboard] Erreur accès entrepôt:', err)
-    error('Erreur lors de l\'accès au dashboard de l\'entrepôt. Veuillez réessayer.')
-    
-    // En cas d'erreur, essayer une redirection manuelle
-    if (process.client) {
+
+    // 2. Afficher une notification de succès AVANT la redirection (pour qu'elle soit visible)
+    try {
+      success(`Accès au dashboard de l'entrepôt "${boutiqueNom}"`)
+    } catch (notifError) {
+      // Ignorer les erreurs de notification
+      console.warn('[Dashboard] Erreur notification:', notifError)
+    }
+
+    // 3. Redirection directe et immédiate (non-bloquante)
+    // Utiliser window.location.href comme méthode principale car elle est synchrone et ne bloque jamais
+    // Cette redirection déclenche immédiatement un rechargement de page
+    try {
+      // Méthode principale: redirection directe (non-bloquante)
+      // Cette méthode est synchrone et ne peut pas bloquer le site
+      window.location.href = '/user'
+      
+      // La redirection est déclenchée immédiatement
+      // Le code suivant ne sera probablement jamais exécuté car la page se recharge
+    } catch (redirectError) {
+      // Si window.location.href échoue (extrêmement rare), essayer window.location.replace
+      console.warn('[Dashboard] Erreur redirection href, utilisation replace:', redirectError)
       try {
-        // Sauvegarder l'entrepôt dans localStorage
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('boutique', JSON.stringify(boutique))
-        }
-        // Rediriger manuellement
-        window.location.href = '/user'
-      } catch (fallbackError) {
-        console.error('[Dashboard] Erreur redirection de secours:', fallbackError)
+        window.location.replace('/user')
+      } catch (replaceError) {
+        // Si même replace échoue, afficher une erreur mais ne pas bloquer
+        console.error('[Dashboard] Erreur redirection finale:', replaceError)
+        error('Impossible de rediriger vers le dashboard. Veuillez rafraîchir la page manuellement.')
+        // Réinitialiser l'état en cas d'échec
+        isAccessingBoutique.value = false
       }
     }
+
+  } catch (err: any) {
+    console.error('[Dashboard] Erreur accès entrepôt:', err)
+    
+    // En cas d'erreur, essayer une redirection de secours immédiate
+    try {
+      if (typeof window !== 'undefined' && window.location) {
+        window.location.href = '/user'
+      }
+    } catch (fallbackError) {
+      console.error('[Dashboard] Erreur redirection de secours:', fallbackError)
+      error('Erreur lors de l\'accès au dashboard. Veuillez rafraîchir la page.')
+    }
+  } finally {
+    // Réinitialiser l'état après un court délai pour permettre la redirection
+    setTimeout(() => {
+      isAccessingBoutique.value = false
+    }, 1000)
   }
 }
 
