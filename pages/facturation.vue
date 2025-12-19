@@ -449,7 +449,7 @@ const fetchProducts = async (forceReload: boolean = false) => {
   }
 };
 
-// Récupération des partenaires depuis l'API
+// Récupération des partenaires depuis l'API (filtrés par entreprise)
 const partners = ref<Partner[]>([]);
 const clients = ref<Client[]>([]);
 const allClients = ref<Client[]>([]); // Tous les clients de l'entreprise
@@ -751,7 +751,24 @@ const fetchPartners = async () => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null;
     
-    const data = await $fetch(`${API_BASE_URL}/api/partenaires/`, {
+    // Récupérer l'entreprise de l'utilisateur connecté
+    const entreprise = process.client ? localStorage.getItem('entreprise') : null;
+    let entrepriseId: number | null = null;
+    if (entreprise) {
+      try {
+        const entrepriseData = JSON.parse(entreprise);
+        entrepriseId = entrepriseData.id;
+      } catch (e) {
+        console.error('Erreur parsing entreprise pour les partenaires:', e);
+      }
+    }
+
+    // Filtrer les partenaires par entreprise si possible
+    const url = entrepriseId
+      ? `${API_BASE_URL}/api/partenaires/?entreprise=${entrepriseId}`
+      : `${API_BASE_URL}/api/partenaires/`;
+    
+    const data = await $fetch<Partner[] | any>(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -759,8 +776,8 @@ const fetchPartners = async () => {
       }
     });
 
-    // Mappez les données de l'API vers Partner
-    partners.value = Array.isArray(data) ? data : [];
+    partners.value = Array.isArray(data) ? data as Partner[] : [];
+    console.log('Partenaires récupérés (filtrés par entreprise):', partners.value);
 
   } catch (err) {
     console.error("Erreur lors de la récupération des partenaires:", err);

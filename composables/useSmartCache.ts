@@ -13,65 +13,25 @@ interface CacheStore {
 
 export const useSmartCache = () => {
   const cache = reactive<CacheStore>({})
-  const maxSize = ref(100) // Taille maximale du cache
-  const defaultTTL = ref(5 * 60 * 1000) // 5 minutes par défaut
+  const maxSize = ref(100) // Taille maximale du cache (non utilisé si cache désactivé)
+  const defaultTTL = ref(0) // TTL 0 → cache désactivé (données toujours recalculées)
 
   // Nettoyer le cache expiré
   const cleanExpiredCache = () => {
-    const now = Date.now()
-    Object.keys(cache).forEach(key => {
-      const entry = cache[key]
-      if (now - entry.timestamp > entry.ttl) {
-        delete cache[key]
-        console.log(`[Cache] Entrée expirée supprimée: ${key}`)
-      }
-    })
+    // Cache désactivé : ne rien faire
   }
 
   // Obtenir une valeur du cache
   const get = (key: string) => {
-    cleanExpiredCache()
-    
-    const entry = cache[key]
-    if (!entry) {
-      console.log(`[Cache] Cache miss: ${key}`)
-      return null
-    }
-
-    const now = Date.now()
-    if (now - entry.timestamp > entry.ttl) {
-      delete cache[key]
-      console.log(`[Cache] Entrée expirée: ${key}`)
-      return null
-    }
-
-    console.log(`[Cache] Cache hit: ${key}`)
-    return entry.data
+    // Cache désactivé : toujours miss
+    console.log(`[Cache] (désactivé) Cache miss forcé: ${key}`)
+    return null
   }
 
   // Mettre une valeur dans le cache
   const set = (key: string, data: any, ttl?: number) => {
-    // Nettoyer le cache si nécessaire
-    if (Object.keys(cache).length >= maxSize.value) {
-      cleanExpiredCache()
-      
-      // Si toujours plein, supprimer les plus anciennes entrées
-      if (Object.keys(cache).length >= maxSize.value) {
-        const entries = Object.entries(cache)
-        entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
-        const toDelete = entries.slice(0, Math.floor(maxSize.value / 2))
-        toDelete.forEach(([key]) => delete cache[key])
-        console.log(`[Cache] Cache nettoyé, ${toDelete.length} entrées supprimées`)
-      }
-    }
-
-    cache[key] = {
-      data,
-      timestamp: Date.now(),
-      ttl: ttl || defaultTTL.value
-    }
-
-    console.log(`[Cache] Entrée mise en cache: ${key}`)
+    // Cache désactivé : ne rien stocker
+    console.log(`[Cache] (désactivé) set ignoré pour: ${key}`)
   }
 
   // Supprimer une entrée du cache
@@ -85,7 +45,7 @@ export const useSmartCache = () => {
   // Vider tout le cache
   const clear = () => {
     Object.keys(cache).forEach(key => delete cache[key])
-    console.log('[Cache] Cache vidé')
+    console.log('[Cache] Cache vidé (désactivé)')
   }
 
   // Obtenir les statistiques du cache
@@ -100,14 +60,9 @@ export const useSmartCache = () => {
 
   // Cache avec fonction de fallback
   const getOrSet = async (key: string, fetcher: () => Promise<any>, ttl?: number) => {
-    const cached = get(key)
-    if (cached !== null) {
-      return cached
-    }
-
+    // Cache désactivé : appeler directement le fetcher à chaque fois
     try {
       const data = await fetcher()
-      set(key, data, ttl)
       return data
     } catch (error) {
       console.error(`[Cache] Erreur lors de la récupération pour ${key}:`, error)
@@ -117,15 +72,16 @@ export const useSmartCache = () => {
 
   // Précharger des données
   const preload = async (keys: string[], fetchers: (() => Promise<any>)[], ttl?: number) => {
-    const promises = keys.map((key, index) => 
-      getOrSet(key, fetchers[index], ttl).catch(err => {
+    // Cache désactivé : exécuter les fetchers sans stocker
+    const promises = keys.map((key, index) =>
+      fetchers[index]().catch(err => {
         console.warn(`[Cache] Erreur préchargement ${key}:`, err)
         return null
       })
     )
 
     await Promise.allSettled(promises)
-    console.log(`[Cache] Préchargement terminé pour ${keys.length} clés`)
+    console.log(`[Cache] Préchargement terminé (cache désactivé) pour ${keys.length} clés`)
   }
 
   return {

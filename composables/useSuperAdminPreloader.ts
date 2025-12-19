@@ -17,16 +17,14 @@ export const useSuperAdminPreloader = () => {
 
   const cache = reactive({
     lastUpdate: null as Date | null,
-    ttl: 5 * 60 * 1000, // 5 minutes
+    ttl: 0, // TTL 0 → pas de réutilisation, données toujours rechargées
     isValid: false
   })
 
   // Vérifier si le cache est valide
   const isCacheValid = () => {
-    if (!cache.lastUpdate) return false
-    const now = new Date()
-    const diff = now.getTime() - cache.lastUpdate.getTime()
-    return diff < cache.ttl && cache.isValid
+    // Cache désactivé : toujours retourner false pour forcer un rechargement
+    return false
   }
 
   // Précharger toutes les données critiques
@@ -133,9 +131,9 @@ export const useSuperAdminPreloader = () => {
           : fournisseursRes.value?.results || []
       }
 
-      // Marquer le cache comme valide
-      cache.lastUpdate = new Date()
-      cache.isValid = true
+      // Ne plus utiliser de cache : marquer comme invalide pour forcer les prochains rechargements
+      cache.lastUpdate = null
+      cache.isValid = false
 
       console.log('[Preloader] Préchargement terminé avec succès')
       console.log('[Preloader] Données:', {
