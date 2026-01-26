@@ -233,7 +233,7 @@ Plan Free (Gratuit) :
 - Pas d'API ni d'export avancé
 - Pas d'intégrations tierces
 
-Plan Basic (15 000 XAF/mois) :
+Plan Basic (9 900 XAF/mois) :
 - 1 entreprise
 - 3 boutiques/entrepôts
 - 5 utilisateurs maximum
@@ -245,7 +245,7 @@ Plan Basic (15 000 XAF/mois) :
 - API limitée
 - Intégrations de base
 
-Plan Premium (35 000 XAF/mois) :
+Plan Premium (29 900 XAF/mois) :
 - 1 entreprise
 - 10 boutiques/entrepôts
 - 25 utilisateurs maximum
@@ -258,7 +258,7 @@ Plan Premium (35 000 XAF/mois) :
 - API complète
 - Intégrations avancées
 
-Plan Organisation (75 000 XAF/mois) :
+Plan Organisation (55 000 XAF/mois) :
 - Entreprises multiples
 - Boutiques/entrepôts illimités
 - Utilisateurs illimités
@@ -318,7 +318,7 @@ En cas d'échec de paiement :
 
 7.5. Remboursements
 Les remboursements suivent les dispositions légales et nos conditions publiées :
-- Remboursement intégral sous 14 jours pour les nouveaux clients
+- Remboursement intégral sous 30 jours pour les nouveaux clients (période d'essai de 3 mois)
 - Remboursement au prorata pour les résiliations anticipées
 - Certains frais peuvent être non remboursables (activation, intégration, personnalisations)
 - Les demandes de remboursement doivent être formulées par email

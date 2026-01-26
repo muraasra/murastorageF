@@ -2668,19 +2668,19 @@ const loadData = async () => {
   } catch (err: any) {
     console.error('Erreur chargement données:', err)
     
-    // Gestion des erreurs spécifiques
+    // Gestion des erreurs spécifiques avec messages conviviaux
     if (err.status === 401) {
       error('Session expirée. Veuillez vous reconnecter.')
-      // Ne pas rediriger automatiquement, laisser l'utilisateur décider
-      // if (process.client) {
-      //   navigateTo('/connexion')
-      // }
     } else if (err.status === 403) {
       error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
     } else if (err.status === 404) {
-      error('Endpoint API non trouvé. Vérifiez la configuration.')
+      error('Service temporairement indisponible.')
+    } else if (err.status === 500 || err.status === 502 || err.status === 503) {
+      error('Erreur serveur. Veuillez réessayer plus tard.')
+    } else if (err.name === 'FetchError' || err.message?.includes('fetch')) {
+      error('Erreur de connexion. Vérifiez votre connexion internet.')
     } else {
-      error('Erreur lors du chargement des données: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+      error('Erreur lors du chargement des données. Veuillez réessayer.')
     }
   } finally {
     loading.value = false
@@ -2802,7 +2802,7 @@ const createCategorie = async () => {
   } catch (err: any) {
     console.error('Erreur création catégorie:', err)
     console.error('Détails de l\'erreur:', err.data)
-    error('Erreur lors de la création de la catégorie: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+    error('Erreur lors de la création de la catégorie. Veuillez réessayer.')
   }
 }
 
@@ -2867,7 +2867,7 @@ const updateCategorie = async () => {
     await loadData()
   } catch (err: any) {
     console.error('Erreur modification catégorie:', err)
-    error('Erreur lors de la modification de la catégorie: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+    error('Erreur lors de la modification de la catégorie. Veuillez réessayer.')
   }
 }
 
@@ -2893,7 +2893,7 @@ const deleteCategorie = async (id: number) => {
     loadData()
   } catch (err: any) {
     console.error('Erreur suppression catégorie:', err)
-    error('Erreur lors de la suppression de la catégorie: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+    error('Erreur lors de la suppression de la catégorie. Veuillez réessayer.')
   }
 }
 
@@ -2963,7 +2963,7 @@ const createFournisseur = async () => {
   } catch (err: any) {
     console.error('Erreur création fournisseur:', err)
     console.error('Détails de l\'erreur:', err.data)
-    error('Erreur lors de la création du fournisseur: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+    error('Erreur lors de la création du fournisseur. Veuillez réessayer.')
   }
 }
 
@@ -3032,7 +3032,7 @@ const updateFournisseur = async () => {
     await loadData()
   } catch (err: any) {
     console.error('Erreur modification fournisseur:', err)
-    error('Erreur lors de la modification du fournisseur: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+    error('Erreur lors de la modification du fournisseur. Veuillez réessayer.')
   }
 }
 
@@ -3058,7 +3058,7 @@ const deleteFournisseur = async (id: number) => {
     loadData()
   } catch (err: any) {
     console.error('Erreur suppression fournisseur:', err)
-    error('Erreur lors de la suppression du fournisseur: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+    error('Erreur lors de la suppression du fournisseur. Veuillez réessayer.')
   }
 }
 
@@ -3101,7 +3101,7 @@ const deleteProduit = async (id: number) => {
       } else if (err.status === 403) {
         error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
       } else {
-        error('Erreur lors de la suppression: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+        error('Erreur lors de la suppression. Veuillez réessayer.')
       }
     }
   }
@@ -3292,9 +3292,9 @@ const createProduit = async () => {
     } else if (err.status === 403) {
       error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
     } else if (err.status === 400) {
-      error('Données invalides: ' + (err.data?.message || err.message || 'Vérifiez les champs'))
+      error('Données invalides. Vérifiez les champs requis.')
     } else {
-      error('Erreur lors de la création: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+      error('Erreur lors de la création. Veuillez réessayer.')
     }
   } finally {
     loading.value = false
@@ -3473,9 +3473,9 @@ const saveProduit = async () => {
     } else if (err.status === 403) {
       error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
     } else if (err.status === 400) {
-      error('Données invalides: ' + (err.data?.message || 'Vérifiez tous les champs requis'))
+      error('Données invalides. Vérifiez tous les champs requis.')
     } else {
-      error('Erreur lors de la modification du produit: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+      error('Erreur lors de la modification du produit. Veuillez réessayer.')
     }
   } finally {
     loading.value = false
@@ -3683,9 +3683,9 @@ const updateStock = async () => {
     } else if (err.status === 403) {
       error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
     } else if (err.status === 400) {
-      error('Données invalides: ' + (err.data?.message || 'Vérifiez tous les champs requis'))
+      error('Données invalides. Vérifiez tous les champs requis.')
     } else {
-      error('Erreur lors de la mise à jour du stock: ' + (err.data?.message || err.message || 'Erreur inconnue'))
+      error('Erreur lors de la mise à jour du stock. Veuillez réessayer.')
     }
   } finally {
     stockUpdating.value = false
@@ -5669,7 +5669,7 @@ const testCreation = async () => {
   } catch (err: any) {
     console.error('❌ Erreur lors du test de création:', err)
     console.error('Détails:', err.data)
-    error('Test de création échoué: ' + (err.data?.message || err.message))
+    error('Test de création échoué. Veuillez réessayer.')
   }
 }
 

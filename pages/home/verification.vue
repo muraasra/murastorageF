@@ -14,7 +14,7 @@ const verificationCode = ref('')
 const isLoading = ref(false)
 const isResending = ref(false)
 const countdown = ref(0)
-const timer = ref(null)
+const timer = ref<ReturnType<typeof setInterval> | null>(null)
 
 // Charger l'email depuis localStorage
 onMounted(() => {
@@ -61,6 +61,24 @@ const verifyCode = async () => {
       // Effacer les données sauvegardées
       if (process.client) {
         localStorage.removeItem('inscription_form_data')
+        localStorage.setItem('email_verified', 'true')
+        const storedUser = localStorage.getItem('user')
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser)
+            const updatedUser = {
+              ...parsedUser,
+              email_verified: true,
+              is_email_verified: true,
+              is_verified: true,
+              verified: true,
+              isVerified: true
+            }
+            localStorage.setItem('user', JSON.stringify(updatedUser))
+          } catch (e) {
+            console.warn('Impossible de mettre à jour le statut email:', e)
+          }
+        }
       }
       
       // Redirection vers la page de connexion après 3 secondes
@@ -123,8 +141,10 @@ const startCountdown = () => {
   timer.value = setInterval(() => {
     countdown.value--
     if (countdown.value <= 0) {
-      clearInterval(timer.value)
-      timer.value = null
+      if (timer.value !== null) {
+        clearInterval(timer.value)
+        timer.value = null
+      }
     }
   }, 1000)
 }
@@ -136,8 +156,9 @@ onMounted(() => {
 
 // Nettoyer le timer au démontage
 onUnmounted(() => {
-  if (timer.value) {
+  if (timer.value !== null) {
     clearInterval(timer.value)
+    timer.value = null
   }
 })
 

@@ -677,7 +677,7 @@ const createClient = async (clientData: Partial<Client>) => {
         // Si erreur 400, afficher les détails de validation
         if (err.response.status === 400) {
           console.error('Erreur de validation:', errorData);
-          throw new Error(`Erreur de validation: ${JSON.stringify(errorData)}`);
+          throw new Error('Erreur de validation. Vérifiez les données saisies.');
         }
         
         // Si erreur 401, le token est probablement expiré
@@ -694,14 +694,14 @@ const createClient = async (clientData: Partial<Client>) => {
         
         // Pour les autres erreurs, continuer avec les valeurs par défaut
         console.warn('Erreur API, utilisation des valeurs par défaut');
-        throw new Error(`Erreur serveur ${err.response.status}: ${JSON.stringify(errorData)}`);
+        throw new Error('Erreur serveur. Veuillez réessayer.');
         
       } catch (e) {
         const errorText = await err.response.text();
         console.error('Réponse du serveur (texte):', errorText);
         console.error('Status:', err.response.status);
         console.error('StatusText:', err.response.statusText);
-        throw new Error(`Erreur serveur ${err.response.status}: ${errorText}`);
+        throw new Error('Erreur serveur. Veuillez réessayer.');
       }
     } else {
       console.error('Pas de réponse disponible - erreur de connexion');
@@ -1702,77 +1702,62 @@ const submitInvoice = async () => {
     console.log('Validation - Partenaire ID:', partenaireId);
 
     let facture: FactureResponse | null = null;
-    
+    const transactionPayload = {
+      ...factureData,
+      items: invoice.value.items.map(item => ({
+        produit: item.id,
+        quantite: item.quantity,
+        prix_unitaire_fcfa: item.price,
+        prix_initial_fcfa: item.prix_achat || item.price,
+        justification_prix: item.justification || ''
+      }))
+    };
+
     try {
-      facture = await $fetch<FactureResponse>(`${API_BASE_URL}/api/factures/`, {
-        method: 'POST',
-        body: factureData,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
+      const transactionResponse = await $fetch<{ success: boolean; facture: FactureResponse }>(
+        `${API_BASE_URL}/api/factures/create-with-stock/`,
+        {
+          method: 'POST',
+          body: transactionPayload,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+          }
         }
-      });
+      );
+
+      facture = transactionResponse?.facture || null;
     } catch (err: any) {
-      console.error('Erreur détaillée:', err);
-      console.error('Type d\'erreur:', typeof err);
-      console.error('Erreur data:', err.data);
-      console.error('Erreur message:', err.message);
-      console.error('Erreur status:', err.status || err.statusCode);
-      console.error('Erreur response:', err.response);
+      console.error('Erreur création facture transactionnelle:', err);
       
-      // Gérer l'erreur - $fetch met généralement les données dans err.data
-      let errorMessage = 'Erreur lors de la création de la facture';
-      let errorData: any = null;
-      
-      // Avec $fetch de Nuxt, les erreurs sont généralement dans err.data
-      if (err.data) {
-        errorData = err.data;
-        console.error('Détails de l\'erreur du serveur (err.data):', errorData);
-      } else if (err.response?.data) {
-        errorData = err.response.data;
-        console.error('Détails de l\'erreur du serveur (err.response.data):', errorData);
-      } else if (err.message) {
-        errorMessage = `Erreur: ${err.message}`;
-      }
-      
-      // Détecter spécifiquement l'erreur de transaction/duplicate entry
+      let errorMessage = 'Erreur lors de la création de la facture. Veuillez réessayer.';
+      const errorData = err.data || err.response?.data;
       const isTransactionError = err.status === 500 && (
         err.message?.includes('TransactionManagementError') ||
         err.message?.includes('atomic') ||
-        errorData?.includes('Duplicate entry') ||
-        errorData?.includes('core_sequencefacture.boutique_id') ||
-        (typeof errorData === 'string' && errorData.includes('TransactionManagementError'))
+        (typeof errorData === 'string' && (
+          errorData.includes('Duplicate entry') ||
+          errorData.includes('TransactionManagementError')
+        ))
       );
       
       if (isTransactionError) {
-        errorMessage = 'Erreur de base de données lors de la génération du numéro de facture. Veuillez réessayer dans quelques instants.';
-        console.error('⚠️ Erreur de transaction détectée - problème d\'index unique sur SequenceFacture');
-        console.error('💡 Solution: Exécuter la migration 0035_fix_sequence_facture_unique_index.py sur le serveur');
-      } else {
-        // Extraire le message d'erreur normal
-        if (errorData) {
-          if (typeof errorData === 'string') {
-            errorMessage = `Erreur serveur: ${errorData}`;
-          } else if (errorData.detail) {
-            errorMessage = `Erreur serveur: ${errorData.detail}`;
-          } else if (errorData.message) {
-            errorMessage = `Erreur serveur: ${errorData.message}`;
-          } else if (errorData.non_field_errors) {
-            errorMessage = `Erreur: ${Array.isArray(errorData.non_field_errors) ? errorData.non_field_errors.join(', ') : errorData.non_field_errors}`;
-          } else {
-            // Afficher toutes les erreurs de validation
-            const validationErrors = Object.entries(errorData)
-              .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
-              .join('; ');
-            errorMessage = `Erreur de validation: ${validationErrors || JSON.stringify(errorData)}`;
-          }
-        }
+        errorMessage = 'Erreur temporaire. Veuillez réessayer dans quelques instants.';
+      } else if (err.status === 401) {
+        errorMessage = 'Session expirée. Veuillez vous reconnecter.';
+      } else if (err.status === 403) {
+        errorMessage = 'Vous n\'avez pas les permissions pour créer une facture.';
+      } else if (err.status === 400) {
+        errorMessage = 'Données invalides. Vérifiez les informations saisies.';
+      } else if (err.status === 500 || err.status === 502 || err.status === 503) {
+        errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
+      } else if (err.name === 'FetchError' || err.message?.includes('fetch')) {
+        errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
       }
       
       error(errorMessage);
-      console.error('Données envoyées qui ont causé l\'erreur:', factureData);
-      isSubmitting.value = false; // Réinitialiser l'état de soumission
-      return; // Arrêter l'exécution en cas d'erreur
+      isSubmitting.value = false;
+      return;
     }
 
     if (!facture?.id) {
@@ -1797,336 +1782,55 @@ const submitInvoice = async () => {
         nuxtApp.$invalidateCacheByPattern('/api/mouvements-stock')
         console.log('[Cache] Cache invalidé après création de facture')
       }
-      // Invalider aussi via useApi si disponible
-      try {
-        const { useApi } = await import('@/stores/useApi')
-        // useApi invalide automatiquement lors des appels POST/PUT/DELETE
-      } catch {}
     }
 
-    if (invoice.value.recipientType === 'client') {
-      const endpoint = `${API_BASE_URL}/api/commandes-client/`;
-      let isSuccess = true;
-
-      for (const item of invoice.value.items) {
-        // Créer la commande client
-        const commandeData = {
-          facture: facture.id,
-          produit: item.id,
-          quantite: item.quantity,
-          prix_unitaire_fcfa: item.price,
-          prix_initial_fcfa: item.prix_achat || item.price,
-          justification_prix: item.justification || ''
-        };
-
-        console.log('Données commande à envoyer:', commandeData);
-        console.log('Item complet:', item);
-
-        try {
-          // Enregistrer la commande
-          const commandeResponse = await $fetch(endpoint, {
-            method: 'POST',
-            body: commandeData,
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token && { 'Authorization': `Bearer ${token}` })
-            }
-          });
-
-          // Mettre à jour le stock dans l'entrepôt
-          const stockData = await $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutique.value?.id}&produit=${item.id}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token && { 'Authorization': `Bearer ${token}` })
-            }
-          });
-
-          if (Array.isArray(stockData) && stockData.length > 0) {
-            const stock = stockData[0];
-            const nouveauStock = stock.quantite - item.quantity;
-            
-            // Mettre à jour le stock
-            await $fetch(`${API_BASE_URL}/api/stocks/${stock.id}/`, {
-              method: 'PATCH',
-              body: { quantite: nouveauStock },
-              headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
-              }
-            });
-
-            // Créer un mouvement de stock pour tracer la sortie
-            await $fetch(`${API_BASE_URL}/api/mouvements-stock/`, {
-              method: 'POST',
-              body: {
-                produit: item.id,
-                entrepot: boutique.value.id,
-                type_mouvement: 'sortie',
-                quantite: item.quantity,
-                quantite_avant: stock.quantite,
-                quantite_apres: nouveauStock,
-                motif: `Vente - Facture ${facture.numero}`,
-                reference_document: facture.numero
-              },
-              headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
-              }
-            });
-          }
-
-        } catch (err: any) {
-          console.error(`Erreur pour l'article ${item.id}:`, err);
-          console.error('Données envoyées:', commandeData);
-          
-          // Gérer l'erreur sans lire le body deux fois
-          if (err.data) {
-            console.error('Détails de l\'erreur du serveur (err.data):', err.data);
-          } else if (err.response?.data) {
-            console.error('Détails de l\'erreur du serveur (err.response.data):', err.response.data);
-          } else if (err.response) {
-            try {
-              // Lire le body une seule fois
-              const contentType = err.response.headers?.get('content-type') || '';
-              if (contentType.includes('application/json')) {
-                const errorData = await err.response.json();
-                console.error('Détails de l\'erreur du serveur:', errorData);
-              } else {
-                const errorText = await err.response.text();
-                console.error('Réponse du serveur (texte):', errorText);
-              }
-            } catch (readErr) {
-              console.error('Impossible de lire la réponse d\'erreur:', readErr);
-            }
-          }
-          
-          isSuccess = false;
-          break;
-        }
-      }
-
-    if (isSuccess) {
-        // Générer le PDF
-      const pdfGenerated = await generatePDF();
-      if (pdfGenerated) {
-          success(`Facture client ${invoice.value.number} enregistrée et téléchargée`);
-          // Effacer la sauvegarde automatique
-          clearDraft()
-      } else {
-        error("Erreur lors de la génération du PDF");
-      }
-      
-      // IMPORTANT: Recharger les produits pour mettre à jour les stocks (forcer le rechargement sans cache)
-      console.log('[Facture] Rechargement des produits après création de facture...');
-      try {
-        // Attendre un peu pour que le backend mette à jour les stocks
-        await new Promise(resolve => setTimeout(resolve, 300));
-        await fetchProducts(true); // true = forceReload pour éviter le cache
-        console.log('[Facture] Produits rechargés avec succès, stocks mis à jour');
-        
-        // Forcer la réactivité de Vue en recréant la liste
-        const updatedProducts = [...products.value];
-        products.value = [];
-        await nextTick();
-        products.value = updatedProducts;
-        console.log('[Facture] Liste des produits mise à jour pour la réactivité');
-      } catch (err) {
-        console.error('[Facture] Erreur lors du rechargement des produits:', err);
-      }
-      
-      // Réinitialiser le formulaire
-      invoice.value = {
-        number: generateInvoiceNumber(),
-        date: new Date().toISOString().split("T")[0],
-        recipientType: "",
-        client: { id: 0, nom: "", prenom: "", telephone: "" },
-        partenaire: "",
-        items: [],
-        montantVerse: 0,
-      };
-      
-      // Réinitialiser l'état de soumission
-      isSubmitting.value = false;
-      
-      // Actualiser la page après un court délai pour s'assurer que tout est à jour
-      if (process.client) {
-        console.log('[Facture] Planification du rechargement de la page dans 1.5 secondes...');
-        setTimeout(() => {
-          console.log('[Facture] Rechargement de la page maintenant...');
-          // Utiliser window.location.href pour forcer un rechargement complet
-          window.location.href = window.location.href;
-        }, 1500); // Attendre 1.5 secondes pour que l'utilisateur voie le message de succès
-      }
-      } else {
-        // En cas d'échec, réinitialiser aussi
-        isSubmitting.value = false;
-      }
-
+    // Générer le PDF
+    const pdfGenerated = await generatePDF();
+    if (pdfGenerated) {
+      const typeLabel = invoice.value.recipientType === 'client' ? 'client' : 'partenaire';
+      success(`Facture ${typeLabel} ${invoice.value.number} enregistrée et téléchargée`);
+      clearDraft()
     } else {
-      // Logique pour les partenaires...
-      const endpoint = `${API_BASE_URL}/api/commandes-partenaire/`;
-      let isSuccess = true;
-
-      const selectedPartner = partners.value.find(
-        p => `${p.prenom} ${p.nom}` === invoice.value.partenaire
-      );
-
-      if (!selectedPartner?.id) {
-        error("Partenaire introuvable");
-        return;
-      }
-
-      for (const item of invoice.value.items) {
-        // Créer la commande partenaire
-        const commandeData = {
-          facture: facture.id,
-          produit: item.id,
-          quantite: item.quantity,
-          prix_unitaire_fcfa: item.price,
-          prix_initial_fcfa: item.prix_achat || item.price,
-          justification_prix: item.justification || ''
-        };
-
-        try {
-          const commandeResponse = await $fetch(endpoint, {
-            method: 'POST',
-            body: commandeData,
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token && { 'Authorization': `Bearer ${token}` })
-            }
-          });
-
-          // Mettre à jour le stock dans l'entrepôt
-          const stockData = await $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutique.value?.id}&produit=${item.id}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token && { 'Authorization': `Bearer ${token}` })
-            }
-          });
-
-          if (Array.isArray(stockData) && stockData.length > 0) {
-            const stock = stockData[0];
-            const nouveauStock = stock.quantite - item.quantity;
-            
-            // Mettre à jour le stock
-            await $fetch(`${API_BASE_URL}/api/stocks/${stock.id}/`, {
-              method: 'PATCH',
-              body: { quantite: nouveauStock },
-              headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
-              }
-            });
-
-            // Créer un mouvement de stock pour tracer la sortie
-            await $fetch(`${API_BASE_URL}/api/mouvements-stock/`, {
-              method: 'POST',
-              body: {
-                produit: item.id,
-                entrepot: boutique.value.id,
-                type_mouvement: 'sortie',
-                quantite: item.quantity,
-                quantite_avant: stock.quantite,
-                quantite_apres: nouveauStock,
-                motif: `Vente - Facture ${facture.numero}`,
-                reference_document: facture.numero
-              },
-              headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
-              }
-            });
-          }
-
-        } catch (err: any) {
-          console.error(`Erreur pour l'article ${item.id}:`, err);
-          console.error('Données envoyées:', commandeData);
-          
-          // Gérer l'erreur sans lire le body deux fois
-          if (err.data) {
-            console.error('Détails de l\'erreur du serveur (err.data):', err.data);
-          } else if (err.response?.data) {
-            console.error('Détails de l\'erreur du serveur (err.response.data):', err.response.data);
-          } else if (err.response) {
-            try {
-              // Lire le body une seule fois
-              const contentType = err.response.headers?.get('content-type') || '';
-              if (contentType.includes('application/json')) {
-                const errorData = await err.response.json();
-                console.error('Détails de l\'erreur du serveur:', errorData);
-              } else {
-                const errorText = await err.response.text();
-                console.error('Réponse du serveur (texte):', errorText);
-              }
-            } catch (readErr) {
-              console.error('Impossible de lire la réponse d\'erreur:', readErr);
-            }
-          }
-          
-          isSuccess = false;
-          break;
-        }
-      }
-
-      if (isSuccess) {
-        // Générer le PDF
-        const pdfGenerated = await generatePDF();
-        if (pdfGenerated) {
-          success(`Facture partenaire ${invoice.value.number} enregistrée et téléchargée`);
-          // Effacer la sauvegarde automatique
-          clearDraft()
-        } else {
-          error("Erreur lors de la génération du PDF");
-        }
-
-        // IMPORTANT: Recharger les produits pour mettre à jour les stocks (forcer le rechargement sans cache)
-        console.log('[Facture] Rechargement des produits après création de facture partenaire...');
-        try {
-          // Attendre un peu pour que le backend mette à jour les stocks
-          await new Promise(resolve => setTimeout(resolve, 300));
-          await fetchProducts(true); // true = forceReload pour éviter le cache
-          console.log('[Facture] Produits rechargés avec succès, stocks mis à jour');
-          
-          // Forcer la réactivité de Vue en recréant la liste
-          const updatedProducts = [...products.value];
-          products.value = [];
-          await nextTick();
-          products.value = updatedProducts;
-          console.log('[Facture] Liste des produits mise à jour pour la réactivité');
-        } catch (err) {
-          console.error('[Facture] Erreur lors du rechargement des produits:', err);
-        }
-
-        // Réinitialiser le formulaire
-        invoice.value = {
-          number: generateInvoiceNumber(),
-          date: new Date().toISOString().split("T")[0],
-          recipientType: "",
-          client: { id: 0, nom: "", prenom: "", telephone: "" },
-          partenaire: "",
-          items: [],
-          montantVerse: 0,
-        };
-        
-        // Réinitialiser l'état de soumission
-        isSubmitting.value = false;
-        
-        // Actualiser la page après un court délai pour s'assurer que tout est à jour
-        if (process.client) {
-          console.log('[Facture] Planification du rechargement de la page dans 1.5 secondes...');
-          setTimeout(() => {
-            console.log('[Facture] Rechargement de la page maintenant...');
-            // Utiliser window.location.href pour forcer un rechargement complet
-            window.location.href = window.location.href;
-          }, 1500); // Attendre 1.5 secondes pour que l'utilisateur voie le message de succès
-        }
-      } else {
-        // En cas d'échec, réinitialiser aussi
-        isSubmitting.value = false;
-      }
+      error("Erreur lors de la génération du PDF");
+    }
+    
+    // Recharger les produits pour mettre à jour les stocks
+    console.log('[Facture] Rechargement des produits après création de facture...');
+    try {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await fetchProducts(true);
+      console.log('[Facture] Produits rechargés avec succès, stocks mis à jour');
+      
+      const updatedProducts = [...products.value];
+      products.value = [];
+      await nextTick();
+      products.value = updatedProducts;
+      console.log('[Facture] Liste des produits mise à jour pour la réactivité');
+    } catch (err) {
+      console.error('[Facture] Erreur lors du rechargement des produits:', err);
+    }
+    
+    // Réinitialiser le formulaire
+    invoice.value = {
+      number: generateInvoiceNumber(),
+      date: new Date().toISOString().split("T")[0],
+      recipientType: "",
+      client: { id: 0, nom: "", prenom: "", telephone: "" },
+      partenaire: "",
+      items: [],
+      montantVerse: 0,
+    };
+    
+    // Réinitialiser l'état de soumission
+    isSubmitting.value = false;
+    
+    // Actualiser la page après un court délai pour s'assurer que tout est à jour
+    if (process.client) {
+      console.log('[Facture] Planification du rechargement de la page dans 1.5 secondes...');
+      setTimeout(() => {
+        console.log('[Facture] Rechargement de la page maintenant...');
+        window.location.href = window.location.href;
+      }, 1500);
     }
 
   } catch (err: any) {

@@ -626,35 +626,7 @@
           </div>
         </div>
         
-        <!-- FAQ ou aide -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div class="flex items-start">
-            <svg class="w-6 h-6 text-blue-600 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-            </svg>
-            <div>
-              <h3 class="text-lg font-medium text-blue-900 mb-2">
-                ✅ Tous les plans sont maintenant affichés !
-              </h3>
-              <p class="text-blue-700 mb-3">
-                Comme demandé, tous les plans d'abonnement sont maintenant visibles sur cette page. 
-                Vous pouvez voir les détails de chaque plan et leurs fonctionnalités.
-              </p>
-              <div class="text-sm text-blue-600 mb-3">
-                <p>✅ Plan Free - Gratuit</p>
-                <p>✅ Plan Basic - 9,900 XAF/mois</p>
-                <p>✅ Plan Premium - 29,000 XAF/mois</p>
-                <p>✅ Plan Organisation - 55,000 XAF/mois</p>
-              </div>
-              <div class="text-sm text-blue-600">
-                <p><strong>📊 Données d'utilisation :</strong></p>
-                <p>• <span class="text-green-600">Données réelles</span> : Récupérées depuis l'API</p>
-                <p>• <span class="text-orange-600">Données estimées</span> : Utilisées si l'API n'est pas disponible</p>
-                <p>• Boutiques, utilisateurs, produits et factures sont maintenant correctement affichés</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
 

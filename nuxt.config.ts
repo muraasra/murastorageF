@@ -1,29 +1,19 @@
 export default defineNuxtConfig({
-  ssr: false, // Mode SPA pour éviter les problèmes SSR en production
+  ssr: false,
 
   nitro: {
     preset: 'static'
   },
 
   devtools: { enabled: true },
+  
   modules: ['@nuxt/ui', '@pinia/nuxt'],
 
-  // Optimisations pour les transitions rapides
-  experimental: {
-    payloadExtraction: false, // Évite l'extraction de payload pour des transitions plus rapides
-    appManifest: false // Désactive la récupération de /_nuxt/builds/meta/*.json
-  },
-
-  // Configuration des transitions
-  router: {
-    options: {
-      scrollBehaviorType: 'smooth'
-    }
-  },
-
-  // Optimisations de rendu
-  render: {
-    resourceHints: true
+  // Configuration du module tailwindcss pour éviter les problèmes avec jiti
+  tailwindcss: {
+    exposeConfig: false,
+    injectPosition: 'first',
+    viewer: false,
   },
 
   // Configuration des composants
@@ -32,16 +22,9 @@ export default defineNuxtConfig({
     dirs: ['~/components']
   },
 
-  // Configuration de build optimisée
+  // Configuration de build
   build: {
-    transpile: ['@nuxt/ui', '@nuxt/kit']
-  },
-
-  // Configuration Vite simplifiée
-  vite: {
-    optimizeDeps: {
-      include: ['@nuxt/ui']
-    }
+    transpile: ['@nuxt/ui']
   },
 
   app: {
@@ -83,17 +66,15 @@ export default defineNuxtConfig({
         { name: 'google-site-verification', content: '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA' }
       ],
       link: [
-        // Favicon / Logos
         { rel: 'icon', type: 'image/png', href: '/img/og-image-MuraSrorage.png' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/img/og-image-MuraSrorage.png' },
         { rel: 'shortcut icon', href: '/favicon.ico' },
-        // Canonical URL
         { rel: 'canonical', href: 'https://murastorage.netlify.app' }
       ]
     }
   },
 
-          css: ['~/assets/css/main.css', '~/assets/css/transitions.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/transitions.css'],
 
   postcss: {
     plugins: {
@@ -102,5 +83,5 @@ export default defineNuxtConfig({
     },
   },
 
-  compatibilityDate: '2025-05-19'
+  compatibilityDate: '2024-07-01'
 })

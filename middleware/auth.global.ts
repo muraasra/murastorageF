@@ -4,6 +4,28 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // Ne rien faire côté serveur (SPA)
   if (process.server) return
 
+  const normalizeBoolean = (value: unknown) => {
+    if (typeof value === 'boolean') return value
+    if (typeof value === 'number') return value !== 0
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase()
+      if (normalized === 'true') return true
+      if (normalized === 'false') return false
+    }
+    return undefined
+  }
+
+  const getEmailVerificationStatus = (userData: any) => {
+    const keys = ['email_verified', 'emailVerified', 'is_email_verified', 'is_verified', 'verified', 'isVerified']
+    if (!userData) return undefined
+    for (const key of keys) {
+      if (Object.prototype.hasOwnProperty.call(userData, key)) {
+        return normalizeBoolean(userData[key])
+      }
+    }
+    return undefined
+  }
+
   // Vérification de sécurité pour éviter les erreurs avec to undefined
   if (!to || !to.path) {
     console.warn('[Auth Middleware] Route ou path non défini, arrêt du middleware')
@@ -14,6 +36,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (process.client) {
     const token = localStorage.getItem('access_token')
     const user = localStorage.getItem('user')
+    let parsedUserForVerification: any = null
+    if (user) {
+      try {
+        parsedUserForVerification = JSON.parse(user)
+      } catch (e) {
+        parsedUserForVerification = null
+      }
+    }
+
+    const explicitEmailVerified = getEmailVerificationStatus(parsedUserForVerification)
+    const storedEmailVerified = normalizeBoolean(localStorage.getItem('email_verified'))
+    const emailVerified = explicitEmailVerified ?? storedEmailVerified ?? false
 
     console.log('[Auth Middleware] Route:', to.path)
     console.log('[Auth Middleware] Token:', token ? 'Présent' : 'Absent')
@@ -68,6 +102,16 @@ export default defineNuxtRouteMiddleware(async (to) => {
       }
 
       console.log('[Auth Middleware] Page publique autorisée sans token:', to.path)
+      return
+    }
+
+    if (token && emailVerified === false) {
+      console.log('[Auth Middleware] Email non vérifié, accès restreint')
+      const isHomePage = to.path && to.path.startsWith('/home/')
+      const isLoginPage = to.path === '/connexion'
+      if (!isHomePage && !isLoginPage && to.path !== '/home/verification') {
+        return navigateTo('/home/verification')
+      }
       return
     }
 

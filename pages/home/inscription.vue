@@ -10,9 +10,9 @@ definePageMeta({
 // Métadonnées SEO optimisées
 useSeoMeta({
   title: 'Inscription Mura Storage - Créez votre Compte Gratuit | Essai 14 Jours',
-  description: 'Inscrivez-vous gratuitement à Mura Storage et commencez votre essai de 14 jours. Créez votre compte entreprise, gérez vos stocks, inventaires et factures. Sans engagement, sans carte bancaire requise.',
+  description: 'Inscrivez-vous gratuitement à Mura Storage et commencez votre essai de 3 mois. Créez votre compte entreprise, gérez vos stocks, inventaires et factures. Sans engagement, sans carte bancaire requise.',
   ogTitle: 'Inscription Mura Storage - Créez votre Compte Gratuit',
-  ogDescription: 'Inscrivez-vous gratuitement à Mura Storage. Essai 14 jours sans engagement. Gestion de stock, inventaires, facturation.',
+  ogDescription: 'Inscrivez-vous gratuitement à Mura Storage. Essai 3 mois sans engagement. Gestion de stock, inventaires, facturation.',
   ogType: 'website',
   ogUrl: 'https://murastorage.netlify.app/home/inscription',
   ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
@@ -341,8 +341,8 @@ const submitForm = async () => {
     // Debug: Afficher les données envoyées
     console.log('Données envoyées au backend:', registrationData)
     
-    // Appel à l'API
-    const { data, error: apiError } = await useApi(`/api/inscription/`, {
+    // Appel à l'API (sans /api car useApi l'ajoute déjà)
+    const { data, error: apiError } = await useApi(`/inscription/`, {
       method: 'POST',
       body: registrationData,
       server: false

@@ -1,9 +1,0 @@
-Nom,Référence,Description,Prix d'achat,Prix de vente,Stock actuel,Catégorie,Code-barre,Unité,Fournisseur,Marque,Modèle,État,Devise,SKU
-iPhone 15 Pro,IPH15-001,"Smartphone Apple avec puce A17 Pro et caméra 48MP",650000,750000,8,telephone,1234567890123,unitaire,"Apple Store",Apple,"iPhone 15 Pro",actif,XAF,IPH15-001
-MacBook Air M2,MBA-M2-001,"Ordinateur portable Apple avec puce M2 et écran 13""",950000,1150000,5,ordinateur,2345678901234,unitaire,"Apple Store",Apple,"MacBook Air M2",actif,XAF,MBA-M2-001
-AirPods Pro 2,APP2-001,"Écouteurs sans fil avec réduction de bruit et spatial audio",180000,220000,15,accessoire,3456789012345,unitaire,"Apple Store",Apple,"AirPods Pro 2",actif,XAF,APP2-001
-iPad Air 5,IPA5-001,"Tablette Apple avec puce M1 et écran Liquid Retina",450000,550000,6,telephone,4567890123456,unitaire,"Apple Store",Apple,"iPad Air 5",actif,XAF,IPA5-001
-Apple Watch Series 9,AWS9-001,"Montre connectée Apple avec écran Always-On et GPS",280000,350000,12,accessoire,5678901234567,unitaire,"Apple Store",Apple,"Apple Watch Series 9",actif,XAF,AWS9-001
-Samsung Galaxy S24,SGS24-001,"Smartphone Samsung avec IA intégrée et caméra 200MP",580000,680000,7,telephone,6789012345678,unitaire,"Samsung Store",Samsung,"Galaxy S24",actif,XAF,SGS24-001
-Dell XPS 13,DXPS13-001,"Ordinateur portable Dell haut de gamme avec écran 4K",800000,950000,4,ordinateur,7890123456789,unitaire,"Dell Store",Dell,"XPS 13",actif,XAF,DXPS13-001
-Sony WH-1000XM5,SWXM5-001,"Casque audio Sony avec réduction de bruit et qualité Hi-Res",250000,300000,9,accessoire,8901234567890,unitaire,"Sony Store",Sony,"WH-1000XM5",actif,XAF,SWXM5-001

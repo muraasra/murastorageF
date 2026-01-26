@@ -55,7 +55,17 @@ export async function useApi<T = unknown>(url: string, options: any = {}) {
   }
   
   // Construire l'URL complète si nécessaire
-  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
+  let fullUrl: string
+  if (url.startsWith('http')) {
+    fullUrl = url
+  } else if (url.startsWith('/api/') || url.startsWith('/api')) {
+    // URL commence déjà par /api
+    fullUrl = `${API_BASE_URL}${url}`
+  } else {
+    // Ajouter /api/ au début
+    const cleanUrl = url.startsWith('/') ? url : `/${url}`
+    fullUrl = `${API_BASE_URL}/api${cleanUrl}`
+  }
   
   // Déterminer un TTL de cache par type d'endpoint et méthode
   const resolveCachePolicy = (endpoint: string, method: string) => {

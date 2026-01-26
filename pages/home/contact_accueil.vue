@@ -163,13 +163,23 @@ const closeToast = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50 dark:from-gray-900 dark:to-gray-800">
+  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
     <!-- Hero Section -->
-    <section class="relative py-16 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-7xl mx-auto">
+    <section class="relative py-20 md:py-28 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <!-- Background decorations -->
+      <div class="absolute inset-0">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-emerald-200/30 dark:bg-emerald-900/20 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-72 h-72 bg-blue-200/30 dark:bg-blue-900/20 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div class="relative max-w-7xl mx-auto">
         <div class="text-center mb-16">
-          <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-            Contactez-nous
+          <span class="inline-flex items-center px-4 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-6">
+            Support & Assistance
+          </span>
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6">
+            Contactez
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-blue-600">-nous</span>
           </h1>
           <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Notre équipe d'experts est là pour vous accompagner dans votre transformation digitale. 
