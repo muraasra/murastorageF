@@ -32,6 +32,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
       '/home/faq',
       '/home/services',
       '/home/tarification',
+      '/bingsiteauth.xml',
+      '/bingsiteauth',
       
       // Pages d'inscription
       '/home/inscription',
