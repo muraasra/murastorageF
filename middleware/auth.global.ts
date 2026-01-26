@@ -66,6 +66,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
       '/home/faq',
       '/home/services',
       '/home/tarification',
+      '/bingsiteauth.xml',
+      '/bingsiteauth',
       
       // Pages d'inscription
       '/home/inscription',
@@ -75,6 +77,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
       '/reset-password',
       '/sitemap',
       '/sitemap.xml',
+      '/BingSiteAuth.xml',
+      '/BingSiteAuth',
       
       '/cookies',
       
