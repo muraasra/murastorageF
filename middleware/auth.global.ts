@@ -41,6 +41,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
       '/reset-password',
       '/sitemap',
       '/sitemap.xml',
+      '/BingSiteAuth.xml',
+      '/BingSiteAuth',
       
       '/cookies',
       
