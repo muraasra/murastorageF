@@ -778,9 +778,7 @@ onUnmounted(() => {
 @keyframes chart-bar {
   0% { transform: scaleY(0); }
   100% { transform: scaleY(1); }
-}
-
-.animate-chart-bar {
+}.animate-chart-bar {
   transform-origin: bottom;
   animation: chart-bar 1s ease-out forwards;
 }.animation-delay-100 { animation-delay: 100ms; }
