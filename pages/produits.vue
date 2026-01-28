@@ -1878,7 +1878,7 @@ const canImportCSVUI = computed(() => canCreateResource('produits'))
 
 function handleCreateProduitClick() {
   if (!canCreateProduitUI.value) {
-    alert('Limite de produits atteinte. Passez à un plan supérieur pour créer plus de produits.')
+    warning('Limite de produits atteinte. Passez à un plan supérieur pour créer plus de produits.')
     return
   }
   // ouvrir le modal existant

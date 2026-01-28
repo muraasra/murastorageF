@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue";
 import { API_BASE_URL } from '@/constants'
+import { useNotification } from '@/types/useNotification'
 
 definePageMeta({
   layout: "accueil",
 });
+
+const notif = useNotification()
 
 useSeoMeta({
   title: 'Contactez Mura Storage - Support et Assistance | Groupe Mura',
@@ -38,18 +41,6 @@ const errors = ref({
 });
 
 const isLoading = ref(false);
-const toastMessage = ref("");
-const toastClass = ref("");
-
-const showToast = (message: string, toastClassValue: string) => {
-  toastMessage.value = message;
-  toastClass.value = toastClassValue;
-
-  setTimeout(() => {
-    toastMessage.value = "";
-    toastClass.value = "";
-  }, 5000);
-};
 
 const validateField = (fieldName: string, value: string) => {
   let isValid = true;
@@ -109,7 +100,7 @@ const submitForm = async () => {
   );
 
   if (!isValid) {
-    showToast("Veuillez corriger les erreurs dans le formulaire.", "bg-red-500");
+    notif.error("Veuillez corriger les erreurs dans le formulaire.");
     return;
   }
 
@@ -133,7 +124,7 @@ const submitForm = async () => {
     }
 
     if (result.success) {
-      showToast(result.message, "bg-green-500");
+      notif.success(result.message);
       
       // Reset form
       form.value = {
@@ -150,15 +141,10 @@ const submitForm = async () => {
     
   } catch (error: any) {
     console.error("Erreur:", error);
-    showToast(error.message || "Une erreur est survenue lors de l'envoi. Veuillez réessayer.", "bg-red-500");
+    notif.error(error.message || "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
   } finally {
     isLoading.value = false;
   }
-};
-
-const closeToast = () => {
-  toastMessage.value = "";
-  toastClass.value = "";
 };
 </script>
 
@@ -443,33 +429,5 @@ const closeToast = () => {
       </div>
     </section>
 
-    <!-- Toast Notification -->
-    <div
-      v-if="toastMessage"
-      class="fixed top-4 right-4 z-50 max-w-sm w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
-    >
-      <div class="p-4">
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <Icon 
-              :icon="toastClass.includes('green') ? 'material-symbols:check-circle' : 'material-symbols:error'" 
-              width="20" 
-              height="20" 
-              :class="toastClass.includes('green') ? 'text-green-500' : 'text-red-500'"
-            />
-          </div>
-          <div class="ml-3 flex-1">
-            <p class="text-sm font-medium text-gray-900 dark:text-white">
-              {{ toastMessage }}
-            </p>
-          </div>
-          <div class="ml-4 flex-shrink-0">
-            <button @click="closeToast" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-              <Icon icon="material-symbols:close" width="16" height="16" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>

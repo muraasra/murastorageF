@@ -1,8 +1,12 @@
 import { defineNuxtRouteMiddleware, navigateTo } from '#app'
 
+const isDev = () => (typeof import.meta !== 'undefined' && !!import.meta.env?.DEV) || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production')
+
 export default defineNuxtRouteMiddleware(async (to) => {
   // Ne rien faire côté serveur (SPA)
   if (process.server) return
+
+  const log = (...args: unknown[]) => { if (isDev()) console.log(...args) }
 
   const normalizeBoolean = (value: unknown) => {
     if (typeof value === 'boolean') return value
@@ -28,7 +32,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // Vérification de sécurité pour éviter les erreurs avec to undefined
   if (!to || !to.path) {
-    console.warn('[Auth Middleware] Route ou path non défini, arrêt du middleware')
+    if (isDev()) console.warn('[Auth Middleware] Route ou path non défini, arrêt du middleware')
     return
   }
 
@@ -49,9 +53,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     const storedEmailVerified = normalizeBoolean(localStorage.getItem('email_verified'))
     const emailVerified = explicitEmailVerified ?? storedEmailVerified ?? false
 
-    console.log('[Auth Middleware] Route:', to.path)
-    console.log('[Auth Middleware] Token:', token ? 'Présent' : 'Absent')
-    console.log('[Auth Middleware] User:', user ? 'Présent' : 'Absent')
+    log('[Auth Middleware] Route:', to.path, 'Token:', token ? 'Présent' : 'Absent', 'User:', user ? 'Présent' : 'Absent')
 
     // Pages publiques autorisées sans authentification
     const publicPages = [
@@ -101,19 +103,19 @@ export default defineNuxtRouteMiddleware(async (to) => {
       const isPublicPage = publicPages.some(page => to.path === page) || (to.path && to.path.startsWith('/home/'))
 
       if (!isPublicPage) {
-        console.log('[Auth Middleware] Page privée sans token, redirection vers /connexion')
+        log('[Auth Middleware] Page privée sans token, redirection vers /connexion')
         return navigateTo('/connexion')
       }
 
-      console.log('[Auth Middleware] Page publique autorisée sans token:', to.path)
+      log('[Auth Middleware] Page publique autorisée sans token:', to.path)
       return
     }
 
+    // Compte non vérifié : accès uniquement aux pages publiques + connexion + déconnexion (via connexion/verification)
     if (token && emailVerified === false) {
-      console.log('[Auth Middleware] Email non vérifié, accès restreint')
-      const isHomePage = to.path && to.path.startsWith('/home/')
-      const isLoginPage = to.path === '/connexion'
-      if (!isHomePage && !isLoginPage && to.path !== '/home/verification') {
+      log('[Auth Middleware] Email non vérifié, accès restreint aux pages publiques et connexion')
+      const isPublicPage = publicPages.some(page => to.path === page) || (to.path && to.path.startsWith('/home/'))
+      if (!isPublicPage) {
         return navigateTo('/home/verification')
       }
       return
@@ -152,20 +154,20 @@ export default defineNuxtRouteMiddleware(async (to) => {
         const userData = JSON.parse(user)
         const userRole = userData.role
 
-        console.log('[Auth Middleware] Rôle utilisateur:', userRole)
+        log('[Auth Middleware] Rôle utilisateur:', userRole)
 
         if (userRole === 'superadmin') {
-          console.log('[Auth Middleware] SuperAdmin détecté')
+          log('[Auth Middleware] SuperAdmin détecté')
           
           // SuperAdmin peut accéder à /superadmin
           if (to.path && to.path.startsWith('/superadmin')) {
-            console.log('[Auth Middleware] Accès autorisé à /superadmin')
+            log('[Auth Middleware] Accès autorisé à /superadmin')
             return
           }
           
           // SuperAdmin peut accéder à /user (peut sélectionner une boutique)
           if (to.path && to.path.startsWith('/user')) {
-            console.log('[Auth Middleware] SuperAdmin accès à /user autorisé')
+            log('[Auth Middleware] SuperAdmin accès à /user autorisé')
             return
           }
           
@@ -180,11 +182,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
           }
           
         } else if (userRole === 'admin' || userRole === 'user') {
-          console.log('[Auth Middleware] Admin/User détecté')
+          log('[Auth Middleware] Admin/User détecté')
           
           // Admin/User ne peut pas accéder à /superadmin
           if (to.path && to.path.startsWith('/superadmin')) {
-            console.log('[Auth Middleware] Accès refusé à /superadmin pour Admin/User')
+            log('[Auth Middleware] Accès refusé à /superadmin pour Admin/User')
             const boutique = localStorage.getItem('boutique')
             let hasValidBoutique = false
             if (boutique && boutique !== 'null' && boutique !== 'undefined') {
@@ -245,7 +247,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
       }
     } else {
       // Si token présent mais pas de données utilisateur (corrompu ou manquant), rediriger vers connexion
-      console.log('[Auth Middleware] Token présent mais données utilisateur manquantes/corrompues, redirection vers /connexion')
+      log('[Auth Middleware] Token présent mais données utilisateur manquantes/corrompues, redirection vers /connexion')
       return navigateTo('/connexion')
     }
   }

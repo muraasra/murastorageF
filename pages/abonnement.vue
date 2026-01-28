@@ -163,6 +163,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useSubscription, formatLimit } from '~/composables/useSubscription'
+import { useNotification } from '@/types/useNotification'
 
 definePageMeta({
   layout: 'default',
@@ -178,6 +179,8 @@ const {
   refresh,
   upgradeSubscription
 } = useSubscription()
+
+const { success, error } = useNotification()
 
 // Éviter les appels API côté serveur
 if (process.server) {
@@ -199,9 +202,9 @@ async function handleUpgrade(planId: number) {
   upgradingPlanId.value = planId
   try {
     await upgradeSubscription(planId)
-    alert('Plan mis à jour avec succès !')
-  } catch (error: any) {
-    alert(`Erreur: ${error.message || 'Impossible de mettre à jour le plan'}`)
+    success('Plan mis à jour avec succès !')
+  } catch (err: any) {
+    error(err?.message || 'Impossible de mettre à jour le plan')
   } finally {
     upgradingPlanId.value = null
   }

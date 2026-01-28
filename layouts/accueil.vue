@@ -1,7 +1,9 @@
 <script lang="ts" setup>
+import { defineAsyncComponent } from "vue";
 import AccueilHeader from "~/components/home/AccueilHeader.vue";
-import ChatBot from "~/components/ChatBot.vue";
-import WalkingManager from "~/components/WalkingManager.vue";
+// ChatBot et WalkingManager chargés en différé pour accélérer le first paint
+const ChatBot = defineAsyncComponent(() => import("~/components/ChatBot.vue"));
+const WalkingManager = defineAsyncComponent(() => import("~/components/WalkingManager.vue"));
 
 const currentYear = new Date().getFullYear();
 
@@ -43,12 +45,20 @@ const socialLinks = [
       <slot />
     </main>
     
-    <!-- ChatBot flottant -->
-    <ChatBot />
-    
-    <!-- Bonhomme gestionnaire qui marche -->
+    <!-- ChatBot flottant (chargé en différé) -->
     <ClientOnly>
-      <WalkingManager />
+      <Suspense>
+        <ChatBot />
+        <template #fallback><span /></template>
+      </Suspense>
+    </ClientOnly>
+
+    <!-- Bonhomme gestionnaire (chargé en différé) -->
+    <ClientOnly>
+      <Suspense>
+        <WalkingManager />
+        <template #fallback><span /></template>
+      </Suspense>
     </ClientOnly>
     
     <!-- Footer Amélioré -->

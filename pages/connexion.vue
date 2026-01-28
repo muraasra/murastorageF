@@ -420,6 +420,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { API_BASE_URL } from '@/constants'
+import { useNotification } from '@/types/useNotification'
 
 definePageMeta({
   layout: "accueil",
@@ -455,48 +456,6 @@ const startTyping = () => {
       }, 2000)
     }
   }, 80)
-}
-
-// Notification system
-const useNotification = () => {
-  const showToast = (message: string, type: 'success' | 'error') => {
-    if (process.client) {
-      const toast = document.createElement('div')
-      toast.className = `fixed bottom-4 right-4 z-[9999] px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 ease-in-out backdrop-blur-xl ${
-        type === 'success' 
-          ? 'bg-emerald-500/90 text-white border border-emerald-400/50' 
-          : 'bg-red-500/90 text-white border border-red-400/50'
-      }`
-      
-      const icon = type === 'success' ? '✅' : '❌'
-      toast.innerHTML = `
-        <div class="flex items-center space-x-3">
-          <span class="text-xl">${icon}</span>
-          <span class="font-medium">${message}</span>
-        </div>
-      `
-      
-      toast.style.transform = 'translateY(100%)'
-      toast.style.opacity = '0'
-      document.body.appendChild(toast)
-      
-      setTimeout(() => {
-        toast.style.transform = 'translateY(0)'
-        toast.style.opacity = '1'
-      }, 100)
-      
-      setTimeout(() => {
-        toast.style.transform = 'translateY(100%)'
-        toast.style.opacity = '0'
-        setTimeout(() => toast.remove(), 300)
-      }, 4000)
-    }
-  }
-
-  return { 
-    error: (msg: string) => showToast(msg, 'error'),
-    success: (msg: string) => showToast(msg, 'success')
-  }
 }
 
 const useAuthStore = () => ({
@@ -625,10 +584,19 @@ const handleLogin = async () => {
       }
     }
 
+    const isVerified = (response.user && (typeof (response.user as any).email_verified !== 'undefined')
+      ? (response.user as any).email_verified
+      : (response.user && (typeof (response.user as any).is_email_verified !== 'undefined')
+        ? (response.user as any).is_email_verified
+        : false))
     success('Connexion réussie !')
 
     setTimeout(() => {
-      navigateTo(response.user.role === 'superadmin' ? '/superadmin/dashboard' : '/')
+      if (!isVerified) {
+        navigateTo('/home/verification')
+      } else {
+        navigateTo(response.user.role === 'superadmin' ? '/superadmin/dashboard' : '/')
+      }
     }, 1000)
 
   } catch (err: any) {

@@ -1,12 +1,12 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, defineAsyncComponent } from "vue";
 import AdminSidebar from "@/components/admin/AdminSidebar.vue";
 import SuperAdminSidebar from "@/components/superadmin/SuperAdminSidebar.vue";
 import Sidebar from "@/components/Sidebar.vue";
 import notification from "@/components/notification.vue";
 import UserTopbar from "@/components/UserTopbar.vue";
 import GlobalLoader from "@/components/GlobalLoader.vue";
-import CacheIndicator from "@/components/CacheIndicator.vue";
+const CacheIndicator = defineAsyncComponent(() => import("@/components/CacheIndicator.vue"));
 
 const user = ref(null);
 

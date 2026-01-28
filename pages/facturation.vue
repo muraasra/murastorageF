@@ -884,7 +884,7 @@ const selectProduct = async (product: Product) => {
     const boutiqueId = boutique.value?.id;
     
     if (!boutiqueId) {
-      alert("Boutique non trouvée");
+      error("Boutique non trouvée");
       return;
     }
     
@@ -901,7 +901,7 @@ const selectProduct = async (product: Product) => {
     const stockDisponible = Array.isArray(stockData) && stockData.length > 0 ? stockData[0].quantite : 0;
 
     if (stockDisponible < 1) {
-      alert(`Stock insuffisant pour ${product.nom}. Stock disponible: ${stockDisponible}`);
+      error(`Stock insuffisant pour ${product.nom}. Stock disponible: ${stockDisponible}`);
       return;
     }
     
@@ -936,7 +936,7 @@ const selectProduct = async (product: Product) => {
     showProductSearch.value = false;
   } catch (err) {
     console.error("Erreur lors de la vérification du stock:", err);
-    alert("Erreur lors de la vérification du stock");
+    error("Erreur lors de la vérification du stock");
   }
 };
 

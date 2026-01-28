@@ -504,7 +504,7 @@ const appliquerFiltres = () => {
 const exporterExcel = async () => {
   try {
     if (!mouvements.value || mouvements.value.length === 0) {
-      alert('Aucun mouvement à exporter');
+      warning('Aucun mouvement à exporter');
       return;
     }
 

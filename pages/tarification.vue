@@ -306,6 +306,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useSubscription, formatLimit } from '~/composables/useSubscription'
 import { API_BASE_URL } from '@/constants'
+import { useNotification } from '@/types/useNotification'
 
 definePageMeta({
   layout: 'default',
@@ -322,6 +323,8 @@ const {
   upgradeSubscription,
   renewSubscription
 } = useSubscription()
+
+const { success, error } = useNotification()
 
 // Éviter les appels API côté serveur
 if (process.server) {
@@ -376,9 +379,9 @@ async function handleUpgrade(planId: number) {
   upgradingPlanId.value = planId
   try {
     await upgradeSubscription(planId)
-    alert('Plan mis à jour avec succès !')
-  } catch (error: any) {
-    alert(`Erreur: ${error.message || 'Impossible de mettre à jour le plan'}`)
+    success('Plan mis à jour avec succès !')
+  } catch (err: any) {
+    error(err?.message || 'Impossible de mettre à jour le plan')
   } finally {
     upgradingPlanId.value = null
   }
@@ -389,12 +392,12 @@ async function handleRenew() {
   try {
     const res = await renewSubscription(30)
     if (res.success) {
-      alert('Abonnement renouvelé avec succès !')
+      success('Abonnement renouvelé avec succès !')
     } else {
-      alert(`Erreur: ${res.error || 'Impossible de renouveler'}`)
+      error(res.error || 'Impossible de renouveler')
     }
   } catch (e: any) {
-    alert(`Erreur: ${e?.message || 'Impossible de renouveler'}`)
+    error(e?.message || 'Impossible de renouveler')
   }
 }
 

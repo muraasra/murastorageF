@@ -103,9 +103,7 @@ export const useErrorHandler = () => {
     
     // Utiliser le système de notification de l'app
     if (process.client) {
-      // Vous pouvez intégrer avec votre système de notification existant
-      // Par exemple: useToast().error(title, message)
-      alert(message) // Fallback basique - à remplacer
+      showNotificationError(message)
     }
   }
   

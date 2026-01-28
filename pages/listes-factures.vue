@@ -4,6 +4,7 @@ import { ref, computed, onMounted } from 'vue';
 import table_factures from '@/components/table_factures.vue';
 import { useApi } from '../stores/useApi';
 import { API_BASE_URL } from '@/constants';
+import { useNotification } from '@/types/useNotification';
 
 // PDF génération désactivée - jsPDF non utilisé
 // declare const jsPDF: any;
@@ -39,6 +40,7 @@ interface Versement {
   created_by_username?: string;
 }
 
+const { success } = useNotification();
 const factures = ref<Facture[]>([]);
 const factureSelectionnee = ref<Facture | null>(null);
 const showModal = ref(false);
@@ -409,7 +411,7 @@ async function validerVersement() {
     await loadFactures();
     
     // 5. Afficher confirmation
-    alert(`✅ Versement de ${payment.value.toLocaleString()} FCFA enregistré avec succès !`);
+    success(`Versement de ${payment.value.toLocaleString()} FCFA enregistré avec succès !`);
     
     // 6. Téléchargement PDF désactivé - ne plus appeler telechargerFacture
     // await telechargerFacture(facturePourVersement.value);

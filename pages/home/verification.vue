@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useNotification } from '@/types/useNotification'
 
 definePageMeta({
@@ -15,8 +15,9 @@ const isLoading = ref(false)
 const isResending = ref(false)
 const countdown = ref(0)
 const timer = ref<ReturnType<typeof setInterval> | null>(null)
+const isLoggedIn = ref(false)
 
-// Charger l'email depuis localStorage
+// Charger l'email et l'état depuis localStorage (inscription ou utilisateur connecté non vérifié)
 onMounted(() => {
   if (process.client) {
     const savedData = localStorage.getItem('inscription_form_data')
@@ -28,8 +29,34 @@ onMounted(() => {
         console.error('Erreur lors du chargement des données:', e)
       }
     }
+    // Si arrivé depuis la connexion (compte non vérifié), prendre l'email de l'utilisateur connecté
+    if (!email.value) {
+      const userStr = localStorage.getItem('user')
+      if (userStr) {
+        try {
+          const u = JSON.parse(userStr)
+          if (u?.email) email.value = u.email
+        } catch (_) {}
+      }
+    }
+    isLoggedIn.value = !!localStorage.getItem('access_token')
+    startCountdown()
   }
 })
+
+// Déconnexion (compte non vérifié peut quitter et se déconnecter)
+const handleLogout = () => {
+  if (process.client) {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('email_verified')
+    localStorage.removeItem('entreprise')
+    localStorage.removeItem('boutique')
+    localStorage.removeItem('permissions')
+    navigateTo('/connexion')
+  }
+}
 
 // Fonction pour vérifier le code
 const verifyCode = async () => {
@@ -148,11 +175,6 @@ const startCountdown = () => {
     }
   }, 1000)
 }
-
-// Démarrer le compte à rebours au montage
-onMounted(() => {
-  startCountdown()
-})
 
 // Nettoyer le timer au démontage
 onUnmounted(() => {
@@ -279,10 +301,16 @@ const updateCode = (event: Event) => {
         </div>
       </div>
 
-      <!-- Lien vers la connexion -->
-      <div class="text-center mt-6">
+      <!-- Déconnexion / Connexion -->
+      <div class="text-center mt-6 space-y-2">
+        <p v-if="isLoggedIn" class="text-gray-600 dark:text-gray-400">
+          Compte non vérifié.
+          <button type="button" @click="handleLogout" class="text-emerald-600 hover:underline font-medium">
+            Se déconnecter
+          </button>
+        </p>
         <p class="text-gray-600 dark:text-gray-400">
-          Vous avez déjà un compte ? 
+          Vous avez déjà un compte ?
           <NuxtLink to="/connexion" class="text-emerald-600 hover:underline font-medium">
             Se connecter
           </NuxtLink>

@@ -151,7 +151,8 @@ const addItem = () => {
     currentProductRef.value = "";
   } else {
     // Optionnel: afficher un message d'erreur si le produit n'est pas trouvé
-    alert("Produit non trouvé. Veuillez vérifier la référence.");
+    const { error } = useNotification();
+    error("Produit non trouvé. Veuillez vérifier la référence.");
   }
 };
 

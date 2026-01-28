@@ -2,6 +2,9 @@
 import { ref, onMounted } from "vue";
 import { useApi } from "../stores/useApi";
 import { API_BASE_URL } from '@/constants'
+import { useNotification } from '@/types/useNotification'
+
+const notif = useNotification()
 
 // Typage du partenaire
 interface Partenaire {
@@ -263,11 +266,11 @@ const supprimerPartenaire = async (partenaire: Partenaire) => {
       await chargerDonnees();
     } else {
       console.error("Erreur lors de la suppression du partenaire:", error.value);
-      alert("Erreur lors de la suppression du partenaire: " + (error.value.message || "Erreur inconnue"));
+      notif.error("Erreur lors de la suppression du partenaire: " + (error.value.message || "Erreur inconnue"));
     }
   } catch (err: any) {
     console.error("Erreur inattendue lors de la suppression:", err);
-    alert("Une erreur inattendue est survenue lors de la suppression.");
+    notif.error("Une erreur inattendue est survenue lors de la suppression.");
   }
 };
 

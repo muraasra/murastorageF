@@ -1,10 +1,12 @@
-
 <script setup lang="ts">
 definePageMeta({
     layout: "accueil",
 });
 
 import { ref } from "vue";
+import { useNotification } from '@/types/useNotification';
+
+const { success } = useNotification();
 
 const company = ref("");
 const email = ref("");
@@ -24,7 +26,7 @@ const validateForm = () => {
 
 const submitForm = () => {
   if (validateForm()) {
-    alert("Demande de devis envoyée !");
+    success("Demande de devis envoyée !");
     company.value = email.value = service.value = details.value = "";
   }
 };
