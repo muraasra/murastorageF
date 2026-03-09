@@ -62,7 +62,7 @@ provide('loadingMessage', loadingMessage)
 </script>
 
 <template>
-  <main class="w-full flex h-full">
+  <main class="w-full flex min-h-screen min-h-full">
     <component :is="SidebarComponent" />
     <div class="flex-1 h-full pl-0 md:pl-[250px] pb-10">
       <UserTopbar />

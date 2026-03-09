@@ -30,9 +30,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return undefined
   }
 
-  // Vérification de sécurité pour éviter les erreurs avec to undefined
+  // Si la route ou le path est invalide, rediriger vers une page valide pour éviter un écran blanc
   if (!to || !to.path) {
-    if (isDev()) console.warn('[Auth Middleware] Route ou path non défini, arrêt du middleware')
+    if (process.client) return navigateTo('/home/accueil')
     return
   }
 

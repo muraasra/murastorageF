@@ -741,9 +741,7 @@ onUnmounted(() => {
 
 .animate-pulse-slow {
   animation: pulse-slow 2s ease-in-out infinite;
-}
-
-@keyframes chart-bar {
+}@keyframes chart-bar {
   0% { transform: scaleY(0); }
   100% { transform: scaleY(1); }
 }.animate-chart-bar {

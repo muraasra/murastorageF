@@ -45,20 +45,14 @@ const socialLinks = [
       <slot />
     </main>
     
-    <!-- ChatBot flottant (chargé en différé) -->
+    <!-- ChatBot flottant (chargé en différé, sans Suspense pour éviter blocage d’affichage) -->
     <ClientOnly>
-      <Suspense>
-        <ChatBot />
-        <template #fallback><span /></template>
-      </Suspense>
+      <ChatBot />
     </ClientOnly>
 
     <!-- Bonhomme gestionnaire (chargé en différé) -->
     <ClientOnly>
-      <Suspense>
-        <WalkingManager />
-        <template #fallback><span /></template>
-      </Suspense>
+      <WalkingManager />
     </ClientOnly>
     
     <!-- Footer Amélioré -->

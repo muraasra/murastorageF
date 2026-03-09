@@ -1,9 +1,15 @@
 <template>
-  <div>
-    <!-- Barre de progression pendant la navigation (améliore la perception du chargement) -->
-    <NuxtLoadingIndicator color="#10b981" :height="3" :duration="1500" />
+  <div class="min-h-screen w-full">
+    <ClientOnly>
+      <NuxtLoadingIndicator color="#10b981" :height="3" :duration="1500" />
+      <template #fallback><span /></template>
+    </ClientOnly>
     <NuxtLayout>
-      <NuxtPage />
+      <NuxtPage :key="route.fullPath" />
     </NuxtLayout>
   </div>
 </template>
+
+<script setup lang="ts">
+const route = useRoute()
+</script>
