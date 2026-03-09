@@ -28,26 +28,12 @@ export default defineNuxtConfig({
   },
 
   vite: {
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: (id: string) => {
-            if (id.includes('node_modules')) {
-              if (id.includes('chart.js') || id.includes('vue-chartjs')) return 'charts'
-              if (id.includes('xlsx') || id.includes('jszip')) return 'xlsx'
-              if (id.includes('jspdf')) return 'pdf'
-              if (id.includes('@nuxt/ui') || id.includes('@vue')) return 'ui'
-              if (id.includes('pinia')) return 'pinia'
-              return 'vendor'
-            }
-          }
-        }
-      }
-    },
     // Pré-bundler les dépendances pour un démarrage plus rapide en dev et build
     optimizeDeps: {
       include: ['vue', 'vue-router', 'pinia', 'date-fns']
     }
+    // Pas de manualChunks : le découpage personnalisé provoquait
+    // "Cannot access 'Ws' before initialization" (ordre d'init des chunks).
   },
 
   app: {
