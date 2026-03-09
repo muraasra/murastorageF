@@ -192,6 +192,7 @@ import { ref, onMounted } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import EditProfileModal from '@/components/superadmin/EditProfileModal.vue'
 import EditEntrepriseModal from '@/components/superadmin/EditEntrepriseModal.vue'
+import { useStockAlerts } from '@/composables/useStockAlerts'
 
 const { error, success } = useNotification()
 
@@ -224,6 +225,11 @@ const loadEntrepriseData = async () => {
       entrepriseData.value = JSON.parse(entreprise)
     }
   }
+}
+
+// Activer les alertes de stock pour le superadmin
+if (process.client) {
+  useStockAlerts()
 }
 
 // Fonctions de debug pour les images

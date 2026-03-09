@@ -7,6 +7,8 @@ import notification from "@/components/notification.vue";
 import UserTopbar from "@/components/UserTopbar.vue";
 import GlobalLoader from "@/components/GlobalLoader.vue";
 import CacheIndicator from "@/components/CacheIndicator.vue";
+import MobileNavigation from "@/components/navigation.vue";
+import { useStockAlerts } from "@/composables/useStockAlerts";
 
 const user = ref(null);
 
@@ -59,26 +61,38 @@ const loadingMessage = ref('')
 // Provide loading state to child components
 provide('isLoading', isLoading)
 provide('loadingMessage', loadingMessage)
+
+// Activer l'écoute des alertes de stock pour tous les utilisateurs connectés
+if (process.client) {
+  useStockAlerts()
+}
 </script>
 
 <template>
-  <main class="w-full flex min-h-screen min-h-full">
+  <main class="w-full flex min-h-screen min-h-full bg-white dark:bg-gray-900">
+    <!-- Sidebar desktop -->
     <component :is="SidebarComponent" />
-    <div class="flex-1 h-full pl-0 md:pl-[250px] pb-10">
+
+    <!-- Contenu principal -->
+    <div class="flex-1 h-full pl-0 md:pl-[250px] pb-20 md:pb-10">
       <UserTopbar />
       <slot />
 
-      <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2 w-full max-w-md pointer-events-none">
+      <!-- Notifications -->
+      <div
+        class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2 w-full max-w-md pointer-events-none"
+      >
         <notification />
       </div>
 
       <!-- Global loader -->
       <GlobalLoader :loading="isLoading" :message="loadingMessage" />
 
-      <!-- Cache indicator -->
-      <CacheIndicator />
+      <!-- Indicateur de cache <CacheIndicator /> -->
+      
 
-      <!-- Profile modal is now opened from the user name in page headers/sidebar -->
+      <!-- Navigation mobile (bas de page) -->
+      <MobileNavigation />
     </div>
   </main>
 </template>
