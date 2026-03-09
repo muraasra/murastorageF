@@ -66,39 +66,70 @@
       </div>
     </div>
 
-    <!-- Actions -->
-    <div class="mb-6 flex space-x-3">
-      <UButton color="blue" :disabled="!canCreateProduitUI" @click="handleCreateProduitClick">
+    <!-- Actions (wrappées sur mobile) -->
+    <div class="mb-6 flex flex-wrap gap-3">
+      <UButton
+        color="blue"
+        :disabled="!canCreateProduitUI"
+        @click="handleCreateProduitClick"
+        class="w-full sm:w-auto"
+      >
         <UIcon name="i-heroicons-plus" class="mr-2" />
         Ajouter un produit
       </UButton>
       
-      <UButton color="purple" @click="showCategoriesModal = true">
+      <UButton
+        color="purple"
+        @click="showCategoriesModal = true"
+        class="w-full sm:w-auto"
+      >
         <UIcon name="i-heroicons-tag" class="mr-2" />
         Gérer les catégories
       </UButton>
       
-      <UButton color="green" @click="showFournisseursModal = true">
+      <UButton
+        color="green"
+        @click="showFournisseursModal = true"
+        class="w-full sm:w-auto"
+      >
         <UIcon name="i-heroicons-building-office-2" class="mr-2" />
         Gérer les fournisseurs
       </UButton>
       
-      <UButton color="orange" :disabled="!canImportCSVUI" @click="handleImport">
+      <UButton
+        color="orange"
+        :disabled="!canImportCSVUI"
+        @click="handleImport"
+        class="w-full sm:w-auto"
+      >
         <UIcon name="i-heroicons-arrow-up-tray" class="mr-2" />
         Importer
       </UButton>
       
-      <UButton color="blue" @click="handleExport">
+      <UButton
+        color="blue"
+        @click="handleExport"
+        class="w-full sm:w-auto"
+      >
         <UIcon name="i-heroicons-arrow-down-tray" class="mr-2" />
         Exporter
       </UButton>
       
-      <UButton color="purple" @click="openBulkCodeModal">
+      <UButton
+        color="purple"
+        @click="openBulkCodeModal"
+        class="w-full sm:w-auto"
+      >
         <UIcon name="i-heroicons-qr-code" class="mr-2" />
         Générer QR Codes
       </UButton>
       
-      <UButton color="gray" @click="testDataLoading" variant="outline">
+      <UButton
+        color="gray"
+        @click="testDataLoading"
+        variant="outline"
+        class="w-full sm:w-auto"
+      >
         <UIcon name="i-heroicons-bug-ant" class="mr-2" />
         Test Debug
       </UButton>
@@ -176,7 +207,7 @@
             
             <div v-if="showAdvancedFilters" class="mt-3 space-y-3">
               <!-- Filtres par nom -->
-              <div class="flex gap-3">
+              <div class="flex flex-wrap gap-3">
                 <USelect
                   v-model="filters.nameFilterType"
                   :options="nameFilterTypeOptions"
@@ -193,7 +224,7 @@
               </div>
               
               <!-- Filtres par référence et marque -->
-              <div class="flex gap-3">
+              <div class="flex flex-wrap gap-3">
                 <UInput
                   v-model="filters.reference"
                   placeholder="Référence..."
@@ -211,8 +242,8 @@
               </div>
               
               <!-- Plages de prix et stock -->
-              <div class="flex gap-3">
-                <div class="flex gap-2">
+              <div class="flex flex-wrap gap-3">
+                <div class="flex gap-2 flex-1 min-w-[150px]">
                   <UInput
                     v-model="filters.priceMin"
                     placeholder="Prix min"
@@ -228,7 +259,7 @@
                     class="w-24"
                   />
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 flex-1 min-w-[150px]">
                   <UInput
                     v-model="filters.stockMin"
                     placeholder="Stock min"

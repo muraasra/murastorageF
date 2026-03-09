@@ -2486,8 +2486,8 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
           </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex justify-end space-x-4">
+        <!-- Actions (centrées et responsives) -->
+        <div class="flex flex-wrap justify-end gap-3">
           <UButton 
             @click="submitInvoice" 
             color="green" 

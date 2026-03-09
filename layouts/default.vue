@@ -88,8 +88,8 @@ if (process.client) {
       <!-- Global loader -->
       <GlobalLoader :loading="isLoading" :message="loadingMessage" />
 
-      <!-- Indicateur de cache <CacheIndicator /> -->
-      
+      <!-- Cache indicator -->
+      <CacheIndicator />
 
       <!-- Navigation mobile (bas de page) -->
       <MobileNavigation />

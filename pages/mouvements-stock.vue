@@ -772,12 +772,12 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- Boutons d'action pour les filtres -->
-      <div class="flex gap-3 mt-4">
-        <UButton color="blue" @click="appliquerFiltres">
+      <!-- Boutons d'action pour les filtres (responsives) -->
+      <div class="flex flex-wrap gap-3 mt-4">
+        <UButton color="blue" @click="appliquerFiltres" class="w-full sm:w-auto">
           Appliquer les Filtres
         </UButton>
-        <UButton color="gray" variant="outline" @click="effacerFiltres">
+        <UButton color="gray" variant="outline" @click="effacerFiltres" class="w-full sm:w-auto">
           Effacer les Filtres
         </UButton>
       </div>
