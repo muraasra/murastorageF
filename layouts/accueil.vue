@@ -1,9 +1,7 @@
 <script lang="ts" setup>
-import { defineAsyncComponent } from "vue";
 import AccueilHeader from "~/components/home/AccueilHeader.vue";
-// ChatBot et WalkingManager chargés en différé pour accélérer le first paint
-const ChatBot = defineAsyncComponent(() => import("~/components/ChatBot.vue"));
-const WalkingManager = defineAsyncComponent(() => import("~/components/WalkingManager.vue"));
+import ChatBot from "~/components/ChatBot.vue";
+import WalkingManager from "~/components/WalkingManager.vue";
 
 const currentYear = new Date().getFullYear();
 
