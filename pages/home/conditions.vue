@@ -11,7 +11,7 @@ useSeoMeta({
   ogDescription: 'CGU complètes de Mura Storage. Droits, obligations, utilisation du service, tarification, responsabilités.',
   ogType: 'website',
   ogUrl: 'https://murastorage.netlify.app/home/conditions',
-  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
   keywords: 'conditions générales utilisation Mura Storage, CGU Mura Storage, termes utilisation stock, conditions service gestion stock, contrat Mura Storage',
   robots: 'index, follow',
   canonical: 'https://murastorage.netlify.app/home/conditions'

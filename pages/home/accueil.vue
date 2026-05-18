@@ -603,8 +603,7 @@ onMounted(() => {
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Email</h3>
-                <p class="text-gray-600 dark:text-gray-300">contact@murastorage.cm</p>
-                <p class="text-gray-600 dark:text-gray-300">support@murastorage.cm</p>
+                <a href="mailto:support@murastorage.com" class="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">support@murastorage.com</a>
               </div>
             </div>
             

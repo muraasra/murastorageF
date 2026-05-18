@@ -17,10 +17,7 @@ Disallow: /connexion
 Disallow: /admin/
 Disallow: /superadmin/
 Disallow: /user/
-Disallow: /debug-auth
-Disallow: /test-public
 Disallow: /facturation
-Disallow: /facturation copy
 Disallow: /produits
 Disallow: /partenaires
 Disallow: /stock_produit
@@ -29,7 +26,6 @@ Disallow: /listes-factures
 Disallow: /liste-ordres
 Disallow: /commandes_partenaires
 Disallow: /transfert
-Disallow: /transfert-simple
 Disallow: /utilisateurs
 Disallow: /journal
 Disallow: /guide

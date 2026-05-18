@@ -12,7 +12,7 @@ useSeoMeta({
   ogDescription: 'Plans de tarification flexibles pour la gestion de stock : Gratuit, Basic, Premium, Organisation. Essai gratuit 3 mois sans engagement.',
   ogType: 'website',
   ogUrl: 'https://murastorage.netlify.app/home/tarification',
-  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
   keywords: 'tarification Mura Storage, prix logiciel stock, tarif gestion stock, plan gratuit stock, essai gratuit gestion stock',
   robots: 'index, follow',
 });

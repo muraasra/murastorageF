@@ -12,7 +12,7 @@ useSeoMeta({
   ogDescription: 'Réponses aux questions fréquentes sur Mura Storage : essai gratuit, sécurité, tarification, fonctionnalités, support.',
   ogType: 'website',
   ogUrl: 'https://murastorage.netlify.app/home/faq',
-  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
   keywords: 'FAQ Mura Storage, questions fréquentes gestion stock, aide logiciel stock, FAQ gestion inventaire, questions Mura Storage, support FAQ, assistance utilisateur stock, guide utilisation stock',
   robots: 'index, follow',
   canonical: 'https://murastorage.netlify.app/home/faq'
@@ -256,11 +256,11 @@ const setCategory = (categoryId: string) => {
                 </svg>
                 +237 658 934 147
               </a>
-              <a href="mailto:support@murastorage.cm" class="flex items-center hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+              <a href="mailto:support@murastorage.com" class="flex items-center hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
-                support@murastorage.cm
+                support@murastorage.com
               </a>
             </div>
           </div>

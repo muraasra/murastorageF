@@ -11,7 +11,7 @@ useSeoMeta({
   ogDescription: 'Politique de confidentialité complète de Mura Storage. Protection des données, conformité RGPD, sécurité des informations.',
   ogType: 'website',
   ogUrl: 'https://murastorage.netlify.app/home/confidentialite',
-  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
   keywords: 'politique confidentialité Mura Storage, protection données RGPD, confidentialité gestion stock, sécurité données entreprise, RGPD logiciel stock, vie privée Mura Storage',
   robots: 'index, follow',
   canonical: 'https://murastorage.netlify.app/home/confidentialite'

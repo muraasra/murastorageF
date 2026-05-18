@@ -59,7 +59,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
     const publicPages = [
       // Pages de connexion et authentification
       '/connexion',
-      '/test-public',
       '/home/accueil',
       '/home/a_propos',
       '/home/confidentialite',

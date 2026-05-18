@@ -5,7 +5,7 @@ export default defineNuxtConfig({
     preset: 'static'
   },
 
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   
   modules: ['@nuxt/ui', '@pinia/nuxt'],
 
@@ -63,7 +63,7 @@ export default defineNuxtConfig({
         { property: 'og:description', content: 'Solution complète de gestion de stock, inventaire et facturation multi-entrepôts. Essai gratuit 14 jours.' },
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://murastorage.netlify.app' },
-        { property: 'og:image', content: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png' },
+        { property: 'og:image', content: 'https://murastorage.netlify.app/img/logo-mura-storage.png' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
         { property: 'og:site_name', content: 'Mura Storage' },
@@ -71,12 +71,12 @@ export default defineNuxtConfig({
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: 'Mura Storage - Logiciel de Gestion de Stock Professionnel' },
         { name: 'twitter:description', content: 'Solution complète de gestion de stock, inventaire et facturation multi-entrepôts. Essai gratuit 14 jours.' },
-        { name: 'twitter:image', content: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png' },
+        { name: 'twitter:image', content: 'https://murastorage.netlify.app/img/logo-mura-storage.png' },
         { name: 'google-site-verification', content: '9artqrghm4Re-7Mtnpp73H61ynt3zNIncWDWGh96fuA' }
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/img/og-image-MuraSrorage.png' },
-        { rel: 'apple-touch-icon', sizes: '180x180', href: '/img/og-image-MuraSrorage.png' },
+        { rel: 'icon', type: 'image/png', href: '/img/logo-mura-storage.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/img/logo-mura-storage.png' },
         { rel: 'shortcut icon', href: '/favicon.ico' },
         { rel: 'canonical', href: 'https://murastorage.netlify.app' },
         // Préconnexion API pour réduire la latence au premier appel

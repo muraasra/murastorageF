@@ -1121,7 +1121,7 @@ const generatePDF = async () => {
     
     // Logo de l'entreprise (si disponible) - chargement synchrone pour éviter les problèmes
     try {
-      const logoUrl = '/img/logo.jpg';
+      const logoUrl = '/img/logo-mura-storage.png';
       const response = await fetch(logoUrl);
       if (response.ok) {
         const blob = await response.blob();

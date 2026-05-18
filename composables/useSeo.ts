@@ -14,7 +14,7 @@ export interface SeoConfig {
 }
 
 const SITE_URL = 'https://murastorage.netlify.app'
-const DEFAULT_OG_IMAGE = `${SITE_URL}/img/og-image-MuraSrorage.png`
+const DEFAULT_OG_IMAGE = `${SITE_URL}/img/logo-mura-storage.png`
 const SITE_NAME = 'Mura Storage'
 
 export const useSeo = (config: SeoConfig) => {
@@ -89,7 +89,7 @@ export const useSeo = (config: SeoConfig) => {
     '@type': 'Organization',
     name: 'Mura Storage',
     url: SITE_URL,
-    logo: `${SITE_URL}/img/og-image-MuraSrorage.png`,
+    logo: `${SITE_URL}/img/logo-mura-storage.png`,
     description: 'Solution complète de gestion de stock, inventaire et facturation pour entreprises.',
     sameAs: [
       // Ajouter les réseaux sociaux si disponibles
@@ -98,6 +98,7 @@ export const useSeo = (config: SeoConfig) => {
       '@type': 'ContactPoint',
       telephone: '+237-658-934-147',
       contactType: 'Support client',
+      email: 'support@murastorage.com',
       areaServed: 'CM',
       availableLanguage: ['fr', 'en']
     }

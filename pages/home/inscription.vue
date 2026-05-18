@@ -15,7 +15,7 @@ useSeoMeta({
   ogDescription: 'Inscrivez-vous gratuitement à Mura Storage. Essai 3 mois sans engagement. Gestion de stock, inventaires, facturation.',
   ogType: 'website',
   ogUrl: 'https://murastorage.netlify.app/home/inscription',
-  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
   keywords: 'inscription Mura Storage, créer compte gestion stock, inscription gratuite stock, essai gratuit stock, compte entreprise stock, s\'inscrire Mura Storage, inscription logiciel stock, créer compte inventaire',
   robots: 'index, follow',
   canonical: 'https://murastorage.netlify.app/home/inscription'

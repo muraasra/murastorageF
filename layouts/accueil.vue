@@ -60,15 +60,8 @@ const socialLinks = [
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
           <!-- Logo et description -->
           <div class="lg:col-span-2">
-            <NuxtLink to="/home/accueil" class="inline-flex items-center space-x-2 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                </svg>
-              </div>
-              <span class="text-xl font-bold">
-                <span class="text-emerald-600 dark:text-emerald-400">Mura</span><span class="text-gray-900 dark:text-white">Storage</span>
-              </span>
+            <NuxtLink to="/home/accueil" class="inline-flex items-center mb-4">
+              <MuraLogo size="md" />
             </NuxtLink>
             <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md leading-relaxed">
               La solution complète de gestion de stock pour les entreprises africaines. 
@@ -165,7 +158,7 @@ const socialLinks = [
               </div>
               <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                <p class="text-gray-900 dark:text-white font-medium">contact@murastorage.cm</p>
+                <p class="text-gray-900 dark:text-white font-medium">support@murastorage.com</p>
               </div>
             </div>
             <div class="flex items-center space-x-3">

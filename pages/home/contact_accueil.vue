@@ -16,7 +16,7 @@ useSeoMeta({
   ogDescription: 'Contactez notre équipe Mura Storage pour obtenir de l\'aide et des informations sur nos solutions de gestion de stock. Support expert disponible.',
   ogType: 'website',
   ogUrl: 'https://murastorage.netlify.app/home/contact_accueil',
-  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
   keywords: 'contact Mura Storage, support gestion stock, assistance logiciel stock, aide Mura Storage, support technique stock, contact Groupe Mura, service client stock, support 24/7, assistance entreprise',
   robots: 'index, follow',
   canonical: 'https://murastorage.netlify.app/home/contact_accueil'
@@ -201,8 +201,8 @@ const submitForm = async () => {
             </div>
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Email</h3>
             <p class="text-gray-600 dark:text-gray-300">
-              <a href="mailto:wilfriedtayou6@gmail.com" class="text-purple-600 hover:text-purple-700 transition-colors">
-                wilfriedtayou6@gmail.com
+              <a href="mailto:support@murastorage.com" class="text-purple-600 hover:text-purple-700 transition-colors">
+                support@murastorage.com
               </a>
             </p>
           </div>

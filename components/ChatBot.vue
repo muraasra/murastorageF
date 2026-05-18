@@ -48,7 +48,7 @@ const getBotResponse = (userMessage: string): string => {
   }
   
   if (lowerMessage.includes('contact') || lowerMessage.includes('téléphone') || lowerMessage.includes('email')) {
-    return "📞 Vous pouvez nous contacter de plusieurs façons :\n\n• **Téléphone** : +237 658 934 147\n• **Email** : contact@murastorage.cm\n• **Adresse** : Bafoussam, Cameroun\n\nNotre équipe est disponible 24/7 pour vous accompagner !"
+    return "📞 Vous pouvez nous contacter de plusieurs façons :\n\n• **Téléphone** : +237 658 934 147\n• **Email** : support@murastorage.com\n• **Adresse** : Bafoussam, Cameroun\n\nNotre équipe est disponible 24/7 pour vous accompagner !"
   }
   
   if (lowerMessage.includes('bonjour') || lowerMessage.includes('salut') || lowerMessage.includes('hello')) {

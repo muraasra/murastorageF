@@ -143,7 +143,7 @@
                 Notre équipe est là pour vous aider à trouver le plan qui correspond le mieux à vos besoins.
               </p>
               <a 
-                href="mailto:support@storage.com" 
+                href="mailto:support@murastorage.com" 
                 class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
               >
                 Contactez-nous

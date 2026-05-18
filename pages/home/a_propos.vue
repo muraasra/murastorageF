@@ -11,7 +11,7 @@ useSeoMeta({
   ogDescription: 'Mura Storage par Groupe Mura : révolutionner la gestion de stock avec des solutions innovantes et fiables pour entreprises modernes.',
   ogType: 'website',
   ogUrl: 'https://murastorage.netlify.app/home/a_propos',
-  ogImage: 'https://murastorage.netlify.app/img/og-image-MuraSrorage.png',
+  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
   keywords: 'à propos Mura Storage, Groupe Mura, mission Mura Storage, vision gestion stock, histoire Mura Storage, équipe Groupe Mura, valeurs entreprise, innovation gestion stock, wilfried tayou',
   robots: 'index, follow',
   canonical: 'https://murastorage.netlify.app/home/a_propos'

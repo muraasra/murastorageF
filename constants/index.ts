@@ -1,5 +1,10 @@
 import type { Produit } from "@/types"
 
+// Marque Mura Storage
+export const BRAND_LOGO_PATH = '/img/logo-mura-storage.png'
+export const SUPPORT_EMAIL = 'support@murastorage.com'
+export const SITE_URL = 'https://murastorage.netlify.app'
+
 // Configuration de l'API
 export const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://murastorage.pythonanywhere.com' 

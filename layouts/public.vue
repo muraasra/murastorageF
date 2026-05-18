@@ -6,13 +6,8 @@
         <div class="flex justify-between items-center h-16">
           <!-- Logo -->
           <div class="flex items-center">
-            <NuxtLink to="/home/accueil" class="flex items-center space-x-2">
-              <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
-                </svg>
-              </div>
-              <span class="text-xl font-bold text-gray-900">Mura Storage</span>
+            <NuxtLink to="/home/accueil" class="flex items-center">
+              <MuraLogo size="sm" />
             </NuxtLink>
           </div>
 
@@ -73,13 +68,8 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
           <!-- Logo et description -->
           <div class="col-span-1 md:col-span-2">
-            <div class="flex items-center space-x-2 mb-4">
-              <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
-                </svg>
-              </div>
-              <span class="text-xl font-bold">Mura Storage</span>
+            <div class="mb-4">
+              <MuraLogo size="sm" />
             </div>
             <p class="text-gray-400 mb-6 max-w-md">
               La solution de gestion de stock complète pour votre entreprise. 

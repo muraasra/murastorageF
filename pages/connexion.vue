@@ -160,14 +160,10 @@
       >
       <!-- Logo et titre avec animation -->
       <div class="text-center">
-        <div class="mx-auto h-20 w-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center mb-6 shadow-2xl shadow-emerald-500/30 transform hover:scale-110 hover:rotate-3 transition-all duration-300 cursor-pointer group">
-          <svg class="h-10 w-10 text-white transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-          </svg>
-          <!-- Ripple effect on logo -->
-          <div class="absolute inset-0 rounded-2xl bg-emerald-400/50 animate-ping opacity-0 group-hover:opacity-100"></div>
+        <div class="mx-auto mb-6 flex justify-center">
+          <MuraLogo size="xl" />
         </div>
-        
+
         <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
           Bienvenue sur
           <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-blue-500 dark:from-emerald-400 dark:to-blue-400 animate-gradient bg-[length:200%_auto]">
