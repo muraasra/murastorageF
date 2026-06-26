@@ -65,7 +65,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
+  async function logout() {
+    // Enregistrer la déconnexion dans le journal avant de vider les tokens
+    if (process.client) {
+      const accessToken = localStorage.getItem('access_token')
+      if (accessToken) {
+        try {
+          await $fetch(`${API_BASE_URL}/api/auth/jwt/logout/`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${accessToken}` },
+          })
+        } catch {}
+      }
+    }
     token.value = null
     cookieToken.value = null
     user.value = null

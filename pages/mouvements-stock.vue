@@ -1,6 +1,7 @@
-<script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useApi } from "../stores/useApi";
+﻿<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useApiBase } from "@/composables/useApiBase";
+const { getApiUrl, getAuthHeaders } = useApiBase();
 import { useNotification } from "../types/useNotification";
 import { API_BASE_URL } from "@/constants";
 import selecteur_date from "@/components/selecteur_date.vue";
@@ -111,7 +112,7 @@ const fetchUserAndBoutiqueData = async () => {
     const token = process.client ? localStorage.getItem('access_token') : null;
     if (!token) return;
 
-    const userData: any = await $fetch(`${API_BASE_URL}/api/user/me/`, {
+    const userData: any = await $fetch(getApiUrl(`/api/user/me/`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +121,7 @@ const fetchUserAndBoutiqueData = async () => {
     });
 
     if (userData && userData.boutique?.id) {
-      const boutiqueData: any = await $fetch(`${API_BASE_URL}/api/boutiques/${userData.boutique.id}/`, {
+      const boutiqueData: any = await $fetch(getApiUrl(`/api/boutiques/${userData.boutique.id}/`), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +148,7 @@ const chargerEntrepots = async () => {
     if (!token) return;
 
     // Utiliser directement l'API boutiques qui filtre automatiquement par entreprise
-    const response = await $fetch(`${API_BASE_URL}/api/boutiques/`, {
+    const response = await $fetch(getApiUrl(`/api/boutiques/`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -185,7 +186,7 @@ const chargerProduitsAvecStock = async () => {
     if (!boutique || !boutique.id) return;
 
     // Récupérer les stocks de l'entrepôt actuel
-    const stocksData = await $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutique.id}`, {
+    const stocksData = await $fetch(getApiUrl(`/api/stocks/?entrepot=${boutique.id}`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -197,7 +198,7 @@ const chargerProduitsAvecStock = async () => {
 
     // Récupérer les détails des produits
     const productIds = stocksData.map(stock => stock.produit).join(',');
-    const productsData = await $fetch(`${API_BASE_URL}/api/produits/?id__in=${productIds}`, {
+    const productsData = await $fetch(getApiUrl(`/api/produits/?id__in=${productIds}`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -260,7 +261,7 @@ const effectuerTransfert = async () => {
     }
 
     // Vérifier le stock disponible dans l'entrepôt actuel via l'API
-    const stockResponse = await $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutique.id}&produit=${transfertForm.value.produitId}`, {
+    const stockResponse = await $fetch(getApiUrl(`/api/stocks/?entrepot=${boutique.id}&produit=${transfertForm.value.produitId}`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -278,7 +279,7 @@ const effectuerTransfert = async () => {
     }
 
     // Utiliser le nouveau endpoint de transfert avec envoi d'emails
-    const response: any = await $fetch(`${API_BASE_URL}/api/mouvements-stock/transfert_stock/`, {
+    const response: any = await $fetch(getApiUrl(`/api/mouvements-stock/transfert_stock/`), {
       method: 'POST',
       body: {
         produit: transfertForm.value.produitId,
@@ -347,7 +348,7 @@ const chargerMouvements = async () => {
     }
 
     // Construire l'URL avec les filtres
-    let url = `${API_BASE_URL}/api/mouvements-stock/?entrepot=${boutique.id}`;
+    let url = getApiUrl(`/api/mouvements-stock/?entrepot=${boutique.id}`);
     
     // Ajouter les filtres de date
     if (filtres.value.dateDebut) {
@@ -373,34 +374,14 @@ const chargerMouvements = async () => {
 
     console.log("🔍 URL de requête:", url);
 
-    // Utiliser useApi pour les mouvements
-    const { data: mouvementsData, error: mouvementsError } = await useApi(url, {
-      method: 'GET',
-      server: false,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
-      }
-    });
-
-    if (mouvementsError.value) {
-      errorMessage.value = "Erreur lors du chargement des mouvements: " + mouvementsError.value;
-      return;
-    }
-
-    if (!mouvementsData.value) {
-      errorMessage.value = "Aucune donnée reçue";
-      return;
-    }
+    const mouvementsRaw: any = await $fetch(url, { headers: getAuthHeaders() });
 
     // Vérifier si c'est une structure paginée ou une liste directe
-    let mouvementsList = [];
-    if (Array.isArray(mouvementsData.value)) {
-      mouvementsList = mouvementsData.value;
-    } else if (mouvementsData.value && typeof mouvementsData.value === 'object' && 'results' in mouvementsData.value) {
-      mouvementsList = mouvementsData.value.results || [];
-    } else {
-      mouvementsList = [];
+    let mouvementsList: any[] = [];
+    if (Array.isArray(mouvementsRaw)) {
+      mouvementsList = mouvementsRaw;
+    } else if (mouvementsRaw && typeof mouvementsRaw === 'object' && 'results' in mouvementsRaw) {
+      mouvementsList = mouvementsRaw.results || [];
     }
 
     mouvements.value = mouvementsList;
@@ -416,12 +397,34 @@ const chargerMouvements = async () => {
   }
 };
 
+// Filtre rapide par type (chips)
+const filtreRapide = ref<string>('')
+
+const mouvementsFiltresRapide = computed(() => {
+  if (!filtreRapide.value) return mouvements.value
+  return mouvements.value.filter(m => m.type_mouvement === filtreRapide.value)
+})
+
 // Mouvements filtrés avec pagination
 const mouvementsFiltres = computed(() => {
+  const list = mouvementsFiltresRapide.value
   const start = (page.value - 1) * pageCount;
   const end = start + pageCount;
-  return mouvements.value.slice(start, end);
+  return list.slice(start, end);
 });
+
+const totalFiltresRapide = computed(() => mouvementsFiltresRapide.value.length)
+
+// KPIs du jour
+const today = new Date().toISOString().slice(0, 10)
+const entreesAujourdhui = computed(() => mouvements.value.filter(m => m.type_mouvement === 'entree' && m.created_at?.slice(0, 10) === today).length)
+const sortiesAujourdhui = computed(() => mouvements.value.filter(m => m.type_mouvement === 'sortie' && m.created_at?.slice(0, 10) === today).length)
+const transfertsAujourdhui = computed(() => mouvements.value.filter(m => m.type_mouvement === 'transfert' && m.created_at?.slice(0, 10) === today).length)
+
+const setFiltreRapide = (type: string) => {
+  filtreRapide.value = filtreRapide.value === type ? '' : type
+  page.value = 1
+}
 
 // Fonction pour formater la date
 const formaterDate = (dateString: string) => {
@@ -638,6 +641,114 @@ ${mouvements.value.map((mouvement) => [
   showExportModal.value = false;
 };
 
+// ——— NOUVEAU MOUVEMENT ———
+const showNouveauMouvementModal = ref(false)
+const nouveauType = ref<'entree' | 'sortie' | 'ajustement' | 'perte' | 'retour'>('entree')
+const nouveauProduitSearch = ref('')
+const nouveauProduitId = ref<number | null>(null)
+const nouveauProduitNom = ref('')
+const nouveauQuantite = ref<number>(1)
+const nouveauMotif = ref('')
+const nouveauReference = ref('')
+const nouveauLoading = ref(false)
+const produitsSuggestions = ref<any[]>([])
+const showProduitDropdown = ref(false)
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+const searchProduits = async (q: string) => {
+  if (!q || q.length < 2) { produitsSuggestions.value = []; return }
+  try {
+    const boutique = getCurrentBoutique()
+    const h = getAuthHeaders()
+    const entrepriseId = boutique?.entreprise?.id ?? (typeof boutique?.entreprise === 'number' ? boutique?.entreprise : null)
+    let url = getApiUrl(`/api/produits/?search=${encodeURIComponent(q)}`)
+    if (entrepriseId) url += `&entreprise=${entrepriseId}`
+    const raw: any = await $fetch(url, { headers: h })
+    const list = Array.isArray(raw) ? raw : (raw?.results ?? [])
+    produitsSuggestions.value = list.slice(0, 8)
+  } catch { produitsSuggestions.value = [] }
+}
+
+const onProduitInput = (e: Event) => {
+  const val = (e.target as HTMLInputElement).value
+  nouveauProduitSearch.value = val
+  nouveauProduitId.value = null
+  showProduitDropdown.value = true
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => searchProduits(val), 300)
+}
+
+const selectProduit = (p: any) => {
+  nouveauProduitId.value = p.id
+  nouveauProduitNom.value = p.nom
+  nouveauProduitSearch.value = p.nom
+  showProduitDropdown.value = false
+}
+
+const ouvrirNouveauMouvementModal = () => {
+  nouveauType.value = 'entree'
+  nouveauProduitSearch.value = ''
+  nouveauProduitId.value = null
+  nouveauProduitNom.value = ''
+  nouveauQuantite.value = 1
+  nouveauMotif.value = ''
+  nouveauReference.value = ''
+  produitsSuggestions.value = []
+  showNouveauMouvementModal.value = true
+}
+
+const creerMouvement = async () => {
+  if (!nouveauProduitId.value) { error('Sélectionnez un produit'); return }
+  if (!nouveauQuantite.value || nouveauQuantite.value <= 0) { error('Quantité invalide'); return }
+  const boutique = getCurrentBoutique()
+  if (!boutique?.id) { error('Aucun entrepôt sélectionné. Reconnectez-vous.'); return }
+  nouveauLoading.value = true
+  try {
+    const h = getAuthHeaders()
+    await $fetch(getApiUrl('/api/mouvements-stock/'), {
+      method: 'POST',
+      headers: { ...h, 'Content-Type': 'application/json' },
+      body: {
+        produit: nouveauProduitId.value,
+        entrepot: boutique.id,
+        type_mouvement: nouveauType.value,
+        quantite: nouveauQuantite.value,
+        motif: nouveauMotif.value || '',
+        reference_document: nouveauReference.value || '',
+      }
+    })
+    success('Mouvement créé avec succès')
+    showNouveauMouvementModal.value = false
+    await chargerMouvements()
+    await chargerProduitsAvecStock()
+  } catch (e: any) {
+    const msg = e?.data?.detail || e?.data?.non_field_errors?.[0] || e?.message || 'Erreur lors de la création'
+    error(msg)
+  } finally {
+    nouveauLoading.value = false
+  }
+}
+
+// Auto-refresh
+const lastUpdated = ref<Date | null>(null)
+const isRefreshing = ref(false)
+let refreshTimer: ReturnType<typeof setInterval> | null = null
+
+const lastUpdatedLabel = computed(() => {
+  if (!lastUpdated.value) return ''
+  const diff = Math.floor((Date.now() - lastUpdated.value.getTime()) / 1000)
+  if (diff < 5) return 'À l\'instant'
+  if (diff < 60) return `Il y a ${diff}s`
+  return `Il y a ${Math.floor(diff / 60)}min`
+})
+
+const rafraichirDonnees = async () => {
+  isRefreshing.value = true
+  await chargerMouvements()
+  isRefreshing.value = false
+  lastUpdated.value = new Date()
+}
+
 // Initialisation
 onMounted(async () => {
   await Promise.all([
@@ -645,57 +756,49 @@ onMounted(async () => {
     chargerEntrepots(),
     chargerProduitsAvecStock()
   ]);
+  lastUpdated.value = new Date()
+  refreshTimer = setInterval(rafraichirDonnees, 30_000)
 });
+
+onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 </script>
 
 <template>
-  <section class="mt-5 px-6">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
     <!-- En-tête de la page -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
-        <h2 class="text-xl md:text-3xl font-bold text-green-400">Mouvements de Stock</h2>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Historique complet des mouvements de stock pour la comptabilité
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Mouvements de Stock</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2">
+          Historique complet des flux
+          <span v-if="lastUpdatedLabel" class="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-600">
+            <UIcon name="i-heroicons-arrow-path" class="w-3 h-3" :class="{ 'animate-spin': isRefreshing }" />
+            {{ lastUpdatedLabel }}
+          </span>
         </p>
       </div>
-      
-      <div class="flex gap-2">
-        <!-- Bouton Transfert -->
-        <UButton
-          color="purple"
-          @click="showTransferModal = true"
-          class="flex items-center gap-2"
-        >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-          </svg>
+      <div class="flex flex-wrap gap-2">
+        <button @click="rafraichirDonnees" :disabled="isRefreshing" class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50">
+          <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" :class="{ 'animate-spin': isRefreshing }" />
+          Rafraîchir
+        </button>
+        <button @click="ouvrirNouveauMouvementModal" class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">
+          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+          Nouveau
+        </button>
+        <button @click="showTransferModal = true" class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+          <UIcon name="i-heroicons-arrows-right-left" class="w-4 h-4" />
           Transfert
-        </UButton>
-
-        <!-- Bouton Filtres -->
-        <UButton
-          color="gray"
-          variant="outline"
-          @click="showFilters = !showFilters"
-          class="flex items-center gap-2"
-        >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-          </svg>
+        </button>
+        <button @click="showFilters = !showFilters" class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :class="showFilters ? 'ring-2 ring-emerald-500' : ''">
+          <UIcon name="i-heroicons-funnel" class="w-4 h-4 text-gray-500" />
           Filtres
-        </UButton>
-
-        <!-- Bouton Export -->
-        <UButton
-          color="green"
-          @click="showExportModal = true"
-          class="flex items-center gap-2"
-        >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
+        </button>
+        <button @click="showExportModal = true" class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">
+          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
           Export
-        </UButton>
+        </button>
       </div>
     </div>
 
@@ -800,32 +903,47 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Statistiques Compactes -->
-    <div class="grid grid-cols-4 gap-3 mb-4">
-      <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-        <div class="text-center">
-          <p class="text-xs font-medium text-blue-600 dark:text-green-400">Total</p>
-          <p class="text-lg font-bold text-blue-800 dark:text-blue-200">{{ totalMouvements }}</p>
-        </div>
-      </div>
-      <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-        <div class="text-center">
-          <p class="text-xs font-medium text-green-600 dark:text-green-400">Entrées</p>
-          <p class="text-lg font-bold text-green-800 dark:text-green-200">{{ mouvements.filter(m => m.type_mouvement === 'entree').length }}</p>
-        </div>
-      </div>
-      <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
-        <div class="text-center">
-          <p class="text-xs font-medium text-red-600 dark:text-red-400">Sorties</p>
-          <p class="text-lg font-bold text-red-800 dark:text-red-200">{{ mouvements.filter(m => m.type_mouvement === 'sortie').length }}</p>
-        </div>
-      </div>
-      <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-        <div class="text-center">
-          <p class="text-xs font-medium text-purple-600 dark:text-purple-400">Transferts</p>
-          <p class="text-lg font-bold text-purple-800 dark:text-purple-200">{{ mouvements.filter(m => m.type_mouvement === 'transfert').length }}</p>
-        </div>
-      </div>
+    <!-- KPIs mouvements — cliquables comme filtres rapides -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total — reset filtre -->
+      <button @click="setFiltreRapide('')" class="bg-white dark:bg-gray-800 rounded-xl border-2 p-4 text-left transition-all" :class="filtreRapide === '' ? 'border-blue-500 shadow-md' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'">
+        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Total chargés</p>
+        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ totalMouvements }}</p>
+        <p class="text-xs text-gray-400 mt-1">Aujourd'hui : {{ entreesAujourdhui + sortiesAujourdhui + transfertsAujourdhui }}</p>
+      </button>
+      <!-- Entrées -->
+      <button @click="setFiltreRapide('entree')" class="bg-white dark:bg-gray-800 rounded-xl border-2 p-4 text-left transition-all" :class="filtreRapide === 'entree' ? 'border-emerald-500 shadow-md' : 'border-gray-200 dark:border-gray-700 hover:border-emerald-300'">
+        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">↑ Entrées</p>
+        <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ mouvements.filter(m => m.type_mouvement === 'entree').length }}</p>
+        <p class="text-xs text-emerald-500 mt-1">Aujourd'hui : {{ entreesAujourdhui }}</p>
+      </button>
+      <!-- Sorties -->
+      <button @click="setFiltreRapide('sortie')" class="bg-white dark:bg-gray-800 rounded-xl border-2 p-4 text-left transition-all" :class="filtreRapide === 'sortie' ? 'border-red-500 shadow-md' : 'border-gray-200 dark:border-gray-700 hover:border-red-300'">
+        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">↓ Sorties</p>
+        <p class="text-2xl font-bold text-red-600 dark:text-red-400">{{ mouvements.filter(m => m.type_mouvement === 'sortie').length }}</p>
+        <p class="text-xs text-red-500 mt-1">Aujourd'hui : {{ sortiesAujourdhui }}</p>
+      </button>
+      <!-- Transferts -->
+      <button @click="setFiltreRapide('transfert')" class="bg-white dark:bg-gray-800 rounded-xl border-2 p-4 text-left transition-all" :class="filtreRapide === 'transfert' ? 'border-purple-500 shadow-md' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300'">
+        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">⇄ Transferts</p>
+        <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ mouvements.filter(m => m.type_mouvement === 'transfert').length }}</p>
+        <p class="text-xs text-purple-500 mt-1">Aujourd'hui : {{ transfertsAujourdhui }}</p>
+      </button>
+    </div>
+
+    <!-- Filtre actif badge -->
+    <div v-if="filtreRapide" class="flex items-center gap-2">
+      <span class="text-sm text-gray-600 dark:text-gray-400">Filtre actif :</span>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+        :class="{
+          'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': filtreRapide === 'entree',
+          'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': filtreRapide === 'sortie',
+          'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400': filtreRapide === 'transfert',
+        }">
+        {{ getTypeLabel(filtreRapide) }}
+        <button @click="filtreRapide = ''" class="ml-1 hover:opacity-70">✕</button>
+      </span>
+      <span class="text-xs text-gray-400">{{ totalFiltresRapide }} résultat(s)</span>
     </div>
 
     <!-- Tableau des mouvements -->
@@ -896,8 +1014,9 @@ onMounted(async () => {
             <!-- Données réelles -->
             <template v-else>
               <tr v-for="mouvement in mouvementsFiltres" :key="mouvement.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-              <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
-                {{ new Date(mouvement.created_at).toLocaleDateString('fr-FR') }}
+              <td class="px-3 py-2 whitespace-nowrap text-xs">
+                <div class="font-medium text-gray-900 dark:text-white">{{ new Date(mouvement.created_at).toLocaleDateString('fr-FR') }}</div>
+                <div class="text-gray-400 dark:text-gray-500">{{ new Date(mouvement.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }}</div>
               </td>
               <td class="px-3 py-2 whitespace-nowrap">
                 <span :class="getTypeColor(mouvement.type_mouvement)" class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
@@ -945,48 +1064,11 @@ onMounted(async () => {
       </div>
 
       <!-- Pagination -->
-      <div v-if="mouvements.length > pageCount" class="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
-        <div class="flex items-center justify-between">
-          <div class="flex-1 flex justify-between sm:hidden">
-            <UButton
-              :disabled="page === 1"
-              @click="page = page - 1"
-              variant="outline"
-              size="sm"
-            >
-              Précédent
-            </UButton>
-            <UButton
-              :disabled="page * pageCount >= mouvements.length"
-              @click="page = page + 1"
-              variant="outline"
-              size="sm"
-            >
-              Suivant
-            </UButton>
-          </div>
-          <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                Affichage de
-                <span class="font-medium">{{ (page - 1) * pageCount + 1 }}</span>
-                à
-                <span class="font-medium">{{ Math.min(page * pageCount, mouvements.length) }}</span>
-                sur
-                <span class="font-medium">{{ mouvements.length }}</span>
-                résultats
-              </p>
-            </div>
-            <div>
-              <UPagination
-                v-model="page"
-                :total="mouvements.length"
-                :page-count="pageCount"
-                color="blue"
-              />
-            </div>
-          </div>
-        </div>
+      <div v-if="totalFiltresRapide > pageCount" class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          {{ (page - 1) * pageCount + 1 }}–{{ Math.min(page * pageCount, totalFiltresRapide) }} sur {{ totalFiltresRapide }}
+        </p>
+        <UPagination v-model="page" :total="totalFiltresRapide" :page-count="pageCount" :active-button="{ variant: 'solid', color: 'emerald' }" :inactive-button="{ color: 'gray' }" />
       </div>
     </div>
 
@@ -1039,109 +1121,90 @@ onMounted(async () => {
     </UModal>
 
     <!-- Modal de Transfert de Stock -->
-    <UModal v-model="showTransferModal">
+    <UModal v-model="showTransferModal" :ui="{ width: 'sm:max-w-lg' }">
       <div class="p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Transfert de Stock
-        </h3>
-        
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-          Transférer des produits de l'entrepôt actuel vers un autre entrepôt de l'entreprise.
-        </p>
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Transfert de stock</h3>
+          <button @click="showTransferModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+            <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+          </button>
+        </div>
 
         <div class="space-y-4">
-          <!-- Sélection du produit -->
+          <!-- Produit -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               Produit à transférer
             </label>
             <USelect
               v-model.number="transfertForm.produitId"
-              :options="produitsAvecStock.map(p => ({ value: p.id, label: `${p.nom} (Stock: ${p.quantiteStock})` }))"
+              :options="produitsAvecStock.map(p => ({ value: p.id, label: `${p.nom} — stock: ${p.quantiteStock}` }))"
               placeholder="Sélectionner un produit"
-              @change="(value) => {
-                const produit = produitsAvecStock.find(p => p.id === value);
-                if (produit) {
-                  transfertForm.produitNom = produit.nom;
-                }
-              }"
             />
           </div>
 
-             <!-- Entrepôt de destination -->
-             <div>
-               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                 Entrepôt de destination
-               </label>
-              <USelect
-                v-model.number="transfertForm.entrepotDestination"
-                 :options="entrepots.map(e => ({ 
-                   value: e.id, 
-                   label: `${e.nom} - ${e.ville}` 
-                 }))"
-                 placeholder="Sélectionner l'entrepôt de destination"
-               />
-               <p v-if="entrepots.length === 0" class="text-xs text-red-500 mt-1">
-                 Aucun autre entrepôt disponible dans l'entreprise
-               </p>
-               <p v-else class="text-xs text-gray-500 mt-1">
-                 {{ entrepots.length }} entrepôt(s) disponible(s)
-               </p>
-             </div>
+          <!-- Stock disponible -->
+          <div v-if="transfertForm.produitId" class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-xs text-purple-700 dark:text-purple-300">
+            <UIcon name="i-heroicons-cube" class="w-4 h-4 flex-shrink-0" />
+            Stock disponible dans cet entrepôt :
+            <strong class="ml-1">{{ produitsAvecStock.find(p => p.id === transfertForm.produitId)?.quantiteStock ?? 0 }}</strong>
+          </div>
+
+          <!-- Entrepôt destination -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Entrepôt de destination
+            </label>
+            <USelect
+              v-model.number="transfertForm.entrepotDestination"
+              :options="entrepots.map(e => ({ value: e.id, label: `${e.nom}${e.ville ? ' — ' + e.ville : ''}` }))"
+              placeholder="Sélectionner l'entrepôt de destination"
+            />
+            <p v-if="entrepots.length === 0" class="text-xs text-red-500 mt-1">
+              Aucun autre entrepôt disponible dans l'entreprise
+            </p>
+          </div>
 
           <!-- Quantité -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               Quantité à transférer
             </label>
-              <UInput
+            <UInput
               v-model.number="transfertForm.quantite"
               type="number"
               min="1"
-              :max="produitsAvecStock.find(p => p.id === transfertForm.produitId)?.quantiteStock || 0"
-              placeholder="Quantité"
+              :max="produitsAvecStock.find(p => p.id === transfertForm.produitId)?.quantiteStock || undefined"
+              placeholder="1"
             />
-            <p v-if="transfertForm.produitId" class="text-xs text-gray-500 mt-1">
-              Stock disponible: {{ produitsAvecStock.find(p => p.id === transfertForm.produitId)?.quantiteStock || 0 }}
-            </p>
           </div>
 
           <!-- Motif -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Motif du transfert
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Motif <span class="text-gray-400 font-normal">(optionnel)</span>
             </label>
             <UTextarea
               v-model.trim="transfertForm.motif"
               placeholder="Raison du transfert..."
-              :rows="3"
+              :rows="2"
             />
           </div>
         </div>
 
-           <div class="mt-6 flex justify-end gap-3">
-             <UButton
-               color="gray"
-               variant="outline"
-               @click="showTransferModal = false"
-             >
-               Annuler
-             </UButton>
-             <UButton
-               color="purple"
-               @click="effectuerTransfert"
-               :disabled="transferLoading || !transfertForm.produitId || !transfertForm.entrepotDestination || !transfertForm.quantite || entrepots.length === 0"
-             >
-               <span v-if="!transferLoading">Effectuer le Transfert</span>
-               <span v-else class="inline-flex items-center gap-2">
-                 <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                 </svg>
-                 Transfert en cours...
-               </span>
-             </UButton>
-           </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <UButton color="gray" variant="outline" @click="showTransferModal = false">
+            Annuler
+          </UButton>
+          <UButton
+            color="purple"
+            :loading="transferLoading"
+            :disabled="transferLoading || !transfertForm.produitId || !transfertForm.entrepotDestination || !transfertForm.quantite || entrepots.length === 0"
+            @click="effectuerTransfert"
+          >
+            Effectuer le transfert
+          </UButton>
+        </div>
       </div>
     </UModal>
 
@@ -1275,5 +1338,98 @@ onMounted(async () => {
         </div>
       </div>
     </UModal>
+
+    <!-- ——— MODAL NOUVEAU MOUVEMENT ——— -->
+    <UModal v-model="showNouveauMouvementModal" :ui="{ width: 'max-w-lg' }">
+      <div class="p-6">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
+            <UIcon name="i-heroicons-plus-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Nouveau mouvement</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Entrée · Sortie · Ajustement</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Type de mouvement -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type de mouvement</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button v-for="t in [{ val:'entree', label:'Entrée', icon:'i-heroicons-arrow-down-circle', cls:'emerald' }, { val:'sortie', label:'Sortie', icon:'i-heroicons-arrow-up-circle', cls:'red' }, { val:'ajustement', label:'Ajustement', icon:'i-heroicons-adjustments-horizontal', cls:'blue' }]" :key="t.val"
+                @click="nouveauType = t.val as any"
+                class="flex flex-col items-center gap-1 p-3 rounded-lg border-2 text-sm font-medium transition-all cursor-pointer"
+                :class="nouveauType === t.val
+                  ? (t.cls === 'emerald' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : t.cls === 'red' ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300' : 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300')
+                  : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'">
+                <UIcon :name="t.icon" class="w-5 h-5" />
+                {{ t.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Recherche produit -->
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Produit</label>
+            <input
+              :value="nouveauProduitSearch"
+              @input="onProduitInput"
+              @focus="showProduitDropdown = produitsSuggestions.length > 0"
+              @blur="setTimeout(() => showProduitDropdown = false, 200)"
+              type="text"
+              placeholder="Rechercher un produit..."
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+            />
+            <!-- Dropdown suggestions -->
+            <div v-if="showProduitDropdown && produitsSuggestions.length" class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              <button v-for="p in produitsSuggestions" :key="p.id" @mousedown.prevent="selectProduit(p)"
+                class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between">
+                <span class="font-medium text-gray-800 dark:text-gray-200">{{ p.nom }}</span>
+                <span class="text-xs text-gray-400">{{ p.reference || '' }}</span>
+              </button>
+            </div>
+            <p v-if="nouveauProduitId" class="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+              <UIcon name="i-heroicons-check-circle" class="w-3.5 h-3.5" /> Produit sélectionné
+            </p>
+          </div>
+
+          <!-- Quantité -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantité</label>
+            <input v-model.number="nouveauQuantite" type="number" min="1"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+          </div>
+
+          <!-- Motif -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motif <span class="text-gray-400 font-normal">(optionnel)</span></label>
+            <input v-model="nouveauMotif" type="text" placeholder="Ex: Réapprovisionnement, Vente directe..."
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+          </div>
+
+          <!-- Référence -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Référence document <span class="text-gray-400 font-normal">(optionnel)</span></label>
+            <input v-model="nouveauReference" type="text" placeholder="Ex: BL-2026-001"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <button @click="showNouveauMouvementModal = false" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            Annuler
+          </button>
+          <button @click="creerMouvement" :disabled="nouveauLoading || !nouveauProduitId"
+            class="px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <UIcon v-if="nouveauLoading" name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+            <UIcon v-else name="i-heroicons-check" class="w-4 h-4" />
+            {{ nouveauLoading ? 'En cours...' : 'Enregistrer' }}
+          </button>
+        </div>
+      </div>
+    </UModal>
+
   </section>
+  </div>
 </template>

@@ -1,5 +1,6 @@
-<template>
-  <div class="container mx-auto px-4 py-8">
+﻿<template>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <!-- Guide d'utilisation -->
     <UCard class="mb-6 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
       <div class="p-6">
@@ -21,24 +22,19 @@
     </UCard>
 
     <!-- En-tête -->
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-          <UIcon name="i-heroicons-clipboard-document-check" class="h-8 w-8 inline-block mr-3" />
-          Inventaires
-        </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-2">
-          Gérez les inventaires physiques de vos entrepôts
-        </p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Inventaires</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Gérez les inventaires physiques de vos entrepôts</p>
       </div>
-      <UButton
-        color="blue"
-        icon="i-heroicons-plus-circle"
+      <button
         @click="openCreateModal"
-        :disabled="!isFeatureAvailable('inventory')"
+        :disabled="false"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
+        <UIcon name="i-heroicons-plus" class="w-4 h-4" />
         Nouvel inventaire
-      </UButton>
+      </button>
     </div>
 
     <!-- Statistiques -->
@@ -159,6 +155,15 @@
                     <UButton
                       v-if="inventaire.statut === 'en_cours'"
                       size="xs"
+                      color="orange"
+                      variant="ghost"
+                      icon="i-heroicons-arrow-path"
+                      title="Ajuster les stocks selon les comptages"
+                      @click="ajusterStocks(inventaire.id)"
+                    />
+                    <UButton
+                      v-if="inventaire.statut === 'en_cours'"
+                      size="xs"
                       color="purple"
                       variant="ghost"
                       icon="i-heroicons-stop-circle"
@@ -231,17 +236,20 @@
       </UCard>
     </UModal>
   </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { useNotification } from '@/types/useNotification'
 import { useSubscriptionLimits } from '@/composables/useSubscriptionLimits'
+import { useApiBase } from '@/composables/useApiBase'
 
 definePageMeta({
   layout: "default"
 })
 
 const { success, error, warning } = useNotification()
+const { getApiUrl, getAuthHeaders } = useApiBase()
 const nuxtApp = useNuxtApp()
 
 // Vérification des limites
@@ -351,13 +359,6 @@ const openCreateModal = () => {
 }
 
 const createInventaire = async () => {
-  // Vérifier si la fonctionnalité inventaire est disponible
-  if (!isFeatureAvailable('inventory')) {
-    error('Les inventaires ne sont pas disponibles sur votre plan actuel.')
-    error(getUpgradeSuggestion('inventaires'))
-    return
-  }
-
   // Vérifier la limite de inventaires
   if (isLimitReached('max_inventaires_per_month')) {
     error(getLimitErrorMessage('max_inventaires_per_month'))
@@ -468,6 +469,30 @@ const demarrerInventaire = async (id: number) => {
   }
 }
 
+const ajusterStocks = async (id: number) => {
+  const inventaire = inventaires.value.find(i => i.id === id)
+  if (!inventaire) return
+  if (inventaire.produits_comptes === 0) {
+    error('Aucun produit compté — ajoutez des comptages avant d\'ajuster')
+    return
+  }
+  if (!confirm(`Ajuster les stocks de "${inventaire.nom}" ?\n\nCela mettra à jour les quantités en stock pour correspondre aux comptages réels.\nDes mouvements de stock seront créés pour la traçabilité.`)) return
+
+  loading.value = true
+  try {
+    const res: any = await $fetch(getApiUrl(`/api/inventaires/${id}/ajuster-stocks/`), {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    })
+    success(res?.message || `Stocks ajustés — ${res?.ajustements_effectues ?? ''} mouvement(s) créé(s)`)
+    await loadData()
+  } catch (err: any) {
+    error(err?.data?.error || 'Erreur lors de l\'ajustement des stocks')
+  } finally {
+    loading.value = false
+  }
+}
+
 const terminerInventaire = async (id: number) => {
   const inventaire = inventaires.value.find(i => i.id === id)
   if (!inventaire) return
@@ -537,12 +562,15 @@ const getButtonTooltip = (statut: string) => {
   return tooltips[statut] || ''
 }
 
-// Charger les données au montage
+// Auto-refresh
+let refreshTimer: ReturnType<typeof setInterval> | null = null
 onMounted(() => {
   loadSubscription()
   loadLimits()
   loadUsage()
   loadData()
+  refreshTimer = setInterval(loadData, 60_000)
 })
+onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 </script>
 

@@ -23,6 +23,13 @@ const messages = ref<Message[]>([
   }
 ])
 
+const formatMessage = (text: string): string => {
+  const div = document.createElement('div')
+  div.textContent = text
+  const escaped = div.innerHTML
+  return escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+}
+
 // Quick replies
 const quickReplies = [
   { text: "Tarifs", query: "tarifs" },

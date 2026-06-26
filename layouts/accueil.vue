@@ -61,7 +61,7 @@ const socialLinks = [
           <!-- Logo et description -->
           <div class="lg:col-span-2">
             <NuxtLink to="/home/accueil" class="inline-flex items-center mb-4">
-              <MuraLogo size="md" />
+              <MuraLogo size="lg" />
             </NuxtLink>
             <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md leading-relaxed">
               La solution complète de gestion de stock pour les entreprises africaines. 

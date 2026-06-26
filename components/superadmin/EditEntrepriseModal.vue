@@ -230,8 +230,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { useNotification } from '@/types/useNotification'
-import { useAuth } from '@/composables/useAuth'
-import { API_BASE_URL } from '@/constants'
+import { useApiBase } from '@/composables/useApiBase'
 
 const props = defineProps<{
   isOpen: boolean
@@ -240,7 +239,7 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'updated'])
 
 const { error, success } = useNotification()
-const { getAuthHeaders } = useAuth()
+const { getApiUrl, getAuthHeaders, API_BASE_URL } = useApiBase()
 const loading = ref(false)
 const showLogoPreview = ref(false)
 
@@ -282,7 +281,7 @@ const loadEntrepriseData = async () => {
   try {
     const entrepriseId = entrepriseData.id
     if (entrepriseId) {
-      const latest = await $fetch(`${API_BASE_URL}/api/entreprises/${entrepriseId}/`, {
+      const latest = await $fetch(getApiUrl(`/api/entreprises/${entrepriseId}/`), {
         method: 'GET',
         headers: getAuthHeaders()
       })
@@ -443,14 +442,14 @@ const updateEntreprise = async () => {
         const headers = getAuthHeaders()
         delete headers['Content-Type']
         
-        data = await $fetch(`${API_BASE_URL}/api/entreprises/${entrepriseId}/`, {
+        data = await $fetch(getApiUrl(`/api/entreprises/${entrepriseId}/`), {
           method: 'PATCH',
           body: formData,
           headers
         })
       } else {
         // Pas de nouveau logo, mise à jour normale
-        data = await $fetch(`${API_BASE_URL}/api/entreprises/${entrepriseId}/`, {
+        data = await $fetch(getApiUrl(`/api/entreprises/${entrepriseId}/`), {
           method: 'PATCH',
           body: updateData,
           headers: getAuthHeaders()

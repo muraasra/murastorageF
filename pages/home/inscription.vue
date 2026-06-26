@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { navigateTo } from '#app'
 import { useNotification } from '@/types/useNotification'
+import { useApiBase } from '@/composables/useApiBase'
 
 definePageMeta({
     layout: "accueil",
@@ -22,6 +23,7 @@ useSeoMeta({
 });
 
 const { error, success } = useNotification()
+const { getApiUrl } = useApiBase()
 
 // État du formulaire
 const currentStep = ref(1)
@@ -53,7 +55,7 @@ const formData = ref({
     adresse: '',
     ville: '',
     codePostal: '',
-    pays: 'Cameroun',
+    pays: '',
     telephone: '',
     email: '',
     siteWeb: '',
@@ -167,10 +169,9 @@ const validateUserData = () => {
     return false
   }
   
-  // Validation téléphone (format camerounais)
-  const phoneRegex = /^(\+237|237)?[6-7][0-9]{8}$/
-  const cleanPhone = user.telephone.replace(/\s/g, '')
-  if (!phoneRegex.test(cleanPhone)) {
+  // Validation téléphone — format international basique
+  const cleanPhone = user.telephone.replace(/[\s\-().]/g, '')
+  if (cleanPhone.length < 6 || cleanPhone.length > 20 || !/^\+?\d+$/.test(cleanPhone)) {
     return false
   }
   
@@ -197,7 +198,7 @@ const validateCompanyData = () => {
   const company = formData.value.entreprise
   
   // Vérifications de base
-  if (!company.nom || !company.secteurActivite || !company.adresse || !company.ville || !company.email) {
+  if (!company.nom || !company.secteurActivite || !company.adresse || !company.ville || !company.email || !company.pays) {
     return false
   }
   
@@ -237,8 +238,9 @@ const getValidationErrors = () => {
   if (user.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
     userErrors.email = 'Format d\'email invalide'
   }
-  if (user.telephone && !/^(\+237|237)?[6-7][0-9]{8}$/.test(user.telephone.replace(/\s/g, ''))) {
-    userErrors.telephone = 'Format de téléphone invalide (ex: +237 6XX XX XX XX)'
+  const cleanTel = user.telephone.replace(/[\s\-().]/g, '')
+  if (user.telephone && (cleanTel.length < 6 || cleanTel.length > 20 || !/^\+?\d+$/.test(cleanTel))) {
+    userErrors.telephone = 'Numéro de téléphone invalide (ex: +33 6 12 34 56 78)'
   }
   if (user.motDePasse && user.motDePasse.length < 8) {
     userErrors.motDePasse = 'Le mot de passe doit contenir au moins 8 caractères'
@@ -300,6 +302,7 @@ const prevStep = () => {
 const selectPack = (pack: any) => {
   formData.value.pack.type = pack.id
   formData.value.pack.prix = pack.prix
+  formData.value.pack.duree = pack.id === 'free' ? 'gratuit' : 'mensuel'
 }
 
 // Soumission du formulaire
@@ -338,35 +341,36 @@ const submitForm = async () => {
       is_active: true
     }
     
-    // Debug: Afficher les données envoyées
-    console.log('Données envoyées au backend:', registrationData)
-    
-    // Appel à l'API (sans /api car useApi l'ajoute déjà)
-    const { data, error: apiError } = await useApi(`/inscription/`, {
+    await $fetch(getApiUrl('/api/inscription/'), {
       method: 'POST',
       body: registrationData,
-      server: false
     })
-    
-    if (apiError.value) {
-      error(apiError.value.message || 'Erreur lors de l\'inscription')
-      return
-    }
-    
+
     success('Inscription réussie ! Un email de vérification a été envoyé.')
-    
-    // Redirection vers la page de vérification
-    setTimeout(() => {
-      navigateTo('/home/verification')
-    }, 1500)
-    
-  } catch (err) {
-    console.error('Erreur lors de l\'inscription:', err)
-    error('Une erreur est survenue lors de l\'inscription')
+    clearSavedData()
+    setTimeout(() => { navigateTo('/home/verification') }, 1500)
+
+  } catch (err: any) {
+    const detail = err?.data?.detail ?? err?.data?.non_field_errors?.[0] ?? err?.data?.email?.[0] ?? err?.data?.user?.email?.[0]
+    if (typeof detail === 'string' && detail) {
+      error(detail.toLowerCase().includes('already') || detail.toLowerCase().includes('existe')
+        ? 'Un compte existe déjà avec cet email.'
+        : detail)
+    } else {
+      error('Une erreur est survenue lors de l\'inscription. Vérifiez vos informations.')
+    }
   } finally {
     isLoading.value = false
   }
 }
+
+// Pays
+const paysList = [
+  'Cameroun', 'Côte d\'Ivoire', 'Sénégal', 'Mali', 'Burkina Faso', 'Niger', 'Guinée',
+  'Togo', 'Bénin', 'Gabon', 'Congo', 'RD Congo', 'Tchad', 'Centrafrique', 'Madagascar',
+  'Maroc', 'Algérie', 'Tunisie', 'Égypte', 'France', 'Belgique', 'Suisse', 'Canada',
+  'États-Unis', 'Autre'
+]
 
 // Secteurs d'activité
 const secteursActivite = [
@@ -583,7 +587,7 @@ onMounted(() => {
               </label>
               <UInput 
                 v-model="formData.user.telephone" 
-                placeholder="+237 6XX XX XX XX"
+                placeholder="+33 6 12 34 56 78"
                 :class="['w-full', getFieldErrorClass('user.telephone')]"
                 required
               />
@@ -729,13 +733,14 @@ onMounted(() => {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Pays
+                Pays *
               </label>
-              <UInput 
-                v-model="formData.entreprise.pays" 
-                placeholder="Pays"
+              <USelect
+                v-model="formData.entreprise.pays"
+                :options="paysList"
+                placeholder="Sélectionner un pays"
                 class="w-full"
-                readonly
+                required
               />
             </div>
             

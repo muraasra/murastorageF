@@ -1,439 +1,386 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
-definePageMeta({
-  layout: "accueil",
-});
+definePageMeta({ layout: 'accueil' })
 
 useSeoMeta({
-  title: 'Tarification Mura Storage - Plans Gratuit, Basic, Premium | Essai Gratuit',
-  description: 'Découvrez nos plans de tarification Mura Storage : Gratuit, Basic, Premium et Organisation. Plans adaptés à chaque entreprise. Essai gratuit 14 jours. Gestion de stock multi-entrepôts, facturation, inventaires, transferts.',
-  ogTitle: 'Tarification Mura Storage - Plans et Prix',
-  ogDescription: 'Plans de tarification flexibles pour la gestion de stock : Gratuit, Basic, Premium, Organisation. Essai gratuit 3 mois sans engagement.',
-  ogType: 'website',
-  ogUrl: 'https://murastorage.netlify.app/home/tarification',
-  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
-  keywords: 'tarification Mura Storage, prix logiciel stock, tarif gestion stock, plan gratuit stock, essai gratuit gestion stock',
+  title: 'Tarification MuraStorage — Starter 4 900 FCFA, Business 9 900 FCFA, Pro 19 900 FCFA',
+  description: 'Plans abordables pour tous les commerces africains. Essai gratuit 3 mois sans carte bancaire. Paiement Orange Money, MTN Money, carte bancaire.',
   robots: 'index, follow',
-});
+})
 
-const billingPeriod = ref<'monthly' | 'yearly'>('monthly');
+const router = useRouter()
+const billingPeriod = ref<'monthly' | 'yearly'>('monthly')
+const showPaymentModal = ref(false)
+const selectedPlan = ref<any>(null)
+const paymentMethod = ref('')
+const phoneNumber = ref('')
+const paying = ref(false)
+const paymentDone = ref(false)
 
-// Plans avec prix cohérents
-const plans = [
+const PLANS = [
   {
-    name: 'Free',
-    description: 'Pour démarrer et tester',
+    key: 'free',
+    name: 'Essai Gratuit',
     price: { monthly: 0, yearly: 0 },
+    badge: '3 mois offerts',
+    badgeColor: 'bg-emerald-100 text-emerald-700',
     highlight: false,
-    badge: '3 mois gratuits',
+    description: 'Découvrez MuraStorage sans engagement ni carte bancaire.',
     features: [
-      { text: '1 entreprise', included: true },
-      { text: '1 boutique', included: true },
-      { text: '2 utilisateurs', included: true },
-      { text: '50 produits', included: true },
-      { text: '100 factures/mois', included: true },
-      { text: 'Inventaires', included: false },
-      { text: 'Transferts', included: false },
-      { text: 'Codes-barres', included: false },
-      { text: 'Import/Export', included: false },
+      { label: '1 boutique', ok: true },
+      { label: '3 utilisateurs', ok: true },
+      { label: '30 produits', ok: true },
+      { label: '30 factures/mois', ok: true },
+      { label: 'Gestion des partenaires', ok: true },
+      { label: 'Inventaires', ok: false },
+      { label: 'Export CSV', ok: false },
+      { label: 'Import CSV', ok: false },
+      { label: 'Transferts entre boutiques', ok: false },
+      { label: 'Analytiques avancées', ok: false },
+      { label: 'Support prioritaire', ok: false },
     ],
-    cta: { text: 'Commencer gratuitement', to: '/home/inscription' },
+    cta: 'Commencer gratuitement',
+    ctaRoute: '/home/inscription',
   },
   {
-    name: 'Basic',
-    description: 'Pour les petites équipes',
-    price: { monthly: 9900, yearly: 118800 },
-    highlight: false,
+    key: 'starter',
+    name: 'Starter',
+    price: { monthly: 4900, yearly: 52920 },
     badge: null,
-    features: [
-      { text: '1 entreprise', included: true },
-      { text: '3 boutiques', included: true },
-      { text: '5 utilisateurs', included: true },
-      { text: '500 produits', included: true },
-      { text: '1 000 factures/mois', included: true },
-      { text: '50 transferts/mois', included: true },
-      { text: 'Codes-barres', included: true },
-      { text: 'Alertes de stock', included: true },
-      { text: 'Export CSV/Excel', included: true },
-    ],
-    cta: { text: 'Choisir Basic', to: '/home/inscription' },
-  },
-  {
-    name: 'Premium',
-    description: 'Pour les entreprises en croissance',
-    price: { monthly: 29900, yearly: 358800 },
-    highlight: true,
-    badge: 'Le plus populaire',
-    features: [
-      { text: '1 entreprise', included: true },
-      { text: '10 boutiques', included: true },
-      { text: '25 utilisateurs', included: true },
-      { text: 'Produits illimités', included: true },
-      { text: 'Factures illimitées', included: true },
-      { text: 'Inventaires illimités', included: true },
-      { text: 'Transferts illimités', included: true },
-      { text: 'Import CSV', included: true },
-      { text: 'Support prioritaire', included: true },
-    ],
-    cta: { text: 'Choisir Premium', to: '/home/inscription' },
-  },
-  {
-    name: 'Organisation',
-    description: 'Pour les grandes structures',
-    price: { monthly: 55000, yearly: 660000 },
     highlight: false,
-    badge: 'Sur mesure',
+    description: 'Pour les petits commerces qui veulent gérer leur stock sérieusement.',
     features: [
-      { text: 'Entreprises illimitées', included: true },
-      { text: 'Boutiques illimitées', included: true },
-      { text: 'Utilisateurs illimités', included: true },
-      { text: 'Produits illimités', included: true },
-      { text: 'Factures illimitées', included: true },
-      { text: 'API complète', included: true },
-      { text: 'Analyses avancées', included: true },
-      { text: 'Support dédié 24/7', included: true },
-      { text: 'Personnalisation', included: true },
+      { label: '1 boutique', ok: true },
+      { label: '5 utilisateurs', ok: true },
+      { label: '200 produits', ok: true },
+      { label: '200 factures/mois', ok: true },
+      { label: 'Gestion des partenaires', ok: true },
+      { label: '1 inventaire/mois', ok: true },
+      { label: 'Export CSV', ok: true },
+      { label: 'Import CSV', ok: false },
+      { label: 'Transferts entre boutiques', ok: false },
+      { label: 'Analytiques avancées', ok: false },
+      { label: 'Support prioritaire', ok: false },
     ],
-    cta: { text: 'Contacter les ventes', to: '/home/contact_accueil' },
+    cta: 'Choisir Starter',
+    ctaRoute: null,
   },
-];
+  {
+    key: 'business',
+    name: 'Business',
+    price: { monthly: 9900, yearly: 106920 },
+    badge: 'Populaire',
+    badgeColor: 'bg-emerald-500 text-white',
+    highlight: true,
+    description: 'Pour les PME avec plusieurs points de vente et une équipe structurée.',
+    features: [
+      { label: '3 boutiques', ok: true },
+      { label: '15 utilisateurs', ok: true },
+      { label: '1 000 produits', ok: true },
+      { label: 'Factures illimitées', ok: true },
+      { label: 'Gestion des partenaires', ok: true },
+      { label: '5 inventaires/mois', ok: true },
+      { label: 'Export CSV & Excel', ok: true },
+      { label: 'Import CSV', ok: true },
+      { label: 'Transferts entre boutiques', ok: true },
+      { label: 'Analytiques avancées', ok: true },
+      { label: 'Support prioritaire', ok: false },
+    ],
+    cta: 'Choisir Business',
+    ctaRoute: null,
+  },
+  {
+    key: 'pro',
+    name: 'Pro',
+    price: { monthly: 19900, yearly: 214920 },
+    badge: 'Tout inclus',
+    badgeColor: 'bg-violet-100 text-violet-700',
+    highlight: false,
+    description: 'Toutes les fonctionnalités sans aucune limite pour les entreprises ambitieuses.',
+    features: [
+      { label: '10 boutiques', ok: true },
+      { label: '50 utilisateurs', ok: true },
+      { label: 'Produits illimités', ok: true },
+      { label: 'Factures illimitées', ok: true },
+      { label: 'Gestion des partenaires', ok: true },
+      { label: 'Inventaires illimités', ok: true },
+      { label: 'Export CSV & Excel', ok: true },
+      { label: 'Import CSV', ok: true },
+      { label: 'Transferts entre boutiques', ok: true },
+      { label: 'Analytiques avancées', ok: true },
+      { label: 'Accès API', ok: true },
+    ],
+    cta: 'Choisir Pro',
+    ctaRoute: null,
+  },
+]
 
-// Format prix
-const formatPrice = (price: number) => {
-  if (price === 0) return 'Gratuit';
-  return new Intl.NumberFormat('fr-FR').format(price) + ' XAF';
-};
+function formatPrice(p: number) {
+  return p.toLocaleString('fr-FR') + ' FCFA'
+}
 
-// FAQ
-const faqs = [
-  {
-    question: 'Puis-je changer de plan à tout moment ?',
-    answer: 'Oui, vous pouvez passer à un plan supérieur ou inférieur à tout moment. La différence sera calculée au prorata.',
-  },
-  {
-    question: "Que se passe-t-il après l'essai gratuit ?",
-    answer: "Après 14 jours, vous serez automatiquement basculé sur le plan Free. Vous pouvez upgrader à tout moment pour accéder à plus de fonctionnalités.",
-  },
-  {
-    question: 'Comment fonctionne la facturation annuelle ?',
-    answer: "La facturation annuelle vous fait économiser 2 mois. Vous payez pour 10 mois et bénéficiez de 12 mois d'accès.",
-  },
-  {
-    question: 'Proposez-vous des réductions pour les ONG ?',
-    answer: 'Oui, nous offrons 50% de réduction pour les ONG et associations à but non lucratif. Contactez-nous pour en savoir plus.',
-  },
-];
+function yearlyMonthly(plan: any) {
+  return Math.round(plan.price.yearly / 12).toLocaleString('fr-FR') + ' FCFA/mois'
+}
+
+function openPayment(plan: any) {
+  if (plan.ctaRoute) {
+    router.push(plan.ctaRoute)
+    return
+  }
+  selectedPlan.value = plan
+  paymentMethod.value = ''
+  phoneNumber.value = ''
+  paymentDone.value = false
+  showPaymentModal.value = true
+}
+
+async function pay() {
+  if (!paymentMethod.value) return
+  paying.value = true
+  // Simulation — la vraie intégration se fera après inscription
+  await new Promise(r => setTimeout(r, 1500))
+  paying.value = false
+  paymentDone.value = true
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-    <!-- Hero Section -->
-    <section class="py-16 md:py-24 px-4">
-      <div class="max-w-7xl mx-auto text-center">
-        <span class="inline-flex items-center px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-6">
-          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-          </svg>
-          3 mois d'essai gratuit
+  <div class="min-h-screen bg-gray-50">
+    <!-- Hero -->
+    <section class="pt-16 pb-12 text-center bg-white border-b border-gray-100">
+      <div class="max-w-3xl mx-auto px-4">
+        <span class="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-3 py-1 rounded-full mb-4">
+          Essai gratuit 3 mois · Aucune carte bancaire requise
         </span>
-        
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6">
-          Des prix simples et
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-blue-600">
-            transparents
-          </span>
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-4">
+          Des prix transparents, pour chaque commerce
         </h1>
-        
-        <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-10">
-          Choisissez le plan adapté à votre entreprise. Sans engagement, sans frais cachés.
+        <p class="text-lg text-gray-500 mb-8">
+          Paiement par Orange Money, MTN Money, Stripe ou carte bancaire. Résiliez à tout moment.
         </p>
 
-        <!-- Toggle Mensuel/Annuel -->
-        <div class="inline-flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+        <!-- Toggle mensuel / annuel -->
+        <div class="inline-flex items-center bg-gray-100 rounded-xl p-1 gap-1">
           <button
             @click="billingPeriod = 'monthly'"
-            :class="[
-              'px-6 py-3 rounded-lg font-medium transition-all duration-200',
-              billingPeriod === 'monthly' 
-                ? 'bg-white dark:bg-gray-700 shadow-md text-emerald-600 dark:text-emerald-400' 
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            ]"
+            class="px-5 py-2 rounded-lg text-sm font-medium transition-all"
+            :class="billingPeriod === 'monthly' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'"
           >
             Mensuel
           </button>
           <button
             @click="billingPeriod = 'yearly'"
-            :class="[
-              'px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center',
-              billingPeriod === 'yearly' 
-                ? 'bg-white dark:bg-gray-700 shadow-md text-emerald-600 dark:text-emerald-400' 
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            ]"
+            class="px-5 py-2 rounded-lg text-sm font-medium transition-all"
+            :class="billingPeriod === 'yearly' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'"
           >
             Annuel
-            <span class="ml-2 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-xs rounded-full">
-              -17%
-            </span>
+            <span class="ml-1.5 text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">-10%</span>
           </button>
         </div>
       </div>
     </section>
 
-    <!-- Plans Grid -->
-    <section class="pb-16 md:pb-24 px-4">
-      <div class="max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          <div
-            v-for="(plan, index) in plans"
-            :key="plan.name"
-            :class="[
-              'relative rounded-2xl p-8 transition-all duration-300 hover:scale-[1.02]',
-              plan.highlight 
-                ? 'bg-gradient-to-b from-emerald-600 to-emerald-700 text-white shadow-2xl shadow-emerald-500/20 ring-4 ring-emerald-500/50' 
-                : 'bg-white dark:bg-gray-800 shadow-xl border border-gray-200 dark:border-gray-700'
-            ]"
-            :style="{ animationDelay: `${index * 100}ms` }"
-          >
-            <!-- Badge -->
-            <span 
-              v-if="plan.badge"
-              :class="[
-                'absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-semibold',
-                plan.highlight 
-                  ? 'bg-white text-emerald-700' 
-                  : 'bg-emerald-600 text-white'
-              ]"
-            >
-              {{ plan.badge }}
-            </span>
-
-            <!-- Plan Info -->
-            <div class="mb-6">
-              <h3 :class="[
-                'text-xl font-bold mb-2',
-                plan.highlight ? 'text-white' : 'text-gray-900 dark:text-white'
-              ]">
-                {{ plan.name }}
-              </h3>
-              <p :class="[
-                'text-sm',
-                plan.highlight ? 'text-emerald-100' : 'text-gray-500 dark:text-gray-400'
-              ]">
-                {{ plan.description }}
-              </p>
+    <!-- Grille des plans -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+          v-for="plan in PLANS"
+          :key="plan.key"
+          class="flex flex-col rounded-2xl border bg-white overflow-hidden transition-shadow hover:shadow-lg"
+          :class="plan.highlight ? 'border-emerald-500 shadow-emerald-100 shadow-lg ring-2 ring-emerald-500' : 'border-gray-200'"
+        >
+          <!-- En-tête -->
+          <div class="px-6 pt-6 pb-4" :class="plan.highlight ? 'bg-emerald-50' : ''">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-base font-bold text-gray-900">{{ plan.name }}</span>
+              <span v-if="plan.badge" class="text-xs font-semibold px-2.5 py-1 rounded-full" :class="plan.badgeColor || 'bg-gray-100 text-gray-600'">
+                {{ plan.badge }}
+              </span>
             </div>
+            <p class="text-sm text-gray-500 mb-5 min-h-[40px]">{{ plan.description }}</p>
 
             <!-- Prix -->
-            <div class="mb-6">
-              <span :class="[
-                'text-4xl font-extrabold',
-                plan.highlight ? 'text-white' : 'text-gray-900 dark:text-white'
-              ]">
-                {{ formatPrice(plan.price[billingPeriod]) }}
-              </span>
-              <span 
-                v-if="plan.price[billingPeriod] !== 0"
-                :class="[
-                  'text-sm ml-1',
-                  plan.highlight ? 'text-emerald-100' : 'text-gray-500 dark:text-gray-400'
-                ]"
-              >
-                /{{ billingPeriod === 'monthly' ? 'mois' : 'an' }}
-              </span>
+            <div v-if="plan.price.monthly === 0" class="mb-4">
+              <span class="text-4xl font-extrabold text-gray-900">Gratuit</span>
+              <div class="text-sm text-emerald-600 font-medium mt-1">3 mois d'essai offerts</div>
+            </div>
+            <div v-else-if="billingPeriod === 'monthly'" class="mb-4">
+              <span class="text-4xl font-extrabold text-gray-900">{{ formatPrice(plan.price.monthly) }}</span>
+              <span class="text-gray-500 text-sm">/mois</span>
+            </div>
+            <div v-else class="mb-4">
+              <span class="text-4xl font-extrabold text-gray-900">{{ yearlyMonthly(plan) }}</span>
+              <div class="text-sm text-emerald-600 font-medium mt-1">soit {{ formatPrice(plan.price.yearly) }}/an</div>
             </div>
 
-            <!-- Features -->
-            <ul class="space-y-3 mb-8">
-              <li 
-                v-for="feature in plan.features" 
-                :key="feature.text"
-                class="flex items-start"
-              >
-                <svg 
-                  :class="[
-                    'w-5 h-5 mr-3 flex-shrink-0 mt-0.5',
-                    feature.included 
-                      ? (plan.highlight ? 'text-emerald-200' : 'text-emerald-500') 
-                      : (plan.highlight ? 'text-emerald-300/50' : 'text-gray-300 dark:text-gray-600')
-                  ]"
-                  fill="currentColor" 
-                  viewBox="0 0 20 20"
-                >
-                  <path 
-                    v-if="feature.included"
-                    fill-rule="evenodd" 
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
-                    clip-rule="evenodd"
-                  />
-                  <path 
-                    v-else
-                    fill-rule="evenodd" 
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" 
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <span :class="[
-                  'text-sm',
-                  feature.included 
-                    ? (plan.highlight ? 'text-white' : 'text-gray-700 dark:text-gray-300') 
-                    : (plan.highlight ? 'text-emerald-200/50 line-through' : 'text-gray-400 dark:text-gray-500 line-through')
-                ]">
-                  {{ feature.text }}
+            <button
+              @click="openPayment(plan)"
+              class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors"
+              :class="plan.highlight
+                ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                : 'bg-gray-900 hover:bg-gray-800 text-white'"
+            >
+              {{ plan.cta }}
+            </button>
+          </div>
+
+          <!-- Features -->
+          <div class="px-6 py-5 border-t border-gray-100 flex-1">
+            <ul class="space-y-2.5">
+              <li v-for="f in plan.features" :key="f.label" class="flex items-start gap-2.5 text-sm">
+                <span v-if="f.ok" class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
                 </span>
+                <span v-else class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-red-50 flex items-center justify-center">
+                  <svg class="w-3 h-3 text-red-400" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </span>
+                <span :class="f.ok ? 'text-gray-700' : 'text-gray-400'">{{ f.label }}</span>
               </li>
             </ul>
+          </div>
+        </div>
+      </div>
 
-            <!-- CTA -->
-            <NuxtLink
-              :to="plan.cta.to"
-              :class="[
-                'block w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-200',
-                plan.highlight 
-                  ? 'bg-white text-emerald-700 hover:bg-emerald-50 shadow-lg' 
-                  : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg hover:shadow-emerald-500/25'
-              ]"
-            >
-              {{ plan.cta.text }}
+      <!-- Organisation card -->
+      <div class="mt-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-gray-900 to-gray-800 text-white p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Entreprise / Organisation</div>
+          <h3 class="text-2xl font-bold mb-2">Tarification sur demande</h3>
+          <p class="text-gray-300 text-sm max-w-xl">
+            Boutiques illimitées, utilisateurs illimités, branding personnalisé, support dédié et intégrations sur mesure.
+            Idéal pour les groupes, réseaux de distribution et franchises.
+          </p>
+        </div>
+        <a
+          href="/home/contact_accueil"
+          class="flex-shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 rounded-xl transition-colors whitespace-nowrap"
+        >
+          Nous contacter
+        </a>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="max-w-3xl mx-auto px-4 pb-20">
+      <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">Questions fréquentes</h2>
+      <div class="space-y-4">
+        <details class="bg-white rounded-xl border border-gray-200 px-6 py-4 group">
+          <summary class="font-medium text-gray-900 cursor-pointer list-none flex items-center justify-between">
+            Comment fonctionne l'essai gratuit ?
+            <span class="text-gray-400 group-open:rotate-45 transition-transform">+</span>
+          </summary>
+          <p class="mt-3 text-sm text-gray-500">Créez votre compte gratuitement. Pendant 3 mois, vous accédez aux fonctionnalités de base sans aucune carte bancaire. Passez à un plan payant quand vous êtes prêt.</p>
+        </details>
+        <details class="bg-white rounded-xl border border-gray-200 px-6 py-4 group">
+          <summary class="font-medium text-gray-900 cursor-pointer list-none flex items-center justify-between">
+            Puis-je changer de plan à tout moment ?
+            <span class="text-gray-400 group-open:rotate-45 transition-transform">+</span>
+          </summary>
+          <p class="mt-3 text-sm text-gray-500">Oui. Vous pouvez passer à un plan supérieur ou inférieur à tout moment. Le changement est immédiat.</p>
+        </details>
+        <details class="bg-white rounded-xl border border-gray-200 px-6 py-4 group">
+          <summary class="font-medium text-gray-900 cursor-pointer list-none flex items-center justify-between">
+            Quels moyens de paiement acceptez-vous ?
+            <span class="text-gray-400 group-open:rotate-45 transition-transform">+</span>
+          </summary>
+          <p class="mt-3 text-sm text-gray-500">Orange Money, MTN Mobile Money, Stripe et carte bancaire classique. Aucun prélèvement automatique sans votre accord.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- Modal paiement -->
+    <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+        <div class="bg-emerald-500 px-6 py-4 flex items-center justify-between">
+          <h3 class="text-white font-bold text-lg">Souscrire — {{ selectedPlan?.name }}</h3>
+          <button @click="showPaymentModal = false" class="text-white/70 hover:text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="p-6">
+          <div v-if="paymentDone" class="text-center py-4">
+            <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <h4 class="text-xl font-bold text-gray-900 mb-2">Paiement simulé !</h4>
+            <p class="text-gray-500 text-sm mb-6">Créez votre compte pour activer votre abonnement {{ selectedPlan?.name }}.</p>
+            <NuxtLink to="/home/inscription" class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+              Créer mon compte
             </NuxtLink>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Features Comparison -->
-    <section class="py-16 md:py-24 bg-gray-50 dark:bg-gray-900/50 px-4">
-      <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Tout ce dont vous avez besoin
-          </h2>
-          <p class="text-xl text-gray-600 dark:text-gray-300">
-            Des fonctionnalités puissantes pour gérer votre stock efficacement
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <!-- Feature 1 -->
-          <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
-            <div class="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center mb-6">
-              <svg class="w-7 h-7 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-              </svg>
+          <div v-else>
+            <!-- Récap -->
+            <div class="bg-gray-50 rounded-xl p-4 mb-5">
+              <div class="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Plan</span><span class="font-medium text-gray-900">{{ selectedPlan?.name }}</span>
+              </div>
+              <div class="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Facturation</span>
+                <span class="font-medium text-gray-900">{{ billingPeriod === 'monthly' ? 'Mensuelle' : 'Annuelle (-10%)' }}</span>
+              </div>
+              <div class="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-200 mt-2">
+                <span>Total</span>
+                <span class="text-emerald-600">
+                  {{
+                    billingPeriod === 'monthly'
+                      ? formatPrice(selectedPlan?.price?.monthly)
+                      : formatPrice(selectedPlan?.price?.yearly)
+                  }}
+                </span>
+              </div>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Tableaux de bord</h3>
-            <p class="text-gray-600 dark:text-gray-400">
-              Visualisez vos données en temps réel avec des graphiques et statistiques détaillés.
-            </p>
+
+            <!-- Méthode de paiement -->
+            <p class="text-sm font-medium text-gray-700 mb-3">Méthode de paiement</p>
+            <div class="grid grid-cols-2 gap-3 mb-5">
+              <button
+                v-for="m in [
+                  { key: 'orange_money', label: 'Orange Money', color: 'bg-orange-50 border-orange-200 text-orange-700' },
+                  { key: 'mtn_money', label: 'MTN Money', color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
+                  { key: 'stripe', label: 'Stripe', color: 'bg-blue-50 border-blue-200 text-blue-700' },
+                  { key: 'bank_card', label: 'Carte bancaire', color: 'bg-gray-50 border-gray-200 text-gray-700' },
+                ]"
+                :key="m.key"
+                @click="paymentMethod = m.key"
+                class="border-2 rounded-xl py-3 px-3 text-sm font-medium transition-all flex items-center justify-center"
+                :class="[m.color, paymentMethod === m.key ? 'ring-2 ring-emerald-500 border-emerald-400' : '']"
+              >
+                {{ m.label }}
+              </button>
+            </div>
+
+            <!-- Numéro (OM/MTN) -->
+            <div v-if="['orange_money', 'mtn_money'].includes(paymentMethod)" class="mb-5">
+              <label class="text-sm font-medium text-gray-700 mb-1.5 block">Numéro de téléphone</label>
+              <input
+                v-model="phoneNumber"
+                type="tel"
+                placeholder="6XX XXX XXX"
+                class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              />
+            </div>
+
+            <button
+              @click="pay"
+              :disabled="!paymentMethod || paying || (['orange_money', 'mtn_money'].includes(paymentMethod) && !phoneNumber)"
+              class="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              <svg v-if="paying" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+              {{ paying ? 'Traitement...' : 'Payer maintenant' }}
+            </button>
+            <p class="text-xs text-gray-400 text-center mt-3">Paiement simulé · Les vraies API seront intégrées prochainement</p>
           </div>
-
-          <!-- Feature 2 -->
-          <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
-            <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-6">
-              <svg class="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Codes-barres</h3>
-            <p class="text-gray-600 dark:text-gray-400">
-              Scannez et générez des codes-barres pour une gestion rapide de votre inventaire.
-            </p>
-          </div>
-
-          <!-- Feature 3 -->
-          <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
-            <div class="w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-6">
-              <svg class="w-7 h-7 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Transferts</h3>
-            <p class="text-gray-600 dark:text-gray-400">
-              Transférez facilement des produits entre vos différents entrepôts et boutiques.
-            </p>
-          </div>
         </div>
       </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="py-16 md:py-24 px-4">
-      <div class="max-w-3xl mx-auto">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Questions fréquentes
-          </h2>
-          <p class="text-xl text-gray-600 dark:text-gray-300">
-            Tout ce que vous devez savoir sur nos tarifs
-          </p>
-        </div>
-
-        <div class="space-y-4">
-          <details 
-            v-for="(faq, index) in faqs" 
-            :key="index"
-            class="group bg-white dark:bg-gray-800 rounded-xl shadow-lg"
-          >
-            <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
-              <span class="font-semibold text-gray-900 dark:text-white">{{ faq.question }}</span>
-              <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </summary>
-            <div class="px-6 pb-6 text-gray-600 dark:text-gray-400">
-              {{ faq.answer }}
-            </div>
-          </details>
-        </div>
-
-        <div class="text-center mt-10">
-          <p class="text-gray-600 dark:text-gray-400 mb-4">Vous avez d'autres questions ?</p>
-          <NuxtLink 
-            to="/home/contact_accueil" 
-            class="inline-flex items-center px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
-          >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-            </svg>
-            Contactez-nous
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="py-16 md:py-24 bg-gradient-to-r from-emerald-600 to-blue-600 px-4">
-      <div class="max-w-4xl mx-auto text-center">
-        <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
-          Prêt à optimiser votre gestion de stock ?
-        </h2>
-        <p class="text-xl text-emerald-100 mb-10">
-          Rejoignez des centaines d'entreprises qui font confiance à Mura Storage
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <NuxtLink 
-            to="/home/inscription"
-            class="inline-flex items-center justify-center px-8 py-4 bg-white text-emerald-700 rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-          >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-            Commencer gratuitement
-          </NuxtLink>
-          <NuxtLink 
-            to="/home/contact_accueil"
-            class="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white rounded-xl font-bold hover:bg-white/10 transition-all duration-300"
-          >
-            Demander une démo
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
+    </div>
   </div>
 </template>
-
-<style scoped>
-details summary::-webkit-details-marker {
-  display: none;
-}
-</style>

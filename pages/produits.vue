@@ -124,15 +124,6 @@
         Générer QR Codes
       </UButton>
       
-      <UButton
-        color="gray"
-        @click="testDataLoading"
-        variant="outline"
-        class="w-full sm:w-auto"
-      >
-        <UIcon name="i-heroicons-bug-ant" class="mr-2" />
-        Test Debug
-      </UButton>
     </div>
 
     <!-- Liste des produits -->
@@ -340,6 +331,12 @@
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <div class="flex items-center space-x-2">
+                    <UIcon name="i-heroicons-squares-2x2" class="h-4 w-4" />
+                    <span>Variantes</span>
+                  </div>
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <div class="flex items-center space-x-2">
                     <UIcon name="i-heroicons-cog-6-tooth" class="h-4 w-4" />
                     <span>Actions</span>
                   </div>
@@ -415,6 +412,32 @@
                   </div>
                 </td>
                 
+                <!-- Variantes -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    <button
+                      v-if="(produit.nb_variantes || 0) > 0"
+                      @click="toggleVariantes(produit.id)"
+                      class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors cursor-pointer"
+                    >
+                      <UIcon name="i-heroicons-squares-2x2" class="h-3 w-3" />
+                      {{ produit.nb_variantes }} variante{{ (produit.nb_variantes || 0) > 1 ? 's' : '' }}
+                      <UIcon :name="expandedVariantes.has(produit.id) ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="h-3 w-3" />
+                    </button>
+                    <span v-else class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                      Aucune
+                    </span>
+                    <!-- Variantes déroulées -->
+                    <div v-if="expandedVariantes.has(produit.id) && produit.variantes && produit.variantes.length > 0" class="mt-2 space-y-1">
+                      <div v-for="v in produit.variantes" :key="v.id" class="text-xs bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1">
+                        <span class="font-medium text-gray-800 dark:text-gray-200">{{ v.nom }}</span>
+                        <span class="ml-2 text-gray-500">{{ v.prix_vente }} XAF</span>
+                        <span class="ml-1 text-gray-400">· stock: {{ v.stock_total }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
                 <!-- Actions -->
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex space-x-2">
@@ -455,16 +478,18 @@
             </UButton>
             
             <div class="flex space-x-1">
-              <UButton
-                v-for="page in Math.min(5, totalPages)"
-                :key="page"
-                @click="currentPage = page"
-                :color="currentPage === page ? 'blue' : 'gray'"
-                variant="outline"
-                size="sm"
-              >
-                {{ page }}
-              </UButton>
+              <template v-for="p in paginationPages" :key="p">
+                <span v-if="p === '...'" class="flex items-center px-2 text-gray-400 text-sm">…</span>
+                <UButton
+                  v-else
+                  @click="currentPage = p as number"
+                  :color="currentPage === p ? 'blue' : 'gray'"
+                  variant="outline"
+                  size="sm"
+                >
+                  {{ p }}
+                </UButton>
+              </template>
             </div>
             
             <UButton
@@ -481,61 +506,54 @@
     </div>
 
     <!-- Modal de création/modification -->
-    <UModal v-model="showCreateModal">
+    <UModal v-model="showCreateModal" :ui="{ width: 'max-w-3xl' }">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Créer un nouveau produit</h3>
-            <UButton
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-x-mark-20-solid"
-              @click="showCreateModal = false"
-            />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Créer un nouveau produit</h3>
+            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="showCreateModal = false" />
+          </div>
+          <!-- Onglets -->
+          <div class="flex gap-1 mt-4 border-b border-gray-200 dark:border-gray-700">
+            <button
+              v-for="tab in [{ key: 'infos', label: 'Informations' }, { key: 'prix', label: 'Prix & Stock' }, { key: 'variantes', label: 'Variantes' }]"
+              :key="tab.key"
+              @click="activeCreateTab = tab.key as any"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-t-lg transition-colors -mb-px border-b-2',
+                activeCreateTab === tab.key
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              ]"
+            >
+              {{ tab.label }}
+              <span v-if="tab.key === 'variantes' && variantesCreate.length > 0" class="ml-1 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-xs">
+                {{ variantesCreate.length }}
+              </span>
+            </button>
           </div>
         </template>
 
-        <UForm :state="formState" class="space-y-4" @submit="createProduit">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-4 min-h-64">
+          <!-- Onglet 1 : Informations -->
+          <div v-show="activeCreateTab === 'infos'" class="space-y-4">
             <UFormGroup label="Nom du produit *" name="nom">
               <UInput v-model="formState.nom" placeholder="Nom du produit" />
             </UFormGroup>
-            
-            <UFormGroup label="Référence" name="reference">
-              <UInput v-model="formState.reference" placeholder="Référence produit" />
+
+            <UFormGroup label="Description" name="description">
+              <UTextarea v-model="formState.description" placeholder="Description du produit" rows="3" />
             </UFormGroup>
-          </div>
-          
-          <UFormGroup label="Description" name="description">
-            <UTextarea v-model="formState.description" placeholder="Description du produit" />
-          </UFormGroup>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UFormGroup label="Prix d'achat *" name="prix_achat">
-              <UInput type="number" v-model="formState.prix_achat" placeholder="0" />
-            </UFormGroup>
-            
-            <UFormGroup label="Prix de vente *" name="prix_vente">
-              <UInput type="number" v-model="formState.prix_vente" placeholder="0" />
-            </UFormGroup>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UFormGroup label="Stock minimal *" name="stock_minimum">
-              <UInput type="number" v-model="formState.stock_minimum" placeholder="0" />
-              <template #help>
-                <span class="text-xs text-gray-500">Seuil d'alerte pour réapprovisionnement</span>
-              </template>
-            </UFormGroup>
-            
-            <UFormGroup label="Stock maximal" name="stock_maximum">
-              <UInput type="number" v-model="formState.stock_maximum" placeholder="1000" />
-              <template #help>
-                <span class="text-xs text-gray-500">Stock maximum recommandé</span>
-              </template>
-            </UFormGroup>
-          </div>
-          
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UFormGroup label="Marque" name="marque">
+                <UInput v-model="formState.marque" placeholder="Ex: Samsung, Nike..." />
+              </UFormGroup>
+              <UFormGroup label="Modèle" name="modele">
+                <UInput v-model="formState.modele" placeholder="Ex: Galaxy S24, Air Max..." />
+              </UFormGroup>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UFormGroup label="Catégorie" name="categorie">
                 <div class="flex gap-2">
@@ -543,7 +561,6 @@
                   <UButton @click="showCategoriesModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter une catégorie" />
                 </div>
               </UFormGroup>
-              
               <UFormGroup label="Fournisseur" name="fournisseur_principal">
                 <div class="flex gap-2">
                   <USelect v-model="formState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" class="flex-1" />
@@ -551,81 +568,222 @@
                 </div>
               </UFormGroup>
             </div>
-            
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UFormGroup label="Unité de mesure" name="unite_mesure">
+                <USelect v-model="formState.unite_mesure" :options="uniteMesureOptions" />
+              </UFormGroup>
+              <UFormGroup label="État" name="etat_produit">
+                <USelect v-model="formState.etat_produit" :options="etatProduitOptions" />
+              </UFormGroup>
+            </div>
+
             <UFormGroup label="Emplacement" name="emplacement">
               <UInput v-model="formState.emplacement" placeholder="Ex: Étagère A3, Palier 2..." />
-              <template #help>
-                <span class="text-xs text-gray-500">Emplacement physique du produit dans l'entrepôt</span>
-              </template>
             </UFormGroup>
 
-          <div class="flex justify-end space-x-3 pt-4 border-t">
-            <UButton type="button" color="gray" variant="outline" @click="showCreateModal = false">
-              Annuler
-            </UButton>
-            <UButton type="submit" color="blue" :loading="loading">
-              Créer
-            </UButton>
+            <UFormGroup label="Image du produit" name="image">
+              <input type="file" accept="image/*" @change="handleImageChange($event, 'create')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-300" />
+              <div v-if="formState.imagePreviewUrl" class="mt-2">
+                <img :src="formState.imagePreviewUrl" alt="Preview" class="h-24 w-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
+              </div>
+            </UFormGroup>
           </div>
-        </UForm>
+
+          <!-- Onglet 2 : Prix & Stock -->
+          <div v-show="activeCreateTab === 'prix'" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UFormGroup label="Prix d'achat *" name="prix_achat">
+                <UInput type="number" v-model="formState.prix_achat" placeholder="0" />
+              </UFormGroup>
+              <UFormGroup label="Prix de vente *" name="prix_vente">
+                <UInput type="number" v-model="formState.prix_vente" placeholder="0" />
+              </UFormGroup>
+            </div>
+
+            <!-- Marge automatique -->
+            <div v-if="margeCreate !== null" class="flex items-center gap-2">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Marge calculée :</span>
+              <span :class="[
+                'px-2 py-0.5 rounded-full text-xs font-bold',
+                parseFloat(margeCreate) >= 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+              ]">
+                {{ margeCreate }}%
+              </span>
+            </div>
+
+            <UFormGroup label="Prix de gros (partenaires)" name="prix_gros">
+              <UInput type="number" v-model="formState.prix_gros" placeholder="Optionnel" />
+            </UFormGroup>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UFormGroup label="Stock minimal *" name="stock_minimum">
+                <UInput type="number" v-model="formState.stock_minimum" placeholder="0" />
+                <template #help><span class="text-xs text-gray-500">Seuil d'alerte pour réapprovisionnement</span></template>
+              </UFormGroup>
+              <UFormGroup label="Stock maximal" name="stock_maximum">
+                <UInput type="number" v-model="formState.stock_maximum" placeholder="1000" />
+                <template #help><span class="text-xs text-gray-500">Stock maximum recommandé</span></template>
+              </UFormGroup>
+            </div>
+
+            <UFormGroup label="Code-barres" name="code_barres">
+              <UInput v-model="formState.code_barres" placeholder="Laissez vide pour auto-générer" />
+              <template #help><span class="text-xs text-gray-500">Auto-généré si vide</span></template>
+            </UFormGroup>
+          </div>
+
+          <!-- Onglet 3 : Variantes -->
+          <div v-show="activeCreateTab === 'variantes'" class="space-y-4">
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                @click="hasVariantesCreate = !hasVariantesCreate"
+                :class="[
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                  hasVariantesCreate ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
+                ]"
+              >
+                <span :class="['inline-block h-4 w-4 transform rounded-full bg-white transition-transform', hasVariantesCreate ? 'translate-x-6' : 'translate-x-1']" />
+              </button>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Ce produit a des variantes</span>
+            </div>
+
+            <div v-if="hasVariantesCreate" class="space-y-4">
+              <!-- Liste des variantes -->
+              <div v-if="variantesCreate.length > 0" class="space-y-2">
+                <div v-for="(v, i) in variantesCreate" :key="i" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <span class="font-medium text-gray-900 dark:text-white text-sm">{{ v.nom }}</span>
+                    <div class="flex gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <span>Achat: {{ v.prix_achat }} XAF</span>
+                      <span>Vente: {{ v.prix_vente }} XAF</span>
+                      <span v-if="margeVariante(v.prix_achat, v.prix_vente) !== null" :class="parseFloat(margeVariante(v.prix_achat, v.prix_vente)!) >= 0 ? 'text-green-600' : 'text-red-600'">
+                        Marge: {{ margeVariante(v.prix_achat, v.prix_vente) }}%
+                      </span>
+                    </div>
+                    <div v-if="v.attributs.length > 0" class="flex flex-wrap gap-1 mt-1">
+                      <span v-for="a in v.attributs" :key="a.cle" class="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded text-xs">
+                        {{ a.cle }}: {{ a.valeur }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex gap-1 ml-2 shrink-0">
+                    <UButton variant="ghost" size="xs" @click="editVarianteCreate(i)"><UIcon name="i-heroicons-pencil" class="h-4 w-4" /></UButton>
+                    <UButton variant="ghost" size="xs" color="red" @click="removeVarianteCreate(i)"><UIcon name="i-heroicons-trash" class="h-4 w-4" /></UButton>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mini-formulaire variante -->
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {{ editingVarianteIndexCreate !== null ? 'Modifier la variante' : 'Ajouter une variante' }}
+                </h4>
+                <UFormGroup label="Nom de la variante *">
+                  <UInput v-model="varianteFormCreate.nom" placeholder="Ex: 500ml, Rouge - L, 64GB Noir..." />
+                </UFormGroup>
+
+                <!-- Attributs dynamiques -->
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs font-medium text-gray-600 dark:text-gray-400">Attributs</label>
+                    <UButton size="xs" variant="outline" @click="addAttributCreate">
+                      <UIcon name="i-heroicons-plus" class="mr-1 h-3 w-3" />Ajouter attribut
+                    </UButton>
+                  </div>
+                  <div v-for="(attr, ai) in varianteFormCreate.attributs" :key="ai" class="flex gap-2 mb-2">
+                    <UInput v-model="attr.cle" placeholder="Clé (ex: Grammage)" size="sm" class="flex-1" />
+                    <UInput v-model="attr.valeur" placeholder="Valeur (ex: 500g)" size="sm" class="flex-1" />
+                    <UButton size="xs" variant="ghost" color="red" @click="removeAttributCreate(ai)"><UIcon name="i-heroicons-x-mark" /></UButton>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <UFormGroup label="Prix achat">
+                    <UInput type="number" v-model="varianteFormCreate.prix_achat" placeholder="0" size="sm" />
+                  </UFormGroup>
+                  <UFormGroup label="Prix vente">
+                    <UInput type="number" v-model="varianteFormCreate.prix_vente" placeholder="0" size="sm" />
+                  </UFormGroup>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <UFormGroup label="Prix gros (optionnel)">
+                    <UInput type="number" v-model="varianteFormCreate.prix_gros" placeholder="Optionnel" size="sm" />
+                  </UFormGroup>
+                  <UFormGroup label="Code-barres (optionnel)">
+                    <UInput v-model="varianteFormCreate.code_barres" placeholder="Optionnel" size="sm" />
+                  </UFormGroup>
+                </div>
+                <div class="flex gap-2 justify-end">
+                  <UButton v-if="editingVarianteIndexCreate !== null" size="sm" variant="outline" color="gray" @click="editingVarianteIndexCreate = null; varianteFormCreate = emptyVarianteForm()">Annuler</UButton>
+                  <UButton size="sm" color="blue" @click="saveVarianteCreate" :disabled="!varianteFormCreate.nom">
+                    {{ editingVarianteIndexCreate !== null ? 'Mettre à jour' : 'Ajouter' }}
+                  </UButton>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end space-x-3">
+            <UButton color="gray" variant="outline" @click="showCreateModal = false">Annuler</UButton>
+            <UButton color="blue" :loading="loading" @click="createProduit">Créer le produit</UButton>
+          </div>
+        </template>
       </UCard>
     </UModal>
 
     <!-- Modal de modification -->
-    <UModal v-model="showEditModal">
+    <UModal v-model="showEditModal" :ui="{ width: 'max-w-3xl' }">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Modifier le produit</h3>
-            <UButton
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-x-mark-20-solid"
-              @click="closeEditModal"
-            />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Modifier le produit</h3>
+            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="closeEditModal" />
+          </div>
+          <!-- Onglets -->
+          <div class="flex gap-1 mt-4 border-b border-gray-200 dark:border-gray-700">
+            <button
+              v-for="tab in [{ key: 'infos', label: 'Informations' }, { key: 'prix', label: 'Prix & Stock' }, { key: 'variantes', label: 'Variantes' }]"
+              :key="tab.key"
+              @click="activeEditTab = tab.key as any"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-t-lg transition-colors -mb-px border-b-2',
+                activeEditTab === tab.key
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              ]"
+            >
+              {{ tab.label }}
+              <span v-if="tab.key === 'variantes' && variantesEdit.length > 0" class="ml-1 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-xs">
+                {{ variantesEdit.length }}
+              </span>
+            </button>
           </div>
         </template>
-        
-        <UForm @submit="saveProduit">
-          <div class="space-y-4">
+
+        <div class="space-y-4 min-h-64">
+          <!-- Onglet 1 : Informations -->
+          <div v-show="activeEditTab === 'infos'" class="space-y-4">
             <UFormGroup label="Nom du produit *" name="nom">
               <UInput v-model="editFormState.nom" placeholder="Nom du produit" />
             </UFormGroup>
-            
-            <UFormGroup label="Référence" name="reference">
-              <UInput v-model="editFormState.reference" placeholder="Référence du produit" />
-            </UFormGroup>
-            
+
             <UFormGroup label="Description" name="description">
-              <UTextarea v-model="editFormState.description" placeholder="Description du produit" />
+              <UTextarea v-model="editFormState.description" placeholder="Description du produit" rows="3" />
             </UFormGroup>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormGroup label="Prix d'achat *" name="prix_achat">
-                <UInput type="number" v-model="editFormState.prix_achat" placeholder="0" />
+              <UFormGroup label="Marque" name="marque">
+                <UInput v-model="editFormState.marque" placeholder="Ex: Samsung, Nike..." />
               </UFormGroup>
-              
-              <UFormGroup label="Prix de vente *" name="prix_vente">
-                <UInput type="number" v-model="editFormState.prix_vente" placeholder="0" />
+              <UFormGroup label="Modèle" name="modele">
+                <UInput v-model="editFormState.modele" placeholder="Ex: Galaxy S24, Air Max..." />
               </UFormGroup>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormGroup label="Stock minimal *" name="stock_minimum">
-                <UInput type="number" v-model="editFormState.stock_minimum" placeholder="0" />
-                <template #help>
-                  <span class="text-xs text-gray-500">Seuil d'alerte pour réapprovisionnement</span>
-                </template>
-              </UFormGroup>
-              
-              <UFormGroup label="Stock maximal" name="stock_maximum">
-                <UInput type="number" v-model="editFormState.stock_maximum" placeholder="1000" />
-                <template #help>
-                  <span class="text-xs text-gray-500">Stock maximum recommandé</span>
-                </template>
-              </UFormGroup>
-            </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UFormGroup label="Catégorie" name="categorie">
                 <div class="flex gap-2">
@@ -633,7 +791,6 @@
                   <UButton @click="showCategoriesModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter une catégorie" />
                 </div>
               </UFormGroup>
-              
               <UFormGroup label="Fournisseur principal" name="fournisseur_principal">
                 <div class="flex gap-2">
                   <USelect v-model="editFormState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" class="flex-1" />
@@ -641,25 +798,169 @@
                 </div>
               </UFormGroup>
             </div>
-            
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UFormGroup label="Unité de mesure" name="unite_mesure">
+                <USelect v-model="editFormState.unite_mesure" :options="uniteMesureOptions" />
+              </UFormGroup>
+              <UFormGroup label="État" name="etat_produit">
+                <USelect v-model="editFormState.etat_produit" :options="etatProduitOptions" />
+              </UFormGroup>
+            </div>
+
             <UFormGroup label="Emplacement" name="emplacement">
               <UInput v-model="editFormState.emplacement" placeholder="Ex: Étagère A3, Palier 2..." />
-              <template #help>
-                <span class="text-xs text-gray-500">Emplacement physique du produit dans l'entrepôt</span>
-              </template>
             </UFormGroup>
-            
-            <!-- Boutons de validation -->
-            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <UButton color="gray" variant="ghost" @click="closeEditModal">
-                Annuler
-              </UButton>
-              <UButton type="submit" :loading="loading">
-                Sauvegarder
-              </UButton>
+
+            <UFormGroup label="Image du produit" name="image">
+              <input type="file" accept="image/*" @change="handleImageChange($event, 'edit')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-300" />
+              <div v-if="editFormState.imagePreviewUrl" class="mt-2">
+                <img :src="editFormState.imagePreviewUrl" alt="Preview" class="h-24 w-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
+              </div>
+            </UFormGroup>
+          </div>
+
+          <!-- Onglet 2 : Prix & Stock -->
+          <div v-show="activeEditTab === 'prix'" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UFormGroup label="Prix d'achat *" name="prix_achat">
+                <UInput type="number" v-model="editFormState.prix_achat" placeholder="0" />
+              </UFormGroup>
+              <UFormGroup label="Prix de vente *" name="prix_vente">
+                <UInput type="number" v-model="editFormState.prix_vente" placeholder="0" />
+              </UFormGroup>
+            </div>
+
+            <!-- Marge automatique -->
+            <div v-if="margeEdit !== null" class="flex items-center gap-2">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Marge calculée :</span>
+              <span :class="[
+                'px-2 py-0.5 rounded-full text-xs font-bold',
+                parseFloat(margeEdit) >= 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+              ]">
+                {{ margeEdit }}%
+              </span>
+            </div>
+
+            <UFormGroup label="Prix de gros (partenaires)" name="prix_gros">
+              <UInput type="number" v-model="editFormState.prix_gros" placeholder="Optionnel" />
+            </UFormGroup>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UFormGroup label="Stock minimal *" name="stock_minimum">
+                <UInput type="number" v-model="editFormState.stock_minimum" placeholder="0" />
+                <template #help><span class="text-xs text-gray-500">Seuil d'alerte pour réapprovisionnement</span></template>
+              </UFormGroup>
+              <UFormGroup label="Stock maximal" name="stock_maximum">
+                <UInput type="number" v-model="editFormState.stock_maximum" placeholder="1000" />
+                <template #help><span class="text-xs text-gray-500">Stock maximum recommandé</span></template>
+              </UFormGroup>
+            </div>
+
+            <UFormGroup label="Code-barres" name="code_barres">
+              <UInput v-model="editFormState.code_barres" placeholder="Laissez vide pour auto-générer" />
+              <template #help><span class="text-xs text-gray-500">Auto-généré si vide</span></template>
+            </UFormGroup>
+          </div>
+
+          <!-- Onglet 3 : Variantes -->
+          <div v-show="activeEditTab === 'variantes'" class="space-y-4">
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                @click="hasVariantesEdit = !hasVariantesEdit"
+                :class="[
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                  hasVariantesEdit ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
+                ]"
+              >
+                <span :class="['inline-block h-4 w-4 transform rounded-full bg-white transition-transform', hasVariantesEdit ? 'translate-x-6' : 'translate-x-1']" />
+              </button>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Ce produit a des variantes</span>
+            </div>
+
+            <div v-if="hasVariantesEdit" class="space-y-4">
+              <!-- Liste des variantes -->
+              <div v-if="variantesEdit.length > 0" class="space-y-2">
+                <div v-for="(v, i) in variantesEdit" :key="i" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <span class="font-medium text-gray-900 dark:text-white text-sm">{{ v.nom }}</span>
+                    <div class="flex gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <span>Achat: {{ v.prix_achat }} XAF</span>
+                      <span>Vente: {{ v.prix_vente }} XAF</span>
+                      <span v-if="margeVariante(v.prix_achat, v.prix_vente) !== null" :class="parseFloat(margeVariante(v.prix_achat, v.prix_vente)!) >= 0 ? 'text-green-600' : 'text-red-600'">
+                        Marge: {{ margeVariante(v.prix_achat, v.prix_vente) }}%
+                      </span>
+                    </div>
+                    <div v-if="v.attributs.length > 0" class="flex flex-wrap gap-1 mt-1">
+                      <span v-for="a in v.attributs" :key="a.cle" class="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded text-xs">
+                        {{ a.cle }}: {{ a.valeur }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex gap-1 ml-2 shrink-0">
+                    <UButton variant="ghost" size="xs" @click="editVarianteEdit(i)"><UIcon name="i-heroicons-pencil" class="h-4 w-4" /></UButton>
+                    <UButton variant="ghost" size="xs" color="red" @click="removeVarianteEdit(i)"><UIcon name="i-heroicons-trash" class="h-4 w-4" /></UButton>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mini-formulaire variante -->
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {{ editingVarianteIndexEdit !== null ? 'Modifier la variante' : 'Ajouter une variante' }}
+                </h4>
+                <UFormGroup label="Nom de la variante *">
+                  <UInput v-model="varianteFormEdit.nom" placeholder="Ex: 500ml, Rouge - L, 64GB Noir..." />
+                </UFormGroup>
+
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs font-medium text-gray-600 dark:text-gray-400">Attributs</label>
+                    <UButton size="xs" variant="outline" @click="addAttributEdit">
+                      <UIcon name="i-heroicons-plus" class="mr-1 h-3 w-3" />Ajouter attribut
+                    </UButton>
+                  </div>
+                  <div v-for="(attr, ai) in varianteFormEdit.attributs" :key="ai" class="flex gap-2 mb-2">
+                    <UInput v-model="attr.cle" placeholder="Clé (ex: Grammage)" size="sm" class="flex-1" />
+                    <UInput v-model="attr.valeur" placeholder="Valeur (ex: 500g)" size="sm" class="flex-1" />
+                    <UButton size="xs" variant="ghost" color="red" @click="removeAttributEdit(ai)"><UIcon name="i-heroicons-x-mark" /></UButton>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <UFormGroup label="Prix achat">
+                    <UInput type="number" v-model="varianteFormEdit.prix_achat" placeholder="0" size="sm" />
+                  </UFormGroup>
+                  <UFormGroup label="Prix vente">
+                    <UInput type="number" v-model="varianteFormEdit.prix_vente" placeholder="0" size="sm" />
+                  </UFormGroup>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <UFormGroup label="Prix gros (optionnel)">
+                    <UInput type="number" v-model="varianteFormEdit.prix_gros" placeholder="Optionnel" size="sm" />
+                  </UFormGroup>
+                  <UFormGroup label="Code-barres (optionnel)">
+                    <UInput v-model="varianteFormEdit.code_barres" placeholder="Optionnel" size="sm" />
+                  </UFormGroup>
+                </div>
+                <div class="flex gap-2 justify-end">
+                  <UButton v-if="editingVarianteIndexEdit !== null" size="sm" variant="outline" color="gray" @click="editingVarianteIndexEdit = null; varianteFormEdit = emptyVarianteForm()">Annuler</UButton>
+                  <UButton size="sm" color="blue" @click="saveVarianteEdit" :disabled="!varianteFormEdit.nom">
+                    {{ editingVarianteIndexEdit !== null ? 'Mettre à jour' : 'Ajouter' }}
+                  </UButton>
+                </div>
+              </div>
             </div>
           </div>
-        </UForm>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end space-x-3">
+            <UButton color="gray" variant="ghost" @click="closeEditModal">Annuler</UButton>
+            <UButton color="blue" :loading="loading" @click="saveProduit">Sauvegarder</UButton>
+          </div>
+        </template>
       </UCard>
     </UModal>
 
@@ -1916,7 +2217,7 @@ function handleCreateProduitClick() {
   // @ts-ignore
   showCreateModal.value = true
 }
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import { useBarcodeGenerator } from '@/composables/useBarcodeGenerator'
 import { useImportExport } from '@/composables/useImportExport'
@@ -1969,6 +2270,21 @@ interface ProduitImport {
   statut?: string
 }
 
+interface ProduitVariante {
+  id: number
+  produit: number
+  nom: string
+  attributs: Record<string, string>
+  sku: string
+  code_barres: string
+  prix_achat: number
+  prix_vente: number
+  prix_gros?: number
+  marge: number
+  stock_total: number
+  actif: boolean
+}
+
 interface Produit {
   id: number
   sku?: string
@@ -2016,6 +2332,9 @@ interface Produit {
   // Nouveaux champs
   emplacement?: string
   details?: any
+  // Variantes
+  variantes?: ProduitVariante[]
+  nb_variantes?: number
 }
 
 definePageMeta({
@@ -2154,13 +2473,21 @@ const editFormState = ref({
   description: "",
   prix_achat: 0,
   prix_vente: 0,
+  prix_gros: undefined as number | undefined,
   reference: "",
   categorie: undefined as number | undefined,
   fournisseur_principal: undefined as number | undefined,
   stock_minimum: 0,
   stock_maximum: 1000,
-  emplacement: "",  // Nouveau champ
-  details: {} as any  // Nouveau champ JSON
+  emplacement: "",
+  details: {} as any,
+  marque: "",
+  modele: "",
+  unite_mesure: "piece",
+  etat_produit: "neuf",
+  code_barres: "",
+  image: null as File | null,
+  imagePreviewUrl: "" as string
 })
 
 // État du formulaire de modification du stock
@@ -2188,15 +2515,197 @@ const formState = ref({
   description: "",
   prix_achat: 0,
   prix_vente: 0,
+  prix_gros: undefined as number | undefined,
   quantite: 0,
   reference: "",
   categorie: undefined as number | undefined,
   fournisseur_principal: undefined as number | undefined,
   stock_minimum: 0,
   stock_maximum: 1000,
-  emplacement: "",  // Nouveau champ
-  details: {} as any  // Nouveau champ JSON
+  emplacement: "",
+  details: {} as any,
+  marque: "",
+  modele: "",
+  unite_mesure: "piece",
+  etat_produit: "neuf",
+  code_barres: "",
+  image: null as File | null,
+  imagePreviewUrl: "" as string
 })
+
+// Onglet actif pour les modaux de création/modification
+const activeCreateTab = ref<'infos' | 'prix' | 'variantes'>('infos')
+const activeEditTab = ref<'infos' | 'prix' | 'variantes'>('infos')
+
+// Marge calculée en temps réel
+const margeCreate = computed(() => {
+  const pa = parseFloat(formState.value.prix_achat.toString()) || 0
+  const pv = parseFloat(formState.value.prix_vente.toString()) || 0
+  if (!pa || pa === 0) return null
+  return ((pv - pa) / pa * 100).toFixed(1)
+})
+
+const margeEdit = computed(() => {
+  const pa = parseFloat(editFormState.value.prix_achat.toString()) || 0
+  const pv = parseFloat(editFormState.value.prix_vente.toString()) || 0
+  if (!pa || pa === 0) return null
+  return ((pv - pa) / pa * 100).toFixed(1)
+})
+
+// Gestion de l'image (preview)
+const handleImageChange = (event: Event, target: 'create' | 'edit') => {
+  const input = event.target as HTMLInputElement
+  if (!input.files || !input.files[0]) return
+  const file = input.files[0]
+  const url = URL.createObjectURL(file)
+  if (target === 'create') {
+    formState.value.image = file
+    formState.value.imagePreviewUrl = url
+  } else {
+    editFormState.value.image = file
+    editFormState.value.imagePreviewUrl = url
+  }
+}
+
+// --- Gestion des variantes ---
+interface VarianteForm {
+  id?: number
+  nom: string
+  attributs: { cle: string; valeur: string }[]
+  prix_achat: number
+  prix_vente: number
+  prix_gros: number | undefined
+  code_barres: string
+}
+
+const variantesCreate = ref<VarianteForm[]>([])
+const variantesEdit = ref<VarianteForm[]>([])
+const hasVariantesCreate = ref(false)
+const hasVariantesEdit = ref(false)
+
+// Index de la variante en cours d'édition inline (-1 = aucune)
+const editingVarianteIndexCreate = ref<number | null>(null)
+const editingVarianteIndexEdit = ref<number | null>(null)
+
+const emptyVarianteForm = (): VarianteForm => ({
+  nom: '',
+  attributs: [],
+  prix_achat: 0,
+  prix_vente: 0,
+  prix_gros: undefined,
+  code_barres: ''
+})
+
+const varianteFormCreate = ref<VarianteForm>(emptyVarianteForm())
+const varianteFormEdit = ref<VarianteForm>(emptyVarianteForm())
+
+const addAttributCreate = () => varianteFormCreate.value.attributs.push({ cle: '', valeur: '' })
+const addAttributEdit = () => varianteFormEdit.value.attributs.push({ cle: '', valeur: '' })
+const removeAttributCreate = (i: number) => varianteFormCreate.value.attributs.splice(i, 1)
+const removeAttributEdit = (i: number) => varianteFormEdit.value.attributs.splice(i, 1)
+
+const saveVarianteCreate = () => {
+  if (!varianteFormCreate.value.nom) return
+  if (editingVarianteIndexCreate.value !== null) {
+    variantesCreate.value[editingVarianteIndexCreate.value] = { ...varianteFormCreate.value, attributs: [...varianteFormCreate.value.attributs] }
+    editingVarianteIndexCreate.value = null
+  } else {
+    variantesCreate.value.push({ ...varianteFormCreate.value, attributs: [...varianteFormCreate.value.attributs] })
+  }
+  varianteFormCreate.value = emptyVarianteForm()
+}
+
+const saveVarianteEdit = () => {
+  if (!varianteFormEdit.value.nom) return
+  if (editingVarianteIndexEdit.value !== null) {
+    variantesEdit.value[editingVarianteIndexEdit.value] = { ...varianteFormEdit.value, attributs: [...varianteFormEdit.value.attributs] }
+    editingVarianteIndexEdit.value = null
+  } else {
+    variantesEdit.value.push({ ...varianteFormEdit.value, attributs: [...varianteFormEdit.value.attributs] })
+  }
+  varianteFormEdit.value = emptyVarianteForm()
+}
+
+const editVarianteCreate = (i: number) => {
+  editingVarianteIndexCreate.value = i
+  varianteFormCreate.value = { ...variantesCreate.value[i], attributs: [...variantesCreate.value[i].attributs] }
+}
+
+const editVarianteEdit = (i: number) => {
+  editingVarianteIndexEdit.value = i
+  varianteFormEdit.value = { ...variantesEdit.value[i], attributs: [...variantesEdit.value[i].attributs] }
+}
+
+const removeVarianteCreate = (i: number) => variantesCreate.value.splice(i, 1)
+const removeVarianteEdit = (i: number) => variantesEdit.value.splice(i, 1)
+
+const margeVariante = (pa: number, pv: number) => {
+  if (!pa || pa === 0) return null
+  return ((pv - pa) / pa * 100).toFixed(1)
+}
+
+// Sauvegarder les variantes après création/modification du produit
+const saveVariantesProduit = async (produitId: number, variantes: VarianteForm[]) => {
+  const h = getAuthHeaders()
+  for (const v of variantes) {
+    const attributsObj: Record<string, string> = {}
+    for (const a of v.attributs) {
+      if (a.cle) attributsObj[a.cle] = a.valeur
+    }
+    const payload: any = {
+      produit: produitId,
+      nom: v.nom,
+      attributs: attributsObj,
+      prix_achat: v.prix_achat,
+      prix_vente: v.prix_vente,
+      code_barres: v.code_barres || '',
+      actif: true
+    }
+    if (v.prix_gros) payload.prix_gros = v.prix_gros
+    if (v.id) {
+      await $fetch(getApiUrl(`/api/variantes-produit/${v.id}/`), { method: 'PATCH', headers: h, body: payload })
+    } else {
+      await $fetch(getApiUrl('/api/variantes-produit/'), { method: 'POST', headers: h, body: payload })
+    }
+  }
+}
+
+const deleteVarianteProduit = async (id: number) => {
+  const h = getAuthHeaders()
+  await $fetch(getApiUrl(`/api/variantes-produit/${id}/`), { method: 'DELETE', headers: h })
+}
+
+// État déroulable des variantes dans la liste
+const expandedVariantes = ref<Set<number>>(new Set())
+const toggleVariantes = (id: number) => {
+  const next = new Set(expandedVariantes.value)
+  if (next.has(id)) {
+    next.delete(id)
+  } else {
+    next.add(id)
+  }
+  expandedVariantes.value = next
+}
+
+// Options unités et états
+const uniteMesureOptions = [
+  { value: 'piece', label: 'Pièce' },
+  { value: 'kg', label: 'kg' },
+  { value: 'g', label: 'g' },
+  { value: 'L', label: 'L' },
+  { value: 'ml', label: 'ml' },
+  { value: 'm', label: 'm' },
+  { value: 'cm', label: 'cm' },
+  { value: 'carton', label: 'Carton' },
+  { value: 'paquet', label: 'Paquet' },
+]
+
+const etatProduitOptions = [
+  { value: 'neuf', label: 'Neuf' },
+  { value: 'occasion', label: 'Occasion' },
+  { value: 'reconditionne', label: 'Reconditionné' },
+  { value: 'defectueux', label: 'Défectueux' },
+]
 
 // Options pour les catégories
 const categoryOptions = [
@@ -2446,6 +2955,18 @@ const totalPages = computed(() => {
   return Math.ceil(filteredProduits.value.length / itemsPerPage.value)
 })
 
+const paginationPages = computed((): (number | '...')[] => {
+  const total = totalPages.value
+  const cur = currentPage.value
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages: (number | '...')[] = [1]
+  if (cur > 3) pages.push('...')
+  for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) pages.push(i)
+  if (cur < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+})
+
 // Fonctions utilitaires
 const margeProduit = (produit: Produit) => {
   const prixAchat = produit.prix_achat || 0
@@ -2456,8 +2977,8 @@ const margeProduit = (produit: Produit) => {
   return Math.round(marge * 100) / 100
 }
 
-import { useApi } from '@/stores/useApi'
-import { API_BASE_URL } from '@/constants'
+import { useApiBase } from '@/composables/useApiBase'
+const { getApiUrl, getAuthHeaders } = useApiBase()
 
 // Charger les données depuis l'API backend
 const isLoadingRequest = ref(false)
@@ -2504,33 +3025,33 @@ const loadData = async () => {
     
     console.log('IDs récupérés:', { entrepriseId, entrepotId })
     
-    // Charger toutes les données en parallèle (filtrées par entreprise côté backend)
-    const promises = [
-      useApi<any[]>(`${API_BASE_URL}/api/entreprises/`, { method: 'GET', server: false, headers, cacheTTL: 10 * 60 * 1000 }),
-      useApi<any[]>(`${API_BASE_URL}/api/boutiques/`, { method: 'GET', server: false, headers, cacheTTL: 10 * 60 * 1000 }),
-      useApi<any[]>(`${API_BASE_URL}/api/categories/`, { method: 'GET', server: false, headers, cacheTTL: 10 * 60 * 1000 }),
-      useApi<any[]>(`${API_BASE_URL}/api/fournisseurs/`, { method: 'GET', server: false, headers, cacheTTL: 10 * 60 * 1000 }),
-      useApi<any[]>(`${API_BASE_URL}/api/produits/`, { method: 'GET', server: false, headers, cacheTTL: 10 * 60 * 1000 })
-    ] as const
-    
-    // Ajouter la requête des stocks seulement si on a un entrepôt
+    const h = getAuthHeaders()
+    // Charger toutes les données en parallèle via $fetch (pas de cache)
+    const fetchAll = [
+      $fetch(getApiUrl('/api/entreprises/'), { headers: h }),
+      $fetch(getApiUrl('/api/boutiques/'), { headers: h }),
+      $fetch(getApiUrl('/api/categories/'), { headers: h }),
+      $fetch(getApiUrl('/api/fournisseurs/'), { headers: h }),
+      $fetch(getApiUrl('/api/produits/'), { headers: h }),
+    ]
+
     let stocksResponse: any[] = []
     if (entrepotId) {
-      const { data: stocksData } = await useApi<any[]>(`${API_BASE_URL}/api/stocks/?entrepot=${entrepotId}`, { method: 'GET', server: false, headers, cacheTTL: 5 * 60 * 1000 })
-      stocksResponse = (stocksData.value as any[]) || []
+      fetchAll.push($fetch(getApiUrl(`/api/stocks/?entrepot=${entrepotId}`), { headers: h }))
     }
 
-    const [entRes, entpRes, catRes, fourRes, prodRes] = await Promise.all(promises)
-    const entreprisesResponse = (entRes.data.value as any[]) || []
-    const entrepotsResponse = (entpRes.data.value as any[]) || []
-    const categoriesResponse = (catRes.data.value as any[]) || []
-    const fournisseursResponse = (fourRes.data.value as any[]) || []
-    const produitsResponse = (prodRes.data.value as any[]) || []
+    const results = await Promise.all(fetchAll)
+    const toArr = (r: any) => Array.isArray(r) ? r : (r?.results ?? [])
+    const entreprisesResponse: any[] = toArr(results[0])
+    const entrepotsResponse: any[]   = toArr(results[1])
+    const categoriesResponse: any[]  = toArr(results[2])
+    const fournisseursResponse: any[] = toArr(results[3])
+    const produitsResponse: any[]    = toArr(results[4])
+    if (entrepotId) stocksResponse   = toArr(results[5])
     
     entreprises.value = entreprisesResponse
     entrepots.value = entrepotsResponse
-    // Filtrer la catégorie "elec" par défaut
-    categories.value = categoriesResponse.filter((c: any) => c.nom?.toLowerCase() !== 'elec')
+    categories.value = categoriesResponse
     fournisseurs.value = fournisseursResponse
     stocks.value = stocksResponse
     
@@ -2669,7 +3190,10 @@ const loadData = async () => {
         stock_high: item.stock_high,
         // Informations d'entrepôt pour l'affichage
         entrepot_nom: entrepotPrincipal?.entrepot_nom || 'Entrepôt principal',
-        entrepot_id: entrepotPrincipal?.entrepot_id
+        entrepot_id: entrepotPrincipal?.entrepot_id,
+        // Variantes
+        variantes: item.variantes || [],
+        nb_variantes: item.nb_variantes ?? (item.variantes ? item.variantes.length : 0)
       }
     })
     
@@ -2732,15 +3256,9 @@ const fetchCategories = async () => {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
-    const { data: catRes } = await useApi<any[]>(`${API_BASE_URL}/api/categories/`, { 
-      method: 'GET', 
-      server: false, 
-      headers, 
-      cacheTTL: 0 // Pas de cache pour forcer le rechargement
-    })
-    const categoriesResponse = (catRes.value as any[]) || []
-    // Filtrer la catégorie "elec" par défaut
-    categories.value = categoriesResponse.filter((c: any) => c.nom?.toLowerCase() !== 'elec')
+    const catRes: any = await $fetch(getApiUrl('/api/categories/'), { headers: getAuthHeaders() })
+    const categoriesResponse = Array.isArray(catRes) ? catRes : (catRes?.results ?? [])
+    categories.value = categoriesResponse
     console.log('Catégories rechargées:', categories.value.length)
   } catch (err: any) {
     console.error('Erreur lors du rechargement des catégories:', err)
@@ -2757,14 +3275,8 @@ const fetchFournisseurs = async () => {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
-    const { data: fourRes } = await useApi<any[]>(`${API_BASE_URL}/api/fournisseurs/`, { 
-      method: 'GET', 
-      server: false, 
-      headers, 
-      cacheTTL: 0 // Pas de cache pour forcer le rechargement
-    })
-    const fournisseursResponse = (fourRes.value as any[]) || []
-    fournisseurs.value = fournisseursResponse
+    const fourRes: any = await $fetch(getApiUrl('/api/fournisseurs/'), { headers: getAuthHeaders() })
+    fournisseurs.value = Array.isArray(fourRes) ? fourRes : (fourRes?.results ?? [])
     console.log('Fournisseurs rechargés:', fournisseurs.value.length)
   } catch (err: any) {
     console.error('Erreur lors du rechargement des fournisseurs:', err)
@@ -3232,12 +3744,16 @@ const createProduit = async () => {
       // Nouveaux champs
       emplacement: formState.value.emplacement || '',
       details: formState.value.details || {},
+      marque: formState.value.marque || '',
+      modele: formState.value.modele || '',
+      code_barres: formState.value.code_barres || '',
       // Valeurs par défaut
       devise: 'XAF',
-      unite_mesure: 'piece',
-      etat_produit: 'neuf',
+      unite_mesure: formState.value.unite_mesure || 'piece',
+      etat_produit: formState.value.etat_produit || 'neuf',
       actif: true
     }
+    if (formState.value.prix_gros) produitData.prix_gros = formState.value.prix_gros
     
     console.log('Données envoyées pour le produit:', produitData)
     
@@ -3290,27 +3806,48 @@ const createProduit = async () => {
     }
     
     produits.value.push(nouveauProduit)
-    
-    // IMPORTANT: L'invalidation du cache est gérée automatiquement par useApi
-    // lors de l'appel POST à /api/produits/
-    
+
+    // Sauvegarder les variantes si activées
+    if (hasVariantesCreate.value && variantesCreate.value.length > 0) {
+      try {
+        await saveVariantesProduit(response.id, variantesCreate.value)
+      } catch (varErr) {
+        console.error('Erreur sauvegarde variantes:', varErr)
+        warning('Produit créé mais erreur lors de la sauvegarde des variantes.')
+      }
+    }
+
     success('Produit créé avec succès!')
     showCreateModal.value = false
-    
+    // Réinitialiser
+    variantesCreate.value = []
+    hasVariantesCreate.value = false
+    varianteFormCreate.value = emptyVarianteForm()
+    activeCreateTab.value = 'infos'
+    await loadData()
+
     // Réinitialiser le formulaire
     formState.value = {
       nom: "",
       description: "",
       prix_achat: 0,
       prix_vente: 0,
-      quantite: 0, // Toujours initialisé à 0 mais non affiché dans le formulaire
+      prix_gros: undefined,
+      quantite: 0,
       reference: "",
       categorie: undefined,
       fournisseur_principal: undefined,
       stock_minimum: 0,
       stock_maximum: 1000,
-      emplacement: "",  // Nouveau champ
-      details: {}  // Nouveau champ
+      emplacement: "",
+      details: {},
+      marque: "",
+      modele: "",
+      unite_mesure: "piece",
+      etat_produit: "neuf",
+      code_barres: "",
+      image: null,
+      imagePreviewUrl: ""
     }
   } catch (err: any) {
     console.error('Erreur création produit:', err)
@@ -3335,22 +3872,45 @@ const createProduit = async () => {
 // Fonction pour ouvrir le formulaire de modification
 const openEditModal = (produit: Produit) => {
   selectedProduit.value = produit
-  
+
   // Pré-remplir le formulaire avec les données du produit
   editFormState.value = {
     nom: produit.nom || "",
     description: produit.description || "",
     prix_achat: produit.prix_achat || 0,
     prix_vente: produit.prix_vente || 0,
+    prix_gros: produit.prix_gros,
     reference: produit.reference || "",
     categorie: produit.categorie,
     fournisseur_principal: produit.fournisseur_principal,
     stock_minimum: produit.stock_minimum || 0,
     stock_maximum: produit.stock_maximum || 1000,
-        emplacement: produit.emplacement || "",  // Nouveau champ
-        details: produit.details || {}  // Nouveau champ
+    emplacement: produit.emplacement || "",
+    details: produit.details || {},
+    marque: produit.marque || "",
+    modele: produit.modele || "",
+    unite_mesure: produit.unite_mesure || "piece",
+    etat_produit: produit.etat_produit || "neuf",
+    code_barres: produit.code_barres || "",
+    image: null,
+    imagePreviewUrl: produit.image || ""
   }
-  
+
+  // Charger les variantes existantes
+  variantesEdit.value = (produit.variantes || []).map(v => ({
+    id: v.id,
+    nom: v.nom,
+    attributs: Object.entries(v.attributs || {}).map(([cle, valeur]) => ({ cle, valeur })),
+    prix_achat: v.prix_achat,
+    prix_vente: v.prix_vente,
+    prix_gros: v.prix_gros,
+    code_barres: v.code_barres || ''
+  }))
+  hasVariantesEdit.value = variantesEdit.value.length > 0
+  varianteFormEdit.value = emptyVarianteForm()
+  editingVarianteIndexEdit.value = null
+  activeEditTab.value = 'infos'
+
   showEditModal.value = true
 }
 
@@ -3447,12 +4007,16 @@ const saveProduit = async () => {
       // Nouveaux champs
       emplacement: editFormState.value.emplacement || '',
       details: editFormState.value.details || {},
+      marque: editFormState.value.marque || '',
+      modele: editFormState.value.modele || '',
+      code_barres: editFormState.value.code_barres || '',
       // Valeurs par défaut
       devise: 'XAF',
-      unite_mesure: 'piece',
-      etat_produit: 'neuf',
+      unite_mesure: editFormState.value.unite_mesure || 'piece',
+      etat_produit: editFormState.value.etat_produit || 'neuf',
       actif: true
     }
+    if (editFormState.value.prix_gros) produitData.prix_gros = editFormState.value.prix_gros
     
     // IMPORTANT: NE PAS ENVOYER LA QUANTITE - elle ne doit pas être modifiée via cette fonction
     // La quantité est gérée indépendamment via l'API de stock
@@ -3489,11 +4053,19 @@ const saveProduit = async () => {
       }
     }
     
-    // IMPORTANT: L'invalidation du cache est gérée automatiquement par useApi
-    // lors de l'appel PUT à /api/produits/{id}/
-    
+    // Sauvegarder les variantes si activées
+    if (hasVariantesEdit.value && variantesEdit.value.length > 0) {
+      try {
+        await saveVariantesProduit(selectedProduit.value.id, variantesEdit.value)
+      } catch (varErr) {
+        console.error('Erreur sauvegarde variantes:', varErr)
+        warning('Produit modifié mais erreur lors de la sauvegarde des variantes.')
+      }
+    }
+
     success('Produit modifié avec succès!')
     showEditModal.value = false
+    await loadData()
     
   } catch (err: any) {
     console.error('Erreur modification produit:', err)
@@ -5704,8 +6276,14 @@ const testCreation = async () => {
   }
 }
 
-// Charger les données au montage
+let refreshTimer: ReturnType<typeof setInterval> | null = null
+
 onMounted(() => {
   loadData()
+  refreshTimer = setInterval(loadData, 30_000)
+})
+
+onUnmounted(() => {
+  if (refreshTimer) clearInterval(refreshTimer)
 })
 </script>

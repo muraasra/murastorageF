@@ -6,8 +6,8 @@ export const SUPPORT_EMAIL = 'support@murastorage.com'
 export const SITE_URL = 'https://murastorage.netlify.app'
 
 // Configuration de l'API
-export const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://murastorage.pythonanywhere.com' 
+export const API_BASE_URL = import.meta.env.PROD
+  ? 'https://murastorage.pythonanywhere.com'
   : 'http://127.0.0.1:8000'
 
 // Configuration des routes
@@ -20,14 +20,12 @@ export const ROUTES = {
   ADMIN_DASHBOARD: '/admin'
 } as const
 
-// Configuration des rôles
 export const ROLES = {
   SUPERADMIN: 'superadmin',
   ADMIN: 'admin',
   USER: 'user'
 } as const
 
-// Configuration des permissions
 export const PERMISSIONS = {
   MANAGE_USERS: 'manage_users',
   MANAGE_PRODUCTS: 'manage_products',
@@ -36,187 +34,127 @@ export const PERMISSIONS = {
   MANAGE_SETTINGS: 'manage_settings'
 } as const
 
-// Configuration des notifications
-export const NOTIFICATION_DURATION = 5000 // 5 secondes
+export const NOTIFICATION_DURATION = 5000
+export const API_TIMEOUT = 30000
+export const REQUEST_TIMEOUT = 10000
 
-// Configuration des timeouts
-export const API_TIMEOUT = 30000 // 30 secondes
-export const REQUEST_TIMEOUT = 10000 // 10 secondes
+// ─── Types ────────────────────────────────────────────────────────────────────
+export interface NavItem {
+  name: string
+  link: string
+  icon: string
+}
 
-export const NAVIGATION_ITEMS = [
-  [
-    {
-      name: "Stock des Produits",
-      link: "/stock_produit",
-      icon: "i-heroicons-square-2-stack",
-    },
-    {
-      name: "Mouvements de Stock",
-      link: "/mouvements-stock",
-      icon: "i-heroicons-chart-bar",
-    },
-    {
-      name: "Inventaires",
-      link: "/inventaire",
-      icon: "i-heroicons-clipboard-document-check",
-    },
-  ],
-  [
-    {
-      name: "Facturation",
-      link: "/facturation",
-      icon: "i-heroicons-document-currency-dollar",
-    },
-    {
-      name: "Liste des factures",
-      link: "/listes-factures",
-      icon: "i-heroicons-clipboard-document-list",
-    },
-  ],
-  [
-    {
-      name: "Logout",
-      link: "",
-      icon: "i-heroicons-power",
-    },
-  ],
-  // [
-  //   {
-  //     name: "Guide",
-  //     link: "/guide",
-  //     icon: "i-heroicons-book-open",
-  //   },
-  // ],
-];
+export interface NavGroup {
+  label: string    // "" = pas de titre de groupe
+  items: NavItem[]
+}
 
-export const NAVIGATION_ITEMS_ADMIN = [
-  [
-    {
-      name: "Dashboard",
-      link: "/",
-      icon: "i-heroicons-rectangle-group",
-    },
-    {
-      name: "Produits",
-      link: "/produits",
-      icon: "i-heroicons-squares-plus",
-    },
+// ─── Navigation Utilisateur (user) ────────────────────────────────────────────
+export const NAVIGATION_ITEMS: NavGroup[] = [
+  {
+    label: 'Stock',
+    items: [
+      { name: 'Stock des Produits',      link: '/stock_produit',    icon: 'i-heroicons-square-2-stack' },
+      { name: 'Mouvements de Stock',     link: '/mouvements-stock', icon: 'i-heroicons-arrows-up-down' },
+      { name: 'Inventaires',             link: '/inventaire',       icon: 'i-heroicons-clipboard-document-check' },
+      { name: 'Transferts',              link: '/transfert',        icon: 'i-heroicons-arrows-right-left' },
+    ],
+  },
+  {
+    label: 'Ventes',
+    items: [
+      { name: 'Facturation',         link: '/facturation',       icon: 'i-heroicons-document-currency-dollar' },
+      { name: 'Listes des factures', link: '/listes-factures',   icon: 'i-heroicons-clipboard-document-list' },
+      { name: 'Partenaires',         link: '/partenaires',       icon: 'i-heroicons-user-group' },
+    ],
+  },
+  {
+    label: 'Rapports',
+    items: [
+      { name: 'Analytiques', link: '/analytics', icon: 'i-heroicons-presentation-chart-line' },
+    ],
+  },
+  {
+    label: '',
+    items: [
+      { name: 'Logout', link: '', icon: 'i-heroicons-power' },
+    ],
+  },
+]
 
-    {
-      name: "Stock des Produits",
-      link: "/stock_produit",
-      icon: "i-heroicons-square-2-stack",
-    },
-    {
-      name: "Mouvements de Stock",
-      link: "/mouvements-stock",
-      icon: "i-heroicons-chart-bar",
-    },
-    {
-      name: "Inventaires",
-      link: "/inventaire",
-      icon: "i-heroicons-clipboard-document-check",
-    },
-  ],
-    [ 
-    {
-      name: "Partenaires",
-      link: "/partenaires",
-      icon: "i-heroicons-user-group",
-    },
-  ],
-  [ 
-    {
-      name: "Facturation",
-      link: "/facturation",
-      icon: "i-heroicons-document-currency-dollar",
-    },    
-    {
-      name: "Liste des factures",
-      link: "/listes-factures",
-      icon: "i-heroicons-clipboard-document-list",
-    },
-  ],
-  // [
-  //   {
-  //     name: "Guide",
-  //     link: "/guide",
-  //     icon: "i-heroicons-book-open",
-  //   },
-  // ],
-  [
-    {
-      name: "Logout",
-      link: "",
-      icon: "i-heroicons-power",
-    },
-  ],
-];
+// ─── Navigation Administrateur ────────────────────────────────────────────────
+export const NAVIGATION_ITEMS_ADMIN: NavGroup[] = [
+  {
+    label: '',
+    items: [
+      { name: 'Dashboard', link: '/admin', icon: 'i-heroicons-rectangle-group' },
+    ],
+  },
+  {
+    label: 'Catalogue',
+    items: [
+      { name: 'Produits', link: '/produits', icon: 'i-heroicons-squares-plus' },
+    ],
+  },
+  {
+    label: 'Stock',
+    items: [
+      { name: 'Stock des Produits',  link: '/stock_produit',    icon: 'i-heroicons-square-2-stack' },
+      { name: 'Mouvements de Stock', link: '/mouvements-stock', icon: 'i-heroicons-arrows-up-down' },
+      { name: 'Inventaires',         link: '/inventaire',       icon: 'i-heroicons-clipboard-document-check' },
+      { name: 'Transferts',          link: '/transfert',        icon: 'i-heroicons-arrows-right-left' },
+    ],
+  },
+  {
+    label: 'Ventes & Facturation',
+    items: [
+      { name: 'Facturation',            link: '/facturation',           icon: 'i-heroicons-document-currency-dollar' },
+      { name: 'Listes des factures',    link: '/listes-factures',       icon: 'i-heroicons-clipboard-document-list' },
+      { name: 'Commandes partenaires',  link: '/commandes_partenaires', icon: 'i-heroicons-truck' },
+      { name: 'Partenaires',            link: '/partenaires',           icon: 'i-heroicons-user-group' },
+    ],
+  },
+  {
+    label: 'Rapports & Analyses',
+    items: [
+      { name: 'Analytiques',    link: '/analytics',      icon: 'i-heroicons-presentation-chart-line' },
+      { name: 'Journal',        link: '/journal',         icon: 'i-heroicons-book-open' },
+    ],
+  },
+  {
+    label: 'Système',
+    items: [
+      { name: 'Abonnement', link: '/abonnement', icon: 'i-heroicons-credit-card' },
+    ],
+  },
+  {
+    label: '',
+    items: [
+      { name: 'Logout', link: '', icon: 'i-heroicons-power' },
+    ],
+  },
+]
 
-export const NAVIGATION_ITEMS_SUPERADMIN = [
-  [
-    {
-      name: "Dashboard",
-      link: "/",
-      icon: "i-heroicons-rectangle-group",
-    },
-    {
-      name: "Produits",
-      link: "/produits",
-      icon: "i-heroicons-squares-plus",
-    },
-    {
-      name: "Stock des Produits",
-      link: "/stock_produit",
-      icon: "i-heroicons-square-2-stack",
-    },
-    {
-      name: "Mouvements de Stock",
-      link: "/mouvements-stock",
-      icon: "i-heroicons-chart-bar",
-    },
-    {
-      name: "Inventaires",
-      link: "/inventaire",
-      icon: "i-heroicons-clipboard-document-check",
-    },
-  ],
-  [ 
-    {
-      name: "Partenaires",
-      link: "/partenaires",
-      icon: "i-heroicons-user-group",
-    },
-  ],
-  [ 
-    {
-      name: "Facturation",
-      link: "/facturation",
-      icon: "i-heroicons-document-currency-dollar",
-    },    
-    {
-      name: "Liste des factures",
-      link: "/listes-factures",
-      icon: "i-heroicons-clipboard-document-list",
-    },
-  ],
-  // [
-  //   {
-  //     name: "Guide",
-  //     link: "/guide",
-  //     icon: "i-heroicons-book-open",
-  //   },
-  // ],
-  [
-    {
-      name: "Logout",
-      link: "",
-      icon: "i-heroicons-power",
-    },
-  ],
-];
+// ─── Navigation SuperAdmin ────────────────────────────────────────────────────
+export const NAVIGATION_ITEMS_SUPERADMIN: NavGroup[] = [
+  {
+    label: '',
+    items: [
+      { name: 'Dashboard',       link: '/superadmin/dashboard',    icon: 'i-heroicons-rectangle-group' },
+      { name: 'Entrepôts',       link: '/superadmin/entrepots',    icon: 'i-heroicons-building-storefront' },
+      { name: 'Utilisateurs',    link: '/superadmin/utilisateurs', icon: 'i-heroicons-users' },
+      { name: 'Tarification',    link: '/superadmin/tarification', icon: 'i-heroicons-credit-card' },
+      { name: 'Exercice Fiscal', link: '/exercice-fiscal',         icon: 'i-heroicons-calendar-days' },
+      { name: 'Journal',         link: '/superadmin/journal',      icon: 'i-heroicons-book-open' },
+    ],
+  },
+  {
+    label: '',
+    items: [
+      { name: 'Logout', link: '', icon: 'i-heroicons-power' },
+    ],
+  },
+]
 
-export const PRODUCTS_DATA: Produit[] = [
-  
-];
-
+export const PRODUCTS_DATA: Produit[] = []

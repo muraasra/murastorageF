@@ -1,606 +1,581 @@
-<script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useApi } from '@/stores/useApi'
-import { API_BASE_URL } from '@/constants'
-import type { Produit } from '~/types'
+﻿<script setup lang="ts">
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useApiBase } from '@/composables/useApiBase'
 
-definePageMeta({
-  layout: "default",
-})
+const { getApiUrl, getAuthHeaders, parseApiList, getEntrepriseId } = useApiBase()
 
+definePageMeta({ layout: "default" })
+
+const parseList = parseApiList
+
+// ─── State ────────────────────────────────────────────────────────────────────
 const userData = ref<any>(null)
 const entrepriseData = ref<any>(null)
 const boutiqueData = ref<any>(null)
-const produits = ref<Produit[] | null>(null)
-const produitsEnStock = ref(0)
-const totalValeurStock = ref(0)
+const produits = ref<any[]>([])
+const factures = ref<any[]>([])
+const isLoading = ref(true)
+const isRefreshing = ref(false)
+const lastUpdated = ref<Date | null>(null)
+let refreshTimer: ReturnType<typeof setInterval> | null = null
 
-// Données pour les graphiques
-const chartData = ref({
-  categories: [] as string[],
-  quantities: [] as number[],
-  values: [] as number[]
-})
+// ─── KPIs dérivés ─────────────────────────────────────────────────────────────
+const totalUnites = computed(() =>
+  produits.value.reduce((acc, p) => acc + (p.quantiteStock || 0), 0)
+)
 
-// Computed properties pour les graphiques (protégées contre les erreurs)
-const topProductsByQuantity = computed(() => {
-  try {
-    if (!produits.value || !Array.isArray(produits.value)) return []
-  return (produits.value as any[])
-      .filter(p => p != null)
-    .sort((a, b) => (b.quantiteStock || 0) - (a.quantiteStock || 0))
-    .slice(0, 5)
-  } catch (err) {
-    console.error('[User Page] Erreur topProductsByQuantity:', err)
-    return []
-  }
-})
+const totalValeur = computed(() =>
+  produits.value.reduce((acc, p) => acc + (p.quantiteStock || 0) * (p.prixUnitaire || 0), 0)
+)
 
-const topProductsByValue = computed(() => {
-  try {
-    if (!produits.value || !Array.isArray(produits.value)) return []
-  return (produits.value as any[])
-      .filter(p => p != null)
-      .sort((a, b) => {
-        const valueA = (a.quantiteStock || 0) * (a.prixUnitaire || 0)
-        const valueB = (b.quantiteStock || 0) * (b.prixUnitaire || 0)
-        return valueB - valueA
-      })
-    .slice(0, 5)
-  } catch (err) {
-    console.error('[User Page] Erreur topProductsByValue:', err)
-    return []
-  }
+const produitsEnRupture = computed(() =>
+  produits.value.filter(p => (p.quantiteStock || 0) === 0).length
+)
+
+const produitsFaibleStock = computed(() =>
+  produits.value.filter(p => (p.quantiteStock || 0) > 0 && (p.quantiteStock || 0) < 10).length
+)
+
+const nbReferences = computed(() => produits.value.length)
+
+const today = new Date().toISOString().slice(0, 10)
+const ventesJour = computed(() =>
+  factures.value
+    .filter(f => (f.created_at || '').slice(0, 10) === today)
+    .reduce((a, f) => a + Number(f.total || 0), 0)
+)
+const nbVentesJour = computed(() =>
+  factures.value.filter(f => (f.created_at || '').slice(0, 10) === today).length
+)
+
+const lastUpdatedLabel = computed(() => {
+  if (!lastUpdated.value) return ''
+  const diff = Math.floor((Date.now() - lastUpdated.value.getTime()) / 1000)
+  if (diff < 5) return "À l'instant"
+  if (diff < 60) return `Il y a ${diff}s`
+  return `Il y a ${Math.floor(diff / 60)}min`
 })
 
 const stockDistribution = computed(() => {
-  try {
-    if (!produits.value || !Array.isArray(produits.value)) {
-      return { low: 0, medium: 0, high: 0, total: 0 }
-    }
-  
-  const total = produits.value.length
-    const low = (produits.value as any[]).filter(p => (p?.quantiteStock || 0) < 10).length
-    const medium = (produits.value as any[]).filter(p => {
-      const qty = p?.quantiteStock || 0
-      return qty >= 10 && qty < 50
-    }).length
-    const high = (produits.value as any[]).filter(p => (p?.quantiteStock || 0) >= 50).length
-  
-  return { low, medium, high, total }
-  } catch (err) {
-    console.error('[User Page] Erreur stockDistribution:', err)
-    return { low: 0, medium: 0, high: 0, total: 0 }
+  const total = produits.value.length || 1
+  const low = produits.value.filter(p => (p.quantiteStock || 0) < 10).length
+  const medium = produits.value.filter(p => { const q = p.quantiteStock || 0; return q >= 10 && q < 50 }).length
+  const high = produits.value.filter(p => (p.quantiteStock || 0) >= 50).length
+  return {
+    low, medium, high, total,
+    lowPct: Math.round((low / total) * 100),
+    mediumPct: Math.round((medium / total) * 100),
+    highPct: Math.round((high / total) * 100),
   }
 })
 
+// ─── Top produits ─────────────────────────────────────────────────────────────
+const topByQuantity = computed(() =>
+  [...produits.value].sort((a, b) => (b.quantiteStock || 0) - (a.quantiteStock || 0)).slice(0, 8)
+)
+
+const topByValue = computed(() =>
+  [...produits.value]
+    .sort((a, b) => ((b.quantiteStock || 0) * (b.prixUnitaire || 0)) - ((a.quantiteStock || 0) * (a.prixUnitaire || 0)))
+    .slice(0, 5)
+)
+
+const alertesProduits = computed(() =>
+  produits.value
+    .filter(p => (p.quantiteStock || 0) < 10)
+    .sort((a, b) => (a.quantiteStock || 0) - (b.quantiteStock || 0))
+    .slice(0, 5)
+)
+
+// ─── Chart data ───────────────────────────────────────────────────────────────
+const barChartCategories = computed(() => topByQuantity.value.map(p => p.nom || '?'))
+const barChartQuantities = computed(() => topByQuantity.value.map(p => p.quantiteStock || 0))
+
+const maxBarQty = computed(() => Math.max(...barChartQuantities.value, 1))
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const formatCurrency = (n: number) =>
+  new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0 }).format(Math.round(n)) + ' FCFA'
+
+const stockStatusClass = (qty: number) => {
+  if (qty === 0) return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
+  if (qty < 10) return 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20'
+  if (qty < 50) return 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20'
+  return 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'
+}
+
+const stockStatusLabel = (qty: number) => {
+  if (qty === 0) return 'Rupture'
+  if (qty < 10) return 'Critique'
+  if (qty < 50) return 'Faible'
+  return 'OK'
+}
+
+// ─── Data loading ─────────────────────────────────────────────────────────────
+const loadData = async () => {
+  if (!boutiqueData.value?.id) return
+  isRefreshing.value = true
+  try {
+    const timeout = (ms: number) => new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms))
+    const h = getAuthHeaders()
+    const fetchOpts = { headers: h, cache: 'no-store' as const }
+
+    const [stocksRes, facturesRes] = await Promise.allSettled([
+      Promise.race([$fetch(getApiUrl(`/api/stocks/?entrepot=${boutiqueData.value.id}`), fetchOpts), timeout(12000)]),
+      Promise.race([$fetch(getApiUrl(`/api/factures/?boutique=${boutiqueData.value.id}`), fetchOpts), timeout(12000)]),
+    ])
+
+    const stocks = parseList(stocksRes.status === 'fulfilled' ? stocksRes.value : null)
+    factures.value = parseList(facturesRes.status === 'fulfilled' ? facturesRes.value : null)
+
+    const entrepriseId = boutiqueData.value?.entreprise?.id || boutiqueData.value?.entreprise || entrepriseData.value?.id || getEntrepriseId()
+    if (stocks.length > 0 && entrepriseId) {
+      const prodsRaw = await Promise.race([
+        $fetch(getApiUrl(`/api/produits/?entreprise=${entrepriseId}`), fetchOpts),
+        timeout(12000),
+      ])
+      const rawProds = parseList(prodsRaw)
+      produits.value = rawProds.map((p: any) => {
+        const stock = stocks.find((s: any) => s.produit === p.id)
+        return {
+          ...p,
+          quantiteStock: stock?.quantite ?? 0,
+          prixUnitaire: parseFloat(p.prix_vente || p.prix || 0),
+        }
+      })
+    } else if (stocks.length > 0) {
+      produits.value = stocks.map((s: any) => ({
+        id: s.produit,
+        nom: s.produit_nom || `Produit #${s.produit}`,
+        quantiteStock: s.quantite ?? 0,
+        prixUnitaire: 0,
+      }))
+    } else {
+      produits.value = []
+    }
+
+    lastUpdated.value = new Date()
+  } catch (err) {
+    console.error('[Dashboard] Erreur chargement:', err)
+    produits.value = []
+  } finally {
+    isLoading.value = false
+    isRefreshing.value = false
+  }
+}
+
 onMounted(async () => {
   if (!process.client) return
-  
-    console.log('[User Page] Début du chargement')
-    
-  // Charger les données utilisateur (opérations synchrones, rapides)
+
   try {
     const user = localStorage.getItem('user')
     const entreprise = localStorage.getItem('entreprise')
     const boutique = localStorage.getItem('boutique')
-    
-    console.log('[User Page] Données localStorage:', { user: !!user, entreprise: !!entreprise, boutique: !!boutique })
-    
-    if (user) {
-      try {
-        userData.value = JSON.parse(user)
-      } catch (e) {
-        console.warn('[User Page] Erreur parsing user:', e)
-      }
-    }
-    
-    if (entreprise) {
-      try {
-        entrepriseData.value = JSON.parse(entreprise)
-      } catch (e) {
-        console.warn('[User Page] Erreur parsing entreprise:', e)
-      }
-    }
-    
-    if (boutique) {
-      try {
-        boutiqueData.value = JSON.parse(boutique)
-      } catch (e) {
-        console.warn('[User Page] Erreur parsing boutique:', e)
-      }
-    }
-    
-    console.log('[User Page] Données parsées:', { 
-      userData: userData.value?.role, 
-      entrepriseData: entrepriseData.value?.nom, 
-      boutiqueData: boutiqueData.value?.nom 
-    })
-  } catch (err) {
-    console.error('[User Page] Erreur chargement données localStorage:', err)
-    // Continuer même en cas d'erreur pour ne pas bloquer la page
+    if (user) userData.value = JSON.parse(user)
+    if (entreprise) entrepriseData.value = JSON.parse(entreprise)
+    if (boutique) boutiqueData.value = JSON.parse(boutique)
+  } catch {}
+
+  if (!boutiqueData.value?.id) {
+    isLoading.value = false
+    return
   }
-    
-  // Charger les stocks de l'entrepôt connecté (avec timeout pour éviter les blocages)
-    if (boutiqueData.value?.id) {
-    // Utiliser un timeout pour éviter que la page reste bloquée
-    const loadStocksWithTimeout = async () => {
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout chargement stocks')), 10000) // 10 secondes max
-      })
-      
-      try {
-        // Récupérer les stocks de l'entrepôt
-        const stocksPromise = useApi(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueData.value.id}`)
-        const { data: stocksData, error: stocksError } = await Promise.race([stocksPromise, timeoutPromise]) as any
-        
-        if (stocksError?.value) {
-          console.warn('[User Page] Erreur chargement stocks:', stocksError.value)
-          // Initialiser avec des valeurs par défaut
-          produits.value = []
-          produitsEnStock.value = 0
-          totalValeurStock.value = 0
-          return
-        }
-        
-        if (!stocksData?.value || !Array.isArray(stocksData.value)) {
-          console.warn('[User Page] Données stocks invalides')
-          produits.value = []
-          produitsEnStock.value = 0
-          totalValeurStock.value = 0
-          return
-        }
-        
-          // Filtrer seulement les stocks avec quantité > 0
-        const stocksAvecQuantite = stocksData.value.filter((stock: any) => (stock.quantite || 0) > 0)
-        
-        // Si aucun stock, initialiser avec des valeurs par défaut
-        if (stocksAvecQuantite.length === 0) {
-          produits.value = []
-          produitsEnStock.value = 0
-          totalValeurStock.value = 0
-          return
-        }
-        
-        // Récupérer les détails des produits (avec timeout aussi)
-        try {
-          const productIds = stocksAvecQuantite.map((stock: any) => stock.produit).filter(Boolean).join(',')
-          
-          if (!productIds) {
-            produits.value = []
-            produitsEnStock.value = 0
-            totalValeurStock.value = 0
-            return
-          }
-          
-          const productsTimeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Timeout chargement produits')), 10000)
-          })
-          
-          const productsPromise = useApi(`${API_BASE_URL}/api/produits/?id__in=${productIds}`)
-          const { data: productsData, error: productsError } = await Promise.race([productsPromise, productsTimeoutPromise]) as any
-          
-          if (productsError?.value) {
-            console.warn('[User Page] Erreur chargement produits:', productsError.value)
-            produits.value = []
-            produitsEnStock.value = 0
-            totalValeurStock.value = 0
-            return
-          }
-          
-          if (!productsData?.value || !Array.isArray(productsData.value)) {
-            console.warn('[User Page] Données produits invalides')
-            produits.value = []
-            produitsEnStock.value = 0
-            totalValeurStock.value = 0
-            return
-          }
-          
-              // Combiner les données de stock et de produits
-              const produitsAvecStock = productsData.value.map((produit: any) => {
-                const stock = stocksAvecQuantite.find((s: any) => s.produit === produit.id)
-                return {
-                  ...produit,
-                  quantiteStock: stock?.quantite || 0,
-                  prixUnitaire: produit.prix_vente || produit.prix || 0
-                }
-              })
-              
-              produits.value = produitsAvecStock
-          produitsEnStock.value = stocksAvecQuantite.reduce((acc: number, stock: any) => acc + (stock.quantite || 0), 0)
-              
-              // Calculer la valeur totale de manière optimisée
-              totalValeurStock.value = stocksAvecQuantite.reduce((acc: number, stock: any) => {
-                const produit = (productsData.value as any[]).find((p: any) => p.id === stock.produit)
-                const prix = produit?.prix_vente || produit?.prix || 0
-                const quantite = stock.quantite || 0
-                return acc + (quantite * prix)
-              }, 0)
-              
-              // Préparer les données pour les graphiques
-              prepareChartData()
-        } catch (productsErr: any) {
-          console.error('[User Page] Erreur chargement produits:', productsErr)
-          // Initialiser avec des valeurs par défaut
-            produits.value = []
-            produitsEnStock.value = 0
-            totalValeurStock.value = 0
-          }
-      } catch (err: any) {
-        console.error('[User Page] Erreur chargement stocks:', err)
-        // Initialiser avec des valeurs par défaut pour ne pas bloquer la page
-        produits.value = []
-        produitsEnStock.value = 0
-        totalValeurStock.value = 0
-      }
-    }
-    
-    // Lancer le chargement en arrière-plan (non-bloquant)
-    loadStocksWithTimeout().catch((err) => {
-      console.error('[User Page] Erreur fatale chargement:', err)
-      // Même en cas d'erreur fatale, initialiser avec des valeurs par défaut
-      produits.value = []
-      produitsEnStock.value = 0
-      totalValeurStock.value = 0
-    })
-  } else {
-    // Pas de boutique sélectionnée, initialiser avec des valeurs par défaut
-    produits.value = []
-    produitsEnStock.value = 0
-    totalValeurStock.value = 0
-  }
+
+  await loadData()
+  refreshTimer = setInterval(loadData, 30_000)
 })
 
-// Fonction pour préparer les données des graphiques
-const prepareChartData = () => {
-  try {
-    if (!produits.value || !Array.isArray(produits.value) || produits.value.length === 0) {
-      chartData.value = {
-        categories: [],
-        quantities: [],
-        values: []
-      }
-      return
-    }
-  
-  const categories = (produits.value as any[]).map(p => p.nom || 'Produit sans nom')
-  const quantities = (produits.value as any[]).map(p => p.quantiteStock || 0)
-  const values = (produits.value as any[]).map(p => (p.quantiteStock || 0) * (p.prixUnitaire || 0))
-  
-  chartData.value = {
-    categories: categories.slice(0, 10), // Limiter à 10 pour la lisibilité
-    quantities: quantities.slice(0, 10),
-    values: values.slice(0, 10)
-    }
-  } catch (err) {
-    console.error('[User Page] Erreur préparation données graphiques:', err)
-    chartData.value = {
-      categories: [],
-      quantities: [],
-      values: []
-    }
-  }
-}
-
-const logout = () => {
-  if (process.client) {
-    localStorage.removeItem('user')
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    localStorage.removeItem('entreprise')
-    localStorage.removeItem('boutique')
-    localStorage.removeItem('permissions')
-  }
-  navigateTo('/connexion')
-}
+onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-0">
-    <!-- Header -->
-    <!-- <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-6">
-          <div class="flex items-center">
-            <div class="h-12 w-12 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg flex items-center justify-center mr-4 overflow-hidden shadow-sm">
-              <img v-if="entrepriseData?.logo" :src="entrepriseData.logo" alt="Logo entreprise" class="h-full w-full object-contain p-1">
-              <svg v-else class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-              </svg>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+      <!-- ── Bannière alerte stock critique ─────────────────────────────── -->
+      <div
+        v-if="!isLoading && alertesProduits.length > 0"
+        class="flex items-start gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3"
+      >
+        <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-red-700 dark:text-red-400">
+            {{ alertesProduits.length }} article{{ alertesProduits.length > 1 ? 's' : '' }} en stock faible ou critique
+          </p>
+          <p class="text-xs text-red-600 dark:text-red-400 mt-0.5 truncate">
+            {{ alertesProduits.map(p => p.nom).join(', ') }}
+          </p>
+        </div>
+        <NuxtLink to="/stock_produit" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline whitespace-nowrap">
+          Voir le stock →
+        </NuxtLink>
+      </div>
+
+      <!-- ── En-tête contextuel ──────────────────────────────────────────── -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Bonjour, {{ userData?.first_name || 'Utilisateur' }} 👋
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            Entrepôt <span class="font-semibold text-gray-700 dark:text-gray-300">{{ boutiqueData?.nom || '—' }}</span>
+            <span v-if="boutiqueData?.ville"> · {{ boutiqueData.ville }}</span>
+            <span v-if="lastUpdatedLabel" class="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-600 ml-2">
+              <UIcon name="i-heroicons-arrow-path" class="w-3 h-3" :class="{ 'animate-spin': isRefreshing }" />
+              {{ lastUpdatedLabel }}
+            </span>
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button @click="loadData" :disabled="isRefreshing" class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50">
+            <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" :class="{ 'animate-spin': isRefreshing }" />
+            Rafraîchir
+          </button>
+          <NuxtLink
+            to="/facturation"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+          >
+            <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+            Nouvelle vente
+          </NuxtLink>
+          <NuxtLink
+            to="/stock_produit"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <UIcon name="i-heroicons-square-2-stack" class="w-4 h-4" />
+            Gérer le stock
+          </NuxtLink>
+        </div>
+      </div>
+
+      <!-- ── Skeleton loading ────────────────────────────────────────────── -->
+      <template v-if="isLoading">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div v-for="i in 4" :key="i" class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 animate-pulse">
+            <div class="flex justify-between items-start">
+              <div class="space-y-3 flex-1">
+                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                <div class="h-7 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+              </div>
+              <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div v-for="i in 2" :key="i" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 h-64 animate-pulse">
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6"></div>
+            <div class="space-y-3">
+              <div v-for="j in 5" :key="j" class="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ── Contenu chargé ──────────────────────────────────────────────── -->
+      <template v-else>
+
+        <!-- ── KPIs Row 1 : chiffres clés ────────────────────────────────── -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+
+          <!-- Total unités -->
+          <KpiCardEnhanced
+            title="Unités en stock"
+            :value="totalUnites"
+            format="number"
+            icon="i-heroicons-cube"
+            color="blue"
+            :subtitle="`${nbReferences} références`"
+          />
+
+          <!-- Valeur du stock -->
+          <KpiCardEnhanced
+            title="Valeur du stock"
+            :value="totalValeur"
+            format="currency"
+            icon="i-heroicons-banknotes"
+            color="green"
+          />
+
+          <!-- Ventes du jour -->
+          <KpiCardEnhanced
+            title="Ventes du jour"
+            :value="ventesJour"
+            format="currency"
+            icon="i-heroicons-chart-bar-square"
+            :color="ventesJour > 0 ? 'green' : 'gray'"
+            :subtitle="`${nbVentesJour} facture${nbVentesJour > 1 ? 's' : ''}`"
+          />
+
+          <!-- Ruptures -->
+          <KpiCardEnhanced
+            title="Ruptures de stock"
+            :value="produitsEnRupture"
+            format="number"
+            icon="i-heroicons-x-circle"
+            :color="produitsEnRupture > 0 ? 'red' : 'gray'"
+            :subtitle="produitsEnRupture > 0 ? 'Action requise' : 'Tout est OK'"
+          />
+
+          <!-- Stock faible -->
+          <KpiCardEnhanced
+            title="Stock faible (< 10)"
+            :value="produitsFaibleStock"
+            format="number"
+            icon="i-heroicons-exclamation-triangle"
+            :color="produitsFaibleStock > 0 ? 'orange' : 'gray'"
+            :subtitle="produitsFaibleStock > 0 ? 'À réapprovisionner' : 'Niveaux OK'"
+          />
+        </div>
+
+        <!-- ── Graphiques ──────────────────────────────────────────────────── -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <!-- Barres Top 8 produits par quantité -->
+          <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between mb-5">
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Top produits — Quantité en stock</h2>
+              <NuxtLink to="/stock_produit" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Voir tout →</NuxtLink>
+            </div>
+
+            <!-- Empty state -->
+            <div v-if="barChartQuantities.length === 0" class="flex flex-col items-center justify-center h-40 text-gray-400 dark:text-gray-600">
+              <UIcon name="i-heroicons-chart-bar" class="w-10 h-10 mb-2" />
+              <p class="text-sm">Aucune donnée disponible</p>
+            </div>
+
+            <!-- Chart -->
+            <div v-else class="space-y-3">
+              <div
+                v-for="(produit, i) in topByQuantity"
+                :key="produit.id"
+                class="flex items-center gap-3 group"
+              >
+                <span class="text-xs text-gray-400 dark:text-gray-600 w-4 text-right flex-shrink-0">{{ i + 1 }}</span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate max-w-[160px]" :title="produit.nom">{{ produit.nom }}</span>
+                    <span class="text-xs font-semibold text-gray-900 dark:text-white ml-2 flex-shrink-0">{{ (produit.quantiteStock || 0).toLocaleString() }}</span>
+                  </div>
+                  <div class="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      class="h-2 rounded-full transition-all duration-500"
+                      :class="{
+                        'bg-red-500': (produit.quantiteStock || 0) < 10,
+                        'bg-amber-400': (produit.quantiteStock || 0) >= 10 && (produit.quantiteStock || 0) < 50,
+                        'bg-emerald-500': (produit.quantiteStock || 0) >= 50,
+                      }"
+                      :style="{ width: `${Math.max(4, ((produit.quantiteStock || 0) / maxBarQty) * 100)}%` }"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Distribution du stock (camembert textuel enrichi) -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-5">Distribution du stock</h2>
+
+            <div v-if="nbReferences === 0" class="flex flex-col items-center justify-center h-40 text-gray-400 dark:text-gray-600">
+              <UIcon name="i-heroicons-chart-pie" class="w-10 h-10 mb-2" />
+              <p class="text-sm">Aucune donnée</p>
+            </div>
+
+            <div v-else class="space-y-4">
+              <!-- Barre empilée -->
+              <div class="flex rounded-full overflow-hidden h-3 bg-gray-100 dark:bg-gray-700">
+                <div :style="{ width: stockDistribution.highPct + '%' }" class="bg-emerald-500 transition-all duration-700"></div>
+                <div :style="{ width: stockDistribution.mediumPct + '%' }" class="bg-amber-400 transition-all duration-700"></div>
+                <div :style="{ width: stockDistribution.lowPct + '%' }" class="bg-red-500 transition-all duration-700"></div>
+              </div>
+
+              <!-- Légende -->
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500 flex-shrink-0"></div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Stock élevé (≥ 50)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ stockDistribution.high }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-600 w-8 text-right">{{ stockDistribution.highPct }}%</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-amber-400 flex-shrink-0"></div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Stock moyen (10–49)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ stockDistribution.medium }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-600 w-8 text-right">{{ stockDistribution.mediumPct }}%</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500 flex-shrink-0"></div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Stock faible (< 10)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ stockDistribution.low }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-600 w-8 text-right">{{ stockDistribution.lowPct }}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total -->
+              <div class="pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-between">
+                <span class="text-sm text-gray-500 dark:text-gray-400">Total références</span>
+                <span class="text-sm font-bold text-gray-900 dark:text-white">{{ stockDistribution.total }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Alertes & Top valeur ────────────────────────────────────────── -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Top 5 par valeur -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Top 5 — Valeur en stock</h2>
+            </div>
+            <div v-if="topByValue.length === 0" class="flex flex-col items-center justify-center h-32 text-gray-400 dark:text-gray-600">
+              <p class="text-sm">Aucune donnée disponible</p>
+            </div>
+            <div v-else class="space-y-3">
+              <div
+                v-for="(produit, i) in topByValue"
+                :key="produit.id"
+                class="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                @click="navigateTo('/stock_produit')"
+              >
+                <div class="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-xs font-bold text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                  {{ i + 1 }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ produit.nom }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ (produit.quantiteStock || 0) }} unités × {{ formatCurrency(produit.prixUnitaire || 0) }}</p>
+                </div>
+                <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                  {{ formatCurrency((produit.quantiteStock || 0) * (produit.prixUnitaire || 0)) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alertes produits à réapprovisionner -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Alertes stock</h2>
+              <span
+                v-if="alertesProduits.length > 0"
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+              >
+                {{ alertesProduits.length }} alerte{{ alertesProduits.length > 1 ? 's' : '' }}
+              </span>
+            </div>
+            <div v-if="alertesProduits.length === 0" class="flex flex-col items-center justify-center h-32 text-emerald-600 dark:text-emerald-400">
+              <UIcon name="i-heroicons-check-circle" class="w-10 h-10 mb-2" />
+              <p class="text-sm font-medium">Tous les stocks sont OK !</p>
+            </div>
+            <div v-else class="space-y-2">
+              <div
+                v-for="produit in alertesProduits"
+                :key="produit.id"
+                class="flex items-center justify-between p-3 rounded-lg border"
+                :class="(produit.quantiteStock || 0) === 0
+                  ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
+                  : 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800'"
+              >
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ produit.nom }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ produit.quantiteStock || 0 }} unité{{ (produit.quantiteStock || 0) !== 1 ? 's' : '' }} restante{{ (produit.quantiteStock || 0) !== 1 ? 's' : '' }}</p>
+                </div>
+                <span
+                  class="ml-3 px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0"
+                  :class="stockStatusClass(produit.quantiteStock || 0)"
+                >
+                  {{ stockStatusLabel(produit.quantiteStock || 0) }}
+                </span>
+              </div>
+              <NuxtLink
+                to="/stock_produit"
+                class="block text-center text-xs text-emerald-600 dark:text-emerald-400 hover:underline pt-1"
+              >
+                Gérer tous les stocks →
+              </NuxtLink>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Informations entrepôt ───────────────────────────────────────── -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Informations de l'entrepôt</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Nom</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ boutiqueData?.nom || '—' }}</p>
             </div>
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ boutiqueData?.nom || 'Entrepôt' }}</h1>
-              <p class="text-sm text-gray-500 dark:text-gray-400">{{ entrepriseData?.nom || 'Entreprise' }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Ville</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ boutiqueData?.ville || '—' }}</p>
             </div>
-          </div>
-          <div class="flex items-center space-x-4">
-            <button v-if="userData?.role === 'superadmin'" @click="navigateTo('/superadmin/dashboard')" class="px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors mr-2">
-              Retour au dashboard superadmin
-            </button>
-            <div class="text-right">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ userData?.first_name || 'Utilisateur' }} {{ userData?.last_name || '' }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ userData?.role === 'admin' ? 'Administrateur' : 'Utilisateur' }}</p>
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Adresse</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ boutiqueData?.adresse || '—' }}</p>
             </div>
-            <button @click="logout" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-              Se déconnecter
-            </button>
-          </div>
-        </div>
-      </div>
-    </div> -->
-
-    <!-- Contenu principal -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-      <!-- Titre de bienvenue -->
-      <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Bienvenue, {{ userData?.first_name || 'Utilisateur' }} !
-        </h2>
-        <p class="text-gray-600 dark:text-gray-400">
-          Voici un aperçu de votre entrepôt <strong>{{ boutiqueData?.nom || 'Entrepôt' }}</strong>
-        </p>
-      </div>
-
-      <!-- Statistiques -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div class="flex items-center">
-            <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-              <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Produits en stock</p>
-              <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ produitsEnStock }}</p>
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Responsable</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ boutiqueData?.responsable || '—' }}</p>
             </div>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div class="flex items-center">
-            <div class="h-12 w-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-              <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-              </svg>
+        <!-- ── Guides interactifs ────────────────────────────────────────── -->
+
+        <!-- ── Actions rapides (desktop) ─────────────────────────────────── -->
+        <div class="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <NuxtLink
+            v-for="action in [
+              { to: '/stock_produit', icon: 'i-heroicons-square-2-stack', label: 'Stock produits', desc: 'Consulter & ajuster', color: 'blue' },
+              { to: '/facturation', icon: 'i-heroicons-document-currency-dollar', label: 'Nouvelle vente', desc: 'Créer une facture', color: 'emerald' },
+              { to: '/mouvements-stock', icon: 'i-heroicons-arrows-right-left', label: 'Mouvements', desc: 'Historique des flux', color: 'purple' },
+              { to: '/inventaire', icon: 'i-heroicons-clipboard-document-check', label: 'Inventaire', desc: 'Lancer un inventaire', color: 'amber' },
+            ]"
+            :key="action.to"
+            :to="action.to"
+            class="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-sm transition-all group"
+          >
+            <div
+              class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+              :class="{
+                'bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50': action.color === 'blue',
+                'bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50': action.color === 'emerald',
+                'bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50': action.color === 'purple',
+                'bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-900/50': action.color === 'amber',
+              }"
+            >
+              <UIcon
+                :name="action.icon"
+                class="w-5 h-5"
+                :class="{
+                  'text-blue-600 dark:text-blue-400': action.color === 'blue',
+                  'text-emerald-600 dark:text-emerald-400': action.color === 'emerald',
+                  'text-purple-600 dark:text-purple-400': action.color === 'purple',
+                  'text-amber-600 dark:text-amber-400': action.color === 'amber',
+                }"
+              />
             </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Valeur du stock</p>
-              <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalValeurStock.toLocaleString() }} FCFA</p>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ action.label }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ action.desc }}</p>
             </div>
-          </div>
+          </NuxtLink>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div class="flex items-center">
-            <div class="h-12 w-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-              <svg class="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Entrepôt</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ boutiqueData?.ville || 'Ville' }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Graphiques et Analyses -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Graphique des Top Produits par Quantité -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top 5 - Produits par Quantité</h3>
-          <div class="space-y-3">
-            <div v-for="(produit, index) in topProductsByQuantity" :key="produit.id" class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center text-sm font-medium text-blue-600 dark:text-blue-400">
-                  {{ index + 1 }}
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ produit.nom }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ produit.quantiteStock }} unités</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                    :style="{ width: `${(() => {
-                      const quantities = topProductsByQuantity.map(p => p.quantiteStock || 0)
-                      const maxQty = quantities.length > 0 ? Math.max(...quantities) : 1
-                      return Math.min(100, maxQty > 0 ? (produit.quantiteStock / maxQty) * 100 : 0)
-                    })()}%` }"
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Graphique des Top Produits par Valeur -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top 5 - Produits par Valeur</h3>
-          <div class="space-y-3">
-            <div v-for="(produit, index) in topProductsByValue" :key="produit.id" class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-sm font-medium text-green-600 dark:text-green-400">
-                  {{ index + 1 }}
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ produit.nom }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ ((produit.quantiteStock || 0) * (produit.prixUnitaire || 0)).toLocaleString() }} FCFA</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    class="bg-green-600 h-2 rounded-full transition-all duration-300" 
-                    :style="{ width: `${(() => {
-                      const values = topProductsByValue.map(p => (p.quantiteStock || 0) * (p.prixUnitaire || 0))
-                      const maxValue = values.length > 0 ? Math.max(...values) : 1
-                      const produitValue = (produit.quantiteStock || 0) * (produit.prixUnitaire || 0)
-                      return Math.min(100, maxValue > 0 ? (produitValue / maxValue) * 100 : 0)
-                    })()}%` }"
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Distribution du Stock -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Distribution du Stock</h3>
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div class="w-4 h-4 bg-red-500 rounded-full mr-3"></div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Stock Faible (&lt; 10)</span>
-              </div>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ stockDistribution.low }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div class="w-4 h-4 bg-yellow-500 rounded-full mr-3"></div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Stock Moyen (10-49)</span>
-              </div>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ stockDistribution.medium }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div class="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Stock Élevé (≥ 50)</span>
-              </div>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ stockDistribution.high }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Graphique en Barres Simple -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 lg:col-span-2">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quantités en Stock (Top 10)</h3>
-          <div class="flex items-end justify-between h-48 space-x-1">
-            <div v-for="(quantity, index) in chartData.quantities" :key="index" class="flex flex-col items-center flex-1">
-              <div 
-                class="bg-blue-500 rounded-t transition-all duration-500 hover:bg-blue-600 cursor-pointer"
-                :style="{ height: `${(() => {
-                  const maxQty = chartData.quantities.length > 0 ? Math.max(...chartData.quantities) : 1
-                  return Math.max(10, maxQty > 0 ? (quantity / maxQty) * 180 : 10)
-                })()}px` }"
-                :title="`${chartData.categories[index]}: ${quantity} unités`"
-              ></div>
-              <div class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center truncate w-full" :title="chartData.categories[index]">
-                {{ (chartData.categories[index] || '').substring(0, 8) }}{{ (chartData.categories[index] || '').length > 8 ? '...' : '' }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Informations de l'entrepôt -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6 mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Informations de l'entrepôt</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Nom</p>
-            <p class="font-medium text-gray-900 dark:text-white">{{ boutiqueData?.nom || 'N/A' }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Ville</p>
-            <p class="font-medium text-gray-900 dark:text-white">{{ boutiqueData?.ville || 'N/A' }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Adresse</p>
-            <p class="font-medium text-gray-900 dark:text-white">{{ boutiqueData?.adresse || 'N/A' }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Responsable</p>
-            <p class="font-medium text-gray-900 dark:text-white">{{ boutiqueData?.responsable || 'N/A' }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Actions rapides - Desktop -->
-      <div class="hidden md:block">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Actions rapides</h3>
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <NuxtLink to="/stock-produit" class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center">
-              <svg class="h-7 w-7 text-blue-600 dark:text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-              </svg>
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white text-sm">Produits</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Gérer le stock</p>
-              </div>
-            </NuxtLink>
-            
-            <NuxtLink to="/facturation" class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center">
-              <svg class="h-7 w-7 text-green-600 dark:text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-              </svg>
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white text-sm">Nouvelle vente</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Créer une facture</p>
-              </div>
-            </NuxtLink>
-            
-            <NuxtLink to="/mouvements-stock" class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center">
-              <svg class="h-7 w-7 text-purple-600 dark:text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-              </svg>
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white text-sm">Mouvements</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Historique des stocks</p>
-              </div>
-            </NuxtLink>
-            
-            <NuxtLink to="/listes-factures" class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center">
-              <svg class="h-7 w-7 text-orange-600 dark:text-orange-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              </svg>
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white text-sm">Mes factures</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Consulter l'historique</p>
-              </div>
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
+      </template>
     </div>
-
-    <!-- Navigation rapide mobile (fixée en bas) -->
-    <nav class="md:hidden fixed inset-x-0 bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-40">
-      <div class="grid grid-cols-4 text-xs text-center">
-        <NuxtLink to="/stock-produit" class="flex flex-col items-center py-2 text-gray-500 hover:text-blue-600">
-          <svg class="h-6 w-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-          </svg>
-          <span>Produits</span>
-        </NuxtLink>
-        <NuxtLink to="/facturation" class="flex flex-col items-center py-2 text-gray-500 hover:text-green-600">
-          <svg class="h-6 w-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          <span>Ventes</span>
-        </NuxtLink>
-        <NuxtLink to="/mouvements-stock" class="flex flex-col items-center py-2 text-gray-500 hover:text-purple-600">
-          <svg class="h-6 w-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-          </svg>
-          <span>Mouvements</span>
-        </NuxtLink>
-        <NuxtLink to="/listes-factures" class="flex flex-col items-center py-2 text-gray-500 hover:text-orange-600">
-          <svg class="h-6 w-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-          </svg>
-          <span>Factures</span>
-        </NuxtLink>
-      </div>
-    </nav>
   </div>
 </template>

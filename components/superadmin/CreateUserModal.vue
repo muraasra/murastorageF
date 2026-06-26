@@ -1,99 +1,119 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <!-- Overlay -->
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="$emit('close')"></div>
+  <Teleport to="body">
+    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="$emit('close')">
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="$emit('close')"></div>
 
-      <!-- Modal -->
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-        <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-          <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 sm:mx-0 sm:h-10 sm:w-10">
-              <svg class="h-6 w-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+      <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 px-6 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
             </div>
-            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                Créer un nouvel utilisateur
-              </h3>
-              <div class="mt-4 space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Prénom</label>
-                  <input v-model="form.first_name" type="text" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white sm:text-sm">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom</label>
-                  <input v-model="form.last_name" type="text" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white sm:text-sm">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                  <input v-model="form.email" type="email" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white sm:text-sm">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Téléphone</label>
-                  <input v-model="form.telephone" type="tel" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white sm:text-sm">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Poste</label>
-                  <input v-model="form.poste" type="text" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white sm:text-sm">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rôle</label>
-                  <select v-model="form.role" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white sm:text-sm">
-                    <option value="user">Utilisateur</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Entrepôt</label>
-                  <select v-model="form.boutique" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white sm:text-sm">
-                    <option value="">Sélectionner un entrepôt</option>
-                    <option v-for="boutique in boutiques" :key="boutique.id" :value="boutique.id">{{ boutique.nom }}</option>
-                  </select>
-                </div>
-                <div class="flex items-center">
-                  <input v-model="form.send_email" type="checkbox" class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded">
-                  <label class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Envoyer les identifiants par email</label>
-                </div>
-              </div>
+            <div>
+              <h3 class="text-base font-bold text-white">Nouvel utilisateur</h3>
+              <p class="text-xs text-emerald-100">Créer et affecter un utilisateur</p>
             </div>
           </div>
-        </div>
-        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-          <button @click="createUser" :disabled="loading || isLimitReached('max_users')" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
-            <span v-if="!loading">Créer</span>
-            <span v-else>Création...</span>
+          <button @click="$emit('close')" class="text-white/70 hover:text-white p-1 rounded-lg transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
-          <button @click="$emit('close')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+        </div>
+
+        <!-- Form -->
+        <div class="px-6 py-5 space-y-4 overflow-y-auto max-h-[75vh]">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Prénom <span class="text-red-500">*</span></label>
+              <input v-model="form.first_name" type="text" placeholder="Jean" class="field" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nom <span class="text-red-500">*</span></label>
+              <input v-model="form.last_name" type="text" placeholder="Dupont" class="field" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Email <span class="text-red-500">*</span></label>
+              <input v-model="form.email" type="email" placeholder="jean@exemple.com" class="field" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Téléphone</label>
+              <input v-model="form.telephone" type="tel" placeholder="+237 6XX XXX XXX" class="field" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Poste</label>
+              <input v-model="form.poste" type="text" placeholder="Ex: Gestionnaire" class="field" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Rôle</label>
+              <select v-model="form.role" class="field">
+                <option value="user">Utilisateur</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Entrepôt assigné</label>
+              <div v-if="loadingBoutiques" class="field text-gray-400 text-xs flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                Chargement…
+              </div>
+              <select v-else v-model="form.boutique" class="field">
+                <option value="">Aucun (sans entrepôt)</option>
+                <option v-for="b in boutiques" :key="b.id" :value="b.id">{{ b.nom }} ({{ b.ville }})</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Email option -->
+          <div class="flex items-start gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-3">
+            <input v-model="form.send_email" type="checkbox" id="send_email"
+              class="mt-0.5 h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded" />
+            <label for="send_email" class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed cursor-pointer">
+              <span class="font-semibold">Envoyer les identifiants par email</span><br>
+              Un mot de passe temporaire sera envoyé à l'adresse email saisie.
+            </label>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 flex gap-3 justify-end">
+          <button @click="$emit('close')" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
             Annuler
+          </button>
+          <button @click="createUser" :disabled="loading"
+            class="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors disabled:opacity-50">
+            <svg v-if="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+            {{ loading ? 'Création...' : 'Créer l\'utilisateur' }}
           </button>
         </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { useNotification } from '@/types/useNotification'
-import { useAuth } from '@/composables/useAuth'
-import { API_BASE_URL } from '@/constants'
-import { useSubscriptionLimits } from '@/composables/useSubscriptionLimits'
+import { useApiBase } from '@/composables/useApiBase'
 
-const props = defineProps<{
-  isOpen: boolean
-  boutiques?: any[]
-}>()
-
+const props = defineProps<{ isOpen: boolean }>()
 const emit = defineEmits(['close', 'created'])
 
+const { getApiUrl, getAuthHeaders } = useApiBase()
 const { error, success } = useNotification()
-const { getAuthHeaders } = useAuth()
-const loading = ref(false)
 
-// Vérification des limites
-const { isLimitReached, getLimitErrorMessage, loadSubscription, loadLimits, loadUsage, getUpgradeSuggestion } = useSubscriptionLimits()
+async function apiFetch(path: string, opts: any = {}) {
+  return $fetch(getApiUrl(path), { headers: getAuthHeaders(), ...opts })
+}
+
+const loading = ref(false)
+const loadingBoutiques = ref(false)
+const boutiques = ref<any[]>([])
 
 const form = reactive({
   first_name: '',
@@ -102,111 +122,86 @@ const form = reactive({
   telephone: '',
   poste: '',
   role: 'user',
-  boutique: '',
-  send_email: true
+  boutique: '' as string | number,
+  send_email: true,
 })
 
-const boutiques = ref<any[]>([])
+function resetForm() {
+  Object.assign(form, {
+    first_name: '', last_name: '', email: '', telephone: '',
+    poste: '', role: 'user', boutique: '', send_email: true,
+  })
+}
 
-// Charger les entrepôts disponibles
-const loadBoutiques = async () => {
+async function loadBoutiques() {
+  loadingBoutiques.value = true
+  boutiques.value = []
   try {
-    const entreprise = localStorage.getItem('entreprise')
-    if (!entreprise) return
-    
-    const entrepriseData = JSON.parse(entreprise)
-    const entrepriseId = entrepriseData.id
-
-    try {
-      const data = await $fetch(`${API_BASE_URL}/api/boutiques/?entreprise=${entrepriseId}`, {
-        headers: getAuthHeaders()
-      })
-      boutiques.value = Array.isArray(data) ? data : []
-    } catch (apiError: any) {
-      console.error('Erreur chargement entrepôts:', apiError)
-    }
-  } catch (err) {
-    console.error('Erreur chargement entrepôts:', err)
+    const raw = process.client ? localStorage.getItem('entreprise') : null
+    const entrepriseId = raw ? JSON.parse(raw).id : null
+    const qs = entrepriseId ? `?entreprise=${entrepriseId}` : ''
+    const res: any = await apiFetch(`/api/boutiques/${qs}`)
+    boutiques.value = res.results ?? (Array.isArray(res) ? res : [])
+  } catch {
+    boutiques.value = []
+  } finally {
+    loadingBoutiques.value = false
   }
 }
 
-const createUser = async () => {
-  if (!form.first_name || !form.last_name || !form.email) {
-    error('Veuillez remplir tous les champs obligatoires')
-    return
-  }
-
-  // Vérifier la limite d'utilisateurs
-  if (isLimitReached('max_users')) {
-    error(getLimitErrorMessage('max_users'))
-    error('Passez au plan supérieur pour ajouter plus d\'utilisateurs!')
+async function createUser() {
+  if (!form.first_name.trim() || !form.last_name.trim() || !form.email.trim()) {
+    error('Prénom, nom et email sont obligatoires')
     return
   }
 
   loading.value = true
   try {
-    const entreprise = localStorage.getItem('entreprise')
-    if (!entreprise) {
-      error('Informations entreprise manquantes')
-      return
-    }
-    
-    const entrepriseData = JSON.parse(entreprise)
-    const entrepriseId = entrepriseData.id
+    const raw = process.client ? localStorage.getItem('entreprise') : null
+    if (!raw) { error('Informations entreprise manquantes. Reconnectez-vous.'); return }
+    const entrepriseId = JSON.parse(raw).id
 
-    const userData = {
-      username: form.email,
-      first_name: form.first_name,
-      last_name: form.last_name,
-      email: form.email,
-      telephone: form.telephone,
-      poste: form.poste,
-      role: form.role,
-      entreprise: entrepriseId,
-      boutique: form.boutique || null,
-      send_email: form.send_email
-    }
+    const res: any = await apiFetch('/api/users/', {
+      method: 'POST',
+      body: {
+        username: form.email,
+        first_name: form.first_name,
+        last_name: form.last_name,
+        email: form.email,
+        telephone: form.telephone,
+        poste: form.poste,
+        role: form.role,
+        entreprise: entrepriseId,
+        boutique: form.boutique || null,
+        send_email: form.send_email,
+      },
+    })
 
-    try {
-      const data = await $fetch(`${API_BASE_URL}/api/users/`, {
-        method: 'POST',
-        body: userData,
-        headers: getAuthHeaders()
-      })
-    } catch (apiError: any) {
-      error('Erreur lors de la création de l\'utilisateur: ' + (apiError.data?.message || apiError.message))
-      return
+    if (form.send_email) {
+      success('Utilisateur créé — les identifiants ont été envoyés par email.')
+    } else {
+      const pwd = res?.temp_password
+      success(pwd ? `Utilisateur créé. Mot de passe temporaire : ${pwd}` : 'Utilisateur créé avec succès.')
     }
-
-    success('Utilisateur créé avec succès. Patientez 1 à 5 minutes pour son activation')
     emit('created')
     emit('close')
-    
-    // Reset form
-    Object.assign(form, {
-      first_name: '',
-      last_name: '',
-      email: '',
-      telephone: '',
-      poste: '',
-      role: 'user',
-      boutique: '',
-      send_email: true
-    })
-  } catch (err) {
-    console.error('Erreur création utilisateur:', err)
-    error('Une erreur est survenue')
+    resetForm()
+  } catch (err: any) {
+    const data = err?.data
+    const msg = data?.email?.[0] || data?.username?.[0] || data?.detail || data?.message || err?.message || ''
+    error(msg || 'Erreur lors de la création de l\'utilisateur')
   } finally {
     loading.value = false
   }
 }
 
-watch(() => props.isOpen, (newVal) => {
-  if (newVal) {
-    loadSubscription()
-    loadLimits()
-    loadUsage()
-    loadBoutiques()
-  }
+watch(() => props.isOpen, (v) => {
+  if (v) { resetForm(); loadBoutiques() }
 })
 </script>
+
+<style scoped>
+.field {
+  @apply w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent;
+}
+</style>

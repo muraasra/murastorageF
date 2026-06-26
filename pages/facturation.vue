@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useNotification } from '../types/useNotification';
 import { useBarcodeScanner } from '../composables/useBarcodeScanner';
@@ -13,12 +13,11 @@ import { Body } from "#components";
 import { boolean } from "zod";
 import { useAuthStore } from '@/stores/auth'
 import { API_BASE_URL } from '@/constants'
+import { useApiBase } from '@/composables/useApiBase'
 import { useSeo } from '@/composables/useSeo'
-// Corriger l'import de jsPDF
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import { useFacturePDF } from '@/composables/useFacturePDF';
 
-// Page privée - Noindex
+// Page privÃ©e - Noindex
 useSeo({
   title: 'Facturation - Mura Storage',
   description: 'Gestion de facturation et commandes clients',
@@ -26,6 +25,7 @@ useSeo({
 });
 
 const auth = useAuthStore()
+const { getStockQuantity } = useApiBase()
 const { error, success } = useNotification();
 const { isScanning, scannedCode, startScan, stopScan, processScannedCode, simulateScan } = useBarcodeScanner();
 const { calculateTotals, validateInvoice, generateInvoiceNumber, formatCurrency, calculateMargin, validateSellingPrice } = useInvoiceManager();
@@ -37,7 +37,7 @@ const { isScanning: realScanning, scannedCode: realCode, scanError: realScanErro
 const { isScanning: simpleScanning, scannedCode: simpleCode, scanError: simpleScanError, videoRef: simpleVideoRef, startSimpleScanner, stopSimpleScanner, testScan: testSimpleScan, processDetectedCode: processSimpleCode, cleanup: simpleCleanup } = useSimpleScanner();
 
 // Variables pour le scanner
-const scannerType = ref<'quagga' | 'simple'>('simple') // Scanner simple par défaut
+const scannerType = ref<'quagga' | 'simple'>('simple') // Scanner simple par dÃ©faut
 const currentScanning = computed(() => scannerType.value === 'quagga' ? realScanning.value : simpleScanning.value)
 const currentScanError = computed(() => scannerType.value === 'quagga' ? realScanError.value : simpleScanError.value)
 
@@ -103,7 +103,7 @@ interface Invoice {
   taxAmount?: number;
 }
 
-// Interface correspondant à la structure de votre API
+// Interface correspondant Ã  la structure de votre API
 interface Product {
   id: number;
   reference: string;
@@ -114,7 +114,7 @@ interface Product {
   category?: string;
   quantite?: number;
   actif?: boolean;
-  // Champs spécifiques pour les ordinateurs
+  // Champs spÃ©cifiques pour les ordinateurs
   ram?: string;
   disque_dur?: string;
   processeur?: string;
@@ -167,7 +167,7 @@ interface Boutique {
   };
 }
 
-// Interfaces pour les réponses API
+// Interfaces pour les rÃ©ponses API
 interface StockResponse {
   quantite: number;
   id: number;
@@ -208,15 +208,7 @@ declare module '@/stores/auth' {
   }
 }
 
-// Corriger la déclaration du module jsPDF
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: any;
-    lastAutoTable: {
-      finalY: number;
-    };
-  }
-}
+const { genererPDFFacture } = useFacturePDF();
 
 const user = ref<User | null>(null);
 const boutique = ref<Boutique | null>(null);
@@ -227,18 +219,18 @@ if (process.client) {
   
   if (userData) {
     user.value = JSON.parse(userData);
-    console.log('Utilisateur récupéré:', user.value);
+    console.log('Utilisateur rÃ©cupÃ©rÃ©:', user.value);
   }
   
   if (boutiqueData) {
     boutique.value = JSON.parse(boutiqueData);
-    console.log('Boutique récupérée:', boutique.value);
+    console.log('Boutique rÃ©cupÃ©rÃ©e:', boutique.value);
   }
 }
 
 const userId = computed(() => user.value?.id);
 
-// Fonction pour récupérer les données utilisateur et boutique depuis l'API
+// Fonction pour rÃ©cupÃ©rer les donnÃ©es utilisateur et boutique depuis l'API
 const fetchUserAndBoutiqueData = async () => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null;
@@ -247,30 +239,30 @@ const fetchUserAndBoutiqueData = async () => {
       return;
     }
 
-    // Récupérer l'ID utilisateur depuis le localStorage ou le store
+    // RÃ©cupÃ©rer l'ID utilisateur depuis le localStorage ou le store
     const currentUser = user.value || (process.client ? JSON.parse(localStorage.getItem('user') || '{}') : {});
     const userId = currentUser.id;
     
     if (!userId) {
-      console.error('ID utilisateur non trouvé dans les données locales');
-      console.log('Données utilisateur disponibles:', currentUser);
-      console.log('Tentative de récupération depuis le store auth...');
+      console.error('ID utilisateur non trouvÃ© dans les donnÃ©es locales');
+      console.log('DonnÃ©es utilisateur disponibles:', currentUser);
+      console.log('Tentative de rÃ©cupÃ©ration depuis le store auth...');
       
-      // Essayer de récupérer depuis le store auth
+      // Essayer de rÃ©cupÃ©rer depuis le store auth
       const authStore = useAuthStore();
       if (authStore.user?.id) {
-        console.log('ID utilisateur trouvé dans le store auth:', authStore.user.id);
+        console.log('ID utilisateur trouvÃ© dans le store auth:', authStore.user.id);
         user.value = authStore.user;
         return;
       }
       
-      console.error('Aucun ID utilisateur trouvé nulle part');
+      console.error('Aucun ID utilisateur trouvÃ© nulle part');
       return;
     }
     
-    console.log('Récupération des données pour l\'utilisateur ID:', userId);
+    console.log('RÃ©cupÃ©ration des donnÃ©es pour l\'utilisateur ID:', userId);
 
-    // Récupérer les données utilisateur complètes
+    // RÃ©cupÃ©rer les donnÃ©es utilisateur complÃ¨tes
     const userData = await $fetch<User>(`${API_BASE_URL}/api/users/${userId}/`, {
       method: 'GET',
       headers: {
@@ -284,10 +276,10 @@ const fetchUserAndBoutiqueData = async () => {
       if (process.client) {
         localStorage.setItem('user', JSON.stringify(userData));
       }
-      console.log('Données utilisateur mises à jour:', user.value);
+      console.log('DonnÃ©es utilisateur mises Ã  jour:', user.value);
     }
 
-    // Récupérer les données de la boutique de l'utilisateur
+    // RÃ©cupÃ©rer les donnÃ©es de la boutique de l'utilisateur
     const boutiqueId = userData?.boutique?.id || userData?.boutique;
     if (boutiqueId) {
       const boutiqueData = await $fetch(`${API_BASE_URL}/api/boutiques/${boutiqueId}/`, {
@@ -303,23 +295,23 @@ const fetchUserAndBoutiqueData = async () => {
         if (process.client) {
           localStorage.setItem('boutique', JSON.stringify(boutiqueData));
         }
-        console.log('Données boutique mises à jour:', boutique.value);
+        console.log('DonnÃ©es boutique mises Ã  jour:', boutique.value);
       }
     } else {
-      console.warn('Aucune boutique associée à l\'utilisateur');
+      console.warn('Aucune boutique associÃ©e Ã  l\'utilisateur');
     }
   } catch (err: any) {
-    console.error('Erreur lors de la récupération des données:', err);
-    console.error('Détails de l\'erreur:', {
+    console.error('Erreur lors de la rÃ©cupÃ©ration des donnÃ©es:', err);
+    console.error('DÃ©tails de l\'erreur:', {
       status: err.response?.status,
       statusText: err.response?.statusText,
       url: err.response?.url,
       message: err.message
     });
     
-    // Si l'erreur est 404, essayer de récupérer les données depuis le localStorage
+    // Si l'erreur est 404, essayer de rÃ©cupÃ©rer les donnÃ©es depuis le localStorage
     if (err.response?.status === 404) {
-      console.log('Endpoint non trouvé, utilisation des données locales');
+      console.log('Endpoint non trouvÃ©, utilisation des donnÃ©es locales');
       if (process.client) {
         const storedUser = localStorage.getItem('user');
         const storedBoutique = localStorage.getItem('boutique');
@@ -327,7 +319,7 @@ const fetchUserAndBoutiqueData = async () => {
         if (storedUser) {
           try {
             user.value = JSON.parse(storedUser);
-            console.log('Utilisateur restauré depuis localStorage:', user.value);
+            console.log('Utilisateur restaurÃ© depuis localStorage:', user.value);
           } catch (e) {
             console.error('Erreur lors de la restauration de l\'utilisateur:', e);
           }
@@ -336,161 +328,222 @@ const fetchUserAndBoutiqueData = async () => {
         if (storedBoutique) {
           try {
             boutique.value = JSON.parse(storedBoutique);
-            console.log('Boutique restaurée depuis localStorage:', boutique.value);
+            console.log('Boutique restaurÃ©e depuis localStorage:', boutique.value);
           } catch (e) {
             console.error('Erreur lors de la restauration de la boutique:', e);
           }
         }
       }
     } else if (err.response?.status === 401) {
-      console.error('Token expiré ou invalide');
+      console.error('Token expirÃ© ou invalide');
       if (process.client) {
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
         localStorage.removeItem('boutique');
-        window.location.href = '/login';
+        window.location.href = '/connexion';
       }
     }
   }
 };
 
-// Récupération des produits depuis l'API avec stock par entrepôt
+// RÃ©cupÃ©ration des produits depuis l'API avec stock par entrepÃ´t
 const products = ref<Product[]>([]);
+const isLoadingProducts = ref(false);
+const isSearchingProducts = ref(false);
+const searchResults = ref<Product[]>([]);
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+const parseApiList = (data: any): any[] =>
+  Array.isArray(data) ? data : (data?.results ?? []);
+
+const getEntrepriseId = (): number | null => {
+  const fromBoutique = boutique.value?.entreprise?.id ?? boutique.value?.entreprise;
+  if (fromBoutique) return Number(fromBoutique);
+  const fromUser = user.value?.entreprise?.id ?? user.value?.entreprise;
+  if (fromUser) return Number(fromUser);
+  if (process.client) {
+    try {
+      const stored = localStorage.getItem('entreprise');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed?.id ? Number(parsed.id) : null;
+      }
+    } catch {}
+  }
+  return null;
+};
+
+const mapProductFromApi = (p: any, stockMap: Map<number, number>): Product => ({
+  id: p.id,
+  reference: p.reference || p.sku || p.code_barres || '',
+  nom: p.nom,
+  description: p.description,
+  prix: parseFloat(p.prix_vente || p.prix || 0),
+  prix_achat: parseFloat(p.prix_achat || 0),
+  category: p.category || p.categorie_nom || p.categorie?.nom || '',
+  quantite: stockMap.get(p.id) ?? 0,
+  actif: p.actif !== false,
+  ram: p.ram,
+  disque_dur: p.disque_dur,
+  processeur: p.processeur,
+  generation: p.generation,
+  carte_graphique: p.carte_graphique,
+  systeme_exploitation: p.systeme_exploitation,
+});
+
+const loadStockMap = async (boutiqueId: number, forceReload = false): Promise<Map<number, number>> => {
+  const stockMap = new Map<number, number>();
+  const token = process.client ? localStorage.getItem('access_token') : null;
+  const authHeaders = {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+  const stocksTimestamp = forceReload ? `&t=${Date.now()}` : '';
+  const stocksUrl = `${API_BASE_URL}/api/stocks/?entrepot=${boutiqueId}${stocksTimestamp}`;
+  const stocksData: any = await $fetch(stocksUrl, {
+    method: 'GET',
+    headers: authHeaders,
+    cache: 'no-store' as any,
+  });
+  parseApiList(stocksData).forEach((stock: any) => stockMap.set(stock.produit, stock.quantite));
+  return stockMap;
+};
+
 const fetchProducts = async (forceReload: boolean = false) => {
   try {
+    isLoadingProducts.value = true;
     const token = process.client ? localStorage.getItem('access_token') : null;
     
-    // Invalider le cache si on force le rechargement
     if (forceReload && process.client) {
       const nuxtApp = useNuxtApp();
       if (nuxtApp.$invalidateCacheByPattern) {
         nuxtApp.$invalidateCacheByPattern('/api/produits');
         nuxtApp.$invalidateCacheByPattern('/api/stocks');
-        console.log('[fetchProducts] Cache invalidé pour forcer le rechargement');
       }
     }
     
-    // Récupérer les produits de l'entreprise avec leurs stocks
-    // Ajouter un timestamp pour éviter le cache si forceReload
-    const timestamp = forceReload ? `?t=${Date.now()}` : '';
-    const produitsUrl = `${API_BASE_URL}/api/produits/${timestamp}`;
-    console.log('[fetchProducts] URL produits:', produitsUrl, 'forceReload:', forceReload);
-    
-    // Vérifier que l'URL est correcte
-    if (forceReload && !produitsUrl.includes('?t=')) {
-      console.warn('[fetchProducts] ATTENTION: Timestamp non ajouté correctement à l\'URL');
-    }
+    const entrepriseId = getEntrepriseId();
+    const params = new URLSearchParams();
+    if (entrepriseId) params.set('entreprise', String(entrepriseId));
+    if (forceReload) params.set('t', String(Date.now()));
+    const produitsUrl = `${API_BASE_URL}/api/produits/?${params.toString()}`;
+
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
     const data = await $fetch(produitsUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
-      }
+      headers: authHeaders,
+      cache: 'no-store' as any,
     });
 
-    // Récupérer les stocks pour la boutique de l'utilisateur
     const boutiqueId = boutique.value?.id;
-    if (!boutiqueId) {
-      console.error("Boutique non trouvée");
-      return;
-    }
-
-    // Ajouter un timestamp pour éviter le cache si forceReload
-    const stocksTimestamp = forceReload ? `&t=${Date.now()}` : '';
-    const stocksUrl = `${API_BASE_URL}/api/stocks/?entrepot=${boutiqueId}${stocksTimestamp}`;
-    const stocksData = await $fetch(stocksUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
+    let stockMap = new Map<number, number>();
+    if (boutiqueId) {
+      try {
+        stockMap = await loadStockMap(boutiqueId, forceReload);
+      } catch (stockErr) {
+        console.warn('[fetchProducts] Impossible de charger les stocks:', stockErr);
       }
-    });
-
-    // Créer un map des stocks par produit
-    const stockMap = new Map();
-    if (Array.isArray(stocksData)) {
-      stocksData.forEach(stock => {
-        stockMap.set(stock.produit, stock.quantite);
-      });
+    } else {
+      console.warn('[fetchProducts] Boutique non trouvÃ©e â€” produits chargÃ©s sans donnÃ©es de stock');
     }
 
-    // Mappez les données de l'API vers Product avec stock disponible
-    products.value = Array.isArray(data)
-      ? data.map(p => ({
-        id : p.id,
-        reference: p.reference,
-        nom: p.nom,
-        description: p.description,
-        prix: p.prix,
-        prix_achat: p.prix_achat,
-        category: p.category,
-        quantite: stockMap.get(p.id) || 0, // Stock disponible dans l'entrepôt
-        actif: p.actif,
-        ram: p.ram,
-        disque_dur: p.disque_dur,
-        processeur: p.processeur,
-        generation: p.generation,
-        carte_graphique: p.carte_graphique,
-        systeme_exploitation: p.systeme_exploitation
-      })).filter(p => p.quantite > 0) // Filtrer seulement les produits avec stock disponible
-      : [];
+    products.value = parseApiList(data)
+      .map((p: any) => mapProductFromApi(p, stockMap))
+      .filter((p: Product) => p.actif !== false);
 
-    console.log(`✅ ${products.value.length} produits avec stock disponible chargés`);
-    if (forceReload) {
-      console.log('[fetchProducts] Stocks mis à jour après rechargement forcé');
-      // Afficher quelques exemples de stocks pour vérification
-      if (products.value.length > 0) {
-        console.log('[fetchProducts] Exemples de stocks:', products.value.slice(0, 3).map(p => ({ nom: p.nom, stock: p.quantite })));
-      }
-    }
+    console.log(`âœ… ${products.value.length} produits chargÃ©s`);
 
   } catch (err) {
-    console.error("Erreur lors de la récupération des produits:", err);
+    console.error("Erreur lors de la rÃ©cupÃ©ration des produits:", err);
+    error("Impossible de charger les produits. VÃ©rifiez votre connexion.");
+  } finally {
+    isLoadingProducts.value = false;
   }
 };
 
-// Récupération des partenaires depuis l'API (filtrés par entreprise)
+const searchProductsOnServer = async (query: string) => {
+  const trimmed = query.trim();
+  if (!trimmed) {
+    searchResults.value = [];
+    return;
+  }
+
+  try {
+    isSearchingProducts.value = true;
+    const token = process.client ? localStorage.getItem('access_token') : null;
+    const entrepriseId = getEntrepriseId();
+    const params = new URLSearchParams({ search: trimmed });
+    if (entrepriseId) params.set('entreprise', String(entrepriseId));
+    params.set('t', String(Date.now()));
+
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const data = await $fetch(`${API_BASE_URL}/api/produits/?${params.toString()}`, {
+      method: 'GET',
+      headers: authHeaders,
+      cache: 'no-store' as any,
+    });
+
+    const boutiqueId = boutique.value?.id;
+    let stockMap = new Map<number, number>();
+    if (boutiqueId) {
+      try {
+        stockMap = await loadStockMap(boutiqueId, true);
+      } catch {}
+    }
+
+    searchResults.value = parseApiList(data)
+      .map((p: any) => mapProductFromApi(p, stockMap))
+      .filter((p: Product) => p.actif !== false);
+  } catch (err) {
+    console.error('[searchProductsOnServer]', err);
+    searchResults.value = [];
+  } finally {
+    isSearchingProducts.value = false;
+  }
+};
+
+// RÃ©cupÃ©ration des partenaires depuis l'API (filtrÃ©s par entreprise)
 const partners = ref<Partner[]>([]);
 const clients = ref<Client[]>([]);
 const allClients = ref<Client[]>([]); // Tous les clients de l'entreprise
 const selectedClient = ref<Client | null>(null);
 const isSearchingClient = ref(false);
 const clientSearchQuery = ref('');
-// Récupération des clients depuis l'API
+// RÃ©cupÃ©ration des clients depuis l'API
 const fetchClients = async () => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null;
-    
-    // Récupérer l'entreprise de l'utilisateur connecté
-    const entreprise = process.client ? localStorage.getItem('entreprise') : null;
-    let entrepriseId = null;
-    if (entreprise) {
-      try {
-        const entrepriseData = JSON.parse(entreprise);
-        entrepriseId = entrepriseData.id;
-      } catch (e) {
-        console.error('Erreur parsing entreprise:', e);
-      }
-    }
-    
-    // Filtrer les clients par entreprise
-    const url = entrepriseId 
+    const entrepriseId = getEntrepriseId();
+
+    const url = entrepriseId
       ? `${API_BASE_URL}/api/clients/?entreprise=${entrepriseId}`
       : `${API_BASE_URL}/api/clients/`;
-    
-    const data = await $fetch<Client[]>(url, {
+
+    const data = await $fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         ...(token && { 'Authorization': `Bearer ${token}` })
-      }
+      },
+      cache: 'no-store' as any,
     });
-    
-    clients.value = data;
-    allClients.value = data; // Stocker tous les clients pour la recherche locale
-    console.log('Clients récupérés (filtrés par entreprise):', data);
+
+    const list = parseApiList<Client>(data);
+    clients.value = list;
+    allClients.value = list;
+    console.log('Clients rÃ©cupÃ©rÃ©s (filtrÃ©s par entreprise):', list.length);
   } catch (err) {
-    console.error("Erreur lors de la récupération des clients:", err);
+    console.error("Erreur lors de la rÃ©cupÃ©ration des clients:", err);
+    clients.value = [];
+    allClients.value = [];
   }
 };
 
@@ -500,14 +553,15 @@ const searchClientAutomatically = () => {
   const prenom = invoice.value.client?.prenom || '';
   const telephone = invoice.value.client?.telephone || '';
   
-  // Rechercher seulement si on a au moins 2 caractères dans un champ
+  // Rechercher seulement si on a au moins 2 caractÃ¨res dans un champ
   if (nom.length < 2 && prenom.length < 2 && telephone.length < 2) {
     clients.value = [];
     return;
   }
   
-  // Recherche locale dans les clients déjà chargés
-  const clientsTrouves = allClients.value.filter(client => {
+  // Recherche locale dans les clients dÃ©jÃ  chargÃ©s
+  const source = Array.isArray(allClients.value) ? allClients.value : parseApiList<Client>(allClients.value)
+  const clientsTrouves = source.filter(client => {
     const nomMatch = nom.length >= 2 && client.nom.toLowerCase().includes(nom.toLowerCase());
     const prenomMatch = prenom.length >= 2 && client.prenom.toLowerCase().includes(prenom.toLowerCase());
     const telephoneMatch = telephone.length >= 2 && client.telephone.includes(telephone);
@@ -516,10 +570,10 @@ const searchClientAutomatically = () => {
   });
   
   clients.value = clientsTrouves;
-  console.log('Clients trouvés localement:', clientsTrouves);
+  console.log('Clients trouvÃ©s localement:', clientsTrouves);
 };
 
-// Recherche de clients par téléphone
+// Recherche de clients par tÃ©lÃ©phone
 const searchClientByPhone = async (phone: string) => {
   if (!phone || phone.length < 3) return;
   
@@ -527,7 +581,7 @@ const searchClientByPhone = async (phone: string) => {
     isSearchingClient.value = true;
     const token = process.client ? localStorage.getItem('access_token') : null;
     
-    // Récupérer l'entreprise de l'utilisateur connecté
+    // RÃ©cupÃ©rer l'entreprise de l'utilisateur connectÃ©
     const entreprise = process.client ? localStorage.getItem('entreprise') : null;
     let entrepriseId = null;
     if (entreprise) {
@@ -539,21 +593,22 @@ const searchClientByPhone = async (phone: string) => {
       }
     }
     
-    // Filtrer par entreprise dans la recherche par téléphone
+    // Filtrer par entreprise dans la recherche par tÃ©lÃ©phone
     const url = entrepriseId 
       ? `${API_BASE_URL}/api/clients/search_by_phone/?phone=${phone}&entreprise=${entrepriseId}`
       : `${API_BASE_URL}/api/clients/search_by_phone/?phone=${phone}`;
     
-    const data = await $fetch<Client[]>(url, {
+    const data = await $fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         ...(token && { 'Authorization': `Bearer ${token}` })
-      }
+      },
+      cache: 'no-store' as any,
     });
-    
-    clients.value = data;
-    console.log('Clients trouvés (filtrés par entreprise):', data);
+
+    clients.value = parseApiList<Client>(data);
+    console.log('Clients trouvÃ©s (filtrÃ©s par entreprise):', clients.value.length);
   } catch (err) {
     console.error("Erreur lors de la recherche de clients:", err);
   } finally {
@@ -561,66 +616,66 @@ const searchClientByPhone = async (phone: string) => {
   }
 };
 
-// Création automatique d'un client
+// CrÃ©ation automatique d'un client
 const createClient = async (clientData: Partial<Client>) => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null;
     
-    // Validation des données requises
+    // Validation des donnÃ©es requises
     if (!clientData.nom || !clientData.telephone) {
-      throw new Error('Nom et téléphone sont requis');
+      throw new Error('Nom et tÃ©lÃ©phone sont requis');
     }
     
     if (!token) {
       throw new Error('Token d\'authentification manquant');
     }
     
-    // Récupérer les données utilisateur si nécessaire
-    console.log('Données utilisateur actuelles:', user.value);
-    console.log('Données boutique actuelles:', boutique.value);
+    // RÃ©cupÃ©rer les donnÃ©es utilisateur si nÃ©cessaire
+    console.log('DonnÃ©es utilisateur actuelles:', user.value);
+    console.log('DonnÃ©es boutique actuelles:', boutique.value);
     
     if (!user.value?.entreprise?.id) {
-      console.log('Données entreprise manquantes, tentative de récupération...');
+      console.log('DonnÃ©es entreprise manquantes, tentative de rÃ©cupÃ©ration...');
       try {
         await fetchUserAndBoutiqueData();
       } catch (err) {
-        console.error('Erreur lors de la récupération des données:', err);
+        console.error('Erreur lors de la rÃ©cupÃ©ration des donnÃ©es:', err);
       }
     }
     
-    // Si toujours pas d'entreprise, essayer de récupérer depuis le store auth ou utiliser des valeurs par défaut
+    // Si toujours pas d'entreprise, essayer de rÃ©cupÃ©rer depuis le store auth ou utiliser des valeurs par dÃ©faut
     let entrepriseId = user.value?.entreprise?.id;
     if (!entrepriseId) {
-      console.warn('Aucune entreprise trouvée dans les données utilisateur');
+      console.warn('Aucune entreprise trouvÃ©e dans les donnÃ©es utilisateur');
       
-      // Essayer de récupérer depuis le store auth
+      // Essayer de rÃ©cupÃ©rer depuis le store auth
       const authStore = useAuthStore();
       if ((authStore.user as any)?.entreprise?.id) {
         entrepriseId = (authStore.user as any).entreprise.id;
-        console.log('Entreprise trouvée dans le store auth:', entrepriseId);
+        console.log('Entreprise trouvÃ©e dans le store auth:', entrepriseId);
       } else {
-        console.warn('Utilisation d\'une entreprise par défaut (ID: 1)');
+        console.warn('Utilisation d\'une entreprise par dÃ©faut (ID: 1)');
         entrepriseId = 1;
       }
     }
     
-    // Récupérer l'ID de la boutique
+    // RÃ©cupÃ©rer l'ID de la boutique
     let boutiqueId = boutique.value?.id || user.value?.boutique?.id;
     if (!boutiqueId) {
-      console.warn('Aucune boutique trouvée dans les données utilisateur');
+      console.warn('Aucune boutique trouvÃ©e dans les donnÃ©es utilisateur');
       
-      // Essayer de récupérer depuis le store auth
+      // Essayer de rÃ©cupÃ©rer depuis le store auth
       const authStore = useAuthStore();
       if ((authStore.user as any)?.boutique?.id) {
         boutiqueId = (authStore.user as any).boutique.id;
-        console.log('Boutique trouvée dans le store auth:', boutiqueId);
+        console.log('Boutique trouvÃ©e dans le store auth:', boutiqueId);
       } else {
-        console.warn('Utilisation d\'une boutique par défaut (ID: 1)');
+        console.warn('Utilisation d\'une boutique par dÃ©faut (ID: 1)');
         boutiqueId = 1;
       }
     }
     
-    console.log('IDs utilisés - Entreprise:', entrepriseId, 'Boutique:', boutiqueId);
+    console.log('IDs utilisÃ©s - Entreprise:', entrepriseId, 'Boutique:', boutiqueId);
     
     const clientPayload = {
       nom: clientData.nom?.trim() || '',
@@ -639,16 +694,16 @@ const createClient = async (clientData: Partial<Client>) => {
       throw new Error('Champs requis manquants: nom, telephone, entreprise, boutique');
     }
     
-    console.log('Données client à envoyer:', clientPayload);
-    console.log('Utilisateur connecté:', {
+    console.log('DonnÃ©es client Ã  envoyer:', clientPayload);
+    console.log('Utilisateur connectÃ©:', {
       id: user.value?.id,
       nom: user.value?.nom,
       prenom: user.value?.prenom,
       entreprise: user.value?.entreprise,
       boutique: user.value?.boutique
     });
-    console.log('Boutique récupérée:', boutique.value);
-    console.log('IDs utilisés - Entreprise:', entrepriseId, 'Boutique:', boutiqueId);
+    console.log('Boutique rÃ©cupÃ©rÃ©e:', boutique.value);
+    console.log('IDs utilisÃ©s - Entreprise:', entrepriseId, 'Boutique:', boutiqueId);
     console.log('Token disponible:', !!token);
     
     const newClient = await $fetch<Client>(`${API_BASE_URL}/api/clients/`, {
@@ -660,57 +715,60 @@ const createClient = async (clientData: Partial<Client>) => {
       }
     });
     
-    console.log('Client créé:', newClient);
+    console.log('Client crÃ©Ã©:', newClient);
     
-    // Ajouter le nouveau client à la liste locale
+    // Ajouter le nouveau client Ã  la liste locale
+    if (!Array.isArray(allClients.value)) {
+      allClients.value = parseApiList<Client>(allClients.value)
+    }
     allClients.value.push(newClient);
     
     return newClient;
     } catch (err: any) {
-      console.error("Erreur lors de la création du client:", err);
+      console.error("Erreur lors de la crÃ©ation du client:", err);
     
     if (err.response) {
       try {
         const errorData = await err.response.json();
-        console.error('Réponse du serveur (JSON):', errorData);
+        console.error('RÃ©ponse du serveur (JSON):', errorData);
         
-        // Si erreur 400, afficher les détails de validation
+        // Si erreur 400, afficher les dÃ©tails de validation
         if (err.response.status === 400) {
           console.error('Erreur de validation:', errorData);
-          throw new Error('Erreur de validation. Vérifiez les données saisies.');
+          throw new Error('Erreur de validation. VÃ©rifiez les donnÃ©es saisies.');
         }
         
-        // Si erreur 401, le token est probablement expiré
+        // Si erreur 401, le token est probablement expirÃ©
         if (err.response.status === 401) {
-          console.error('Token expiré, redirection vers la connexion');
+          console.error('Token expirÃ©, redirection vers la connexion');
           if (process.client) {
             localStorage.removeItem('access_token');
             localStorage.removeItem('user');
             localStorage.removeItem('boutique');
-            window.location.href = '/login';
+            window.location.href = '/connexion';
           }
-          throw new Error('Token expiré, veuillez vous reconnecter');
+          throw new Error('Token expirÃ©, veuillez vous reconnecter');
         }
         
-        // Pour les autres erreurs, continuer avec les valeurs par défaut
-        console.warn('Erreur API, utilisation des valeurs par défaut');
-        throw new Error('Erreur serveur. Veuillez réessayer.');
+        // Pour les autres erreurs, continuer avec les valeurs par dÃ©faut
+        console.warn('Erreur API, utilisation des valeurs par dÃ©faut');
+        throw new Error('Erreur serveur. Veuillez rÃ©essayer.');
         
       } catch (e) {
         const errorText = await err.response.text();
-        console.error('Réponse du serveur (texte):', errorText);
+        console.error('RÃ©ponse du serveur (texte):', errorText);
         console.error('Status:', err.response.status);
         console.error('StatusText:', err.response.statusText);
-        throw new Error('Erreur serveur. Veuillez réessayer.');
+        throw new Error('Erreur serveur. Veuillez rÃ©essayer.');
       }
     } else {
-      console.error('Pas de réponse disponible - erreur de connexion');
+      console.error('Pas de rÃ©ponse disponible - erreur de connexion');
       throw new Error('Erreur de connexion au serveur');
     }
   }
 };
 
-// Sélection d'un client existant
+// SÃ©lection d'un client existant
 const selectClient = (client: Client) => {
   selectedClient.value = client;
   invoice.value.client = {
@@ -725,25 +783,26 @@ const selectClient = (client: Client) => {
   clients.value = []; // Vider la liste des suggestions
 };
 
-// Création automatique d'un client si nécessaire
+// CrÃ©ation automatique d'un client si nÃ©cessaire
 const handleClientCreation = async () => {
   if (!invoice.value.client?.telephone) return;
   
-  // Vérifier si le client existe déjà dans la liste locale
-  const existingClient = allClients.value.find(c => c.telephone === invoice.value.client?.telephone);
+  // VÃ©rifier si le client existe dÃ©jÃ  dans la liste locale
+  const clientsList = Array.isArray(allClients.value) ? allClients.value : parseApiList<Client>(allClients.value)
+  const existingClient = clientsList.find(c => c.telephone === invoice.value.client?.telephone);
   
   if (existingClient) {
     selectClient(existingClient);
     return;
   }
   
-  // Créer le client automatiquement
+  // CrÃ©er le client automatiquement
   try {
     const newClient = await createClient(invoice.value.client);
     selectClient(newClient);
-    success(`Client ${newClient.nom_complet} créé automatiquement`);
+    success(`Client ${newClient.nom_complet} crÃ©Ã© automatiquement`);
   } catch (err) {
-    error("Erreur lors de la création du client");
+    error("Erreur lors de la crÃ©ation du client");
   }
 };
 
@@ -751,17 +810,7 @@ const fetchPartners = async () => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null;
     
-    // Récupérer l'entreprise de l'utilisateur connecté
-    const entreprise = process.client ? localStorage.getItem('entreprise') : null;
-    let entrepriseId: number | null = null;
-    if (entreprise) {
-      try {
-        const entrepriseData = JSON.parse(entreprise);
-        entrepriseId = entrepriseData.id;
-      } catch (e) {
-        console.error('Erreur parsing entreprise pour les partenaires:', e);
-      }
-    }
+    const entrepriseId = getEntrepriseId();
 
     // Filtrer les partenaires par entreprise si possible
     const url = entrepriseId
@@ -776,11 +825,11 @@ const fetchPartners = async () => {
       }
     });
 
-    partners.value = Array.isArray(data) ? data as Partner[] : [];
-    console.log('Partenaires récupérés (filtrés par entreprise):', partners.value);
+    partners.value = parseApiList<Partner>(data);
+    console.log('Partenaires rÃ©cupÃ©rÃ©s (filtrÃ©s par entreprise):', partners.value.length);
 
   } catch (err) {
-    console.error("Erreur lors de la récupération des partenaires:", err);
+    console.error("Erreur lors de la rÃ©cupÃ©ration des partenaires:", err);
   }
 };
 
@@ -799,60 +848,86 @@ const invoice = ref<Invoice>({
   montantVerse: 0,
 });
 
-// Nouvelles fonctionnalités
+// Nouvelles fonctionnalitÃ©s
 const taxRate = ref(0); // Taux de TVA en pourcentage
 const discountRate = ref(0); // Remise en pourcentage
 const discountAmount = ref(0); // Remise en montant fixe
-const paymentMethod = ref('cash'); // Méthode de paiement
+const paymentMethod = ref('cash'); // MÃ©thode de paiement
 const notes = ref(''); // Notes de la facture
 const showBarcodeScanner = ref(false);
 const barcodeInput = ref('');
-const isSubmitting = ref(false); // État de soumission de la facture
+const isSubmitting = ref(false); // Ã‰tat de soumission de la facture
 
 const currentProductRef = ref("");
 const invoicePreview = ref<HTMLElement | null>(null);
 
-// État pour la recherche de produits
+// Ã‰tat pour la recherche de produits
 const searchQuery = ref("");
 const showProductSearch = ref(false);
 
 // Computed pour filtrer les produits selon la recherche
 const filteredProducts = computed(() => {
-  if (!searchQuery.value) return [];
-  
-  const query = searchQuery.value.toLowerCase().trim();
-  return products.value.filter(product => 
-    product.reference.toLowerCase().includes(query) ||
-    product.nom.toLowerCase().includes(query)
-  ).slice(0, 5); // Limite à 5 résultats
+  const query = searchQuery.value.toLowerCase().trim()
+  if (!query) {
+    return [...products.value]
+      .sort((a, b) => (b.quantite || 0) - (a.quantite || 0))
+      .slice(0, 8)
+  }
+
+  // PrioritÃ© aux rÃ©sultats serveur si disponibles
+  const source = searchResults.value.length > 0 ? searchResults.value : products.value
+  return source.filter(product =>
+    (product.reference || '').toLowerCase().includes(query) ||
+    (product.nom || '').toLowerCase().includes(query) ||
+    (product.category || '').toLowerCase().includes(query) ||
+    String(product.id).includes(query)
+  ).slice(0, 15)
+});
+
+watch(searchQuery, (query) => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  const trimmed = query.trim()
+  if (!trimmed) {
+    searchResults.value = []
+    return
+  }
+  searchDebounceTimer = setTimeout(() => {
+    searchProductsOnServer(trimmed)
+  }, 300)
 });
 
 
 const findProductByReference = (reference: string): Product | undefined => {
-  return products.value.find((product) => product.reference === reference);
+  const ref = reference.toLowerCase()
+  return products.value.find((product) =>
+    product.reference?.toLowerCase() === ref ||
+    product.reference === reference
+  );
 };
 
 // Recherche par code-barres
 const findProductByBarcode = (barcode: string): Product | undefined => {
+  const code = barcode.toLowerCase()
   return products.value.find((product) => 
-    product.reference === barcode || 
+    product.reference?.toLowerCase() === code ||
+    product.reference === barcode ||
     product.id.toString() === barcode
   );
 };
 
-// Fonction pour traiter le code-barres scanné
+// Fonction pour traiter le code-barres scannÃ©
 const handleBarcodeScan = async (barcode: string) => {
-  console.log('Code-barres scanné:', barcode);
+  console.log('Code-barres scannÃ©:', barcode);
   
   const product = findProductByBarcode(barcode);
   if (product) {
     await selectProduct(product);
-    success(`Produit trouvé: ${product.nom}`);
+    success(`Produit trouvÃ©: ${product.nom}`);
   } else {
-    error(`Produit non trouvé pour le code: ${barcode}`);
+    error(`Produit non trouvÃ© pour le code: ${barcode}`);
   }
   
-  // Réinitialiser le scanner
+  // RÃ©initialiser le scanner
   scannedCode.value = '';
   showBarcodeScanner.value = false;
 };
@@ -865,30 +940,30 @@ const simulateBarcodeScan = () => {
   }
 };
 
-// Fonction pour démarrer le scan
+// Fonction pour dÃ©marrer le scan
 const startBarcodeScan = () => {
   showBarcodeScanner.value = true;
   startScan();
 };
 
-// Fonction pour arrêter le scan
+// Fonction pour arrÃªter le scan
 const stopBarcodeScan = () => {
   showBarcodeScanner.value = false;
   stopScan();
 };
 
-// Sélection d'un produit depuis la liste de recherche
+// SÃ©lection d'un produit depuis la liste de recherche
 const selectProduct = async (product: Product) => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null;
     const boutiqueId = boutique.value?.id;
     
     if (!boutiqueId) {
-      error("Boutique non trouvée");
+      error("Boutique non trouvÃ©e");
       return;
     }
     
-    // Vérifier le stock disponible dans l'entrepôt (forcer le rechargement sans cache)
+    // VÃ©rifier le stock disponible dans l'entrepÃ´t (forcer le rechargement sans cache)
     const timestamp = `&t=${Date.now()}`;
     const stockData = await $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueId}&produit=${product.id}${timestamp}`, {
       method: 'GET',
@@ -898,18 +973,20 @@ const selectProduct = async (product: Product) => {
       }
     });
 
-    const stockDisponible = Array.isArray(stockData) && stockData.length > 0 ? stockData[0].quantite : 0;
+    const stockDisponible = getStockQuantity(stockData, product.quantite ?? 0);
 
     if (stockDisponible < 1) {
-      error(`Stock insuffisant pour ${product.nom}. Stock disponible: ${stockDisponible}`);
+      error(`Stock insuffisant pour "${product.nom}". Stock actuel : ${stockDisponible} unitÃ©(s) dans cet entrepÃ´t.`);
+      searchQuery.value = ''
+      showProductSearch.value = false
       return;
     }
     
-    // Mettre à jour le stock dans la liste locale des produits
+    // Mettre Ã  jour le stock dans la liste locale des produits
     const productIndex = products.value.findIndex(p => p.id === product.id);
     if (productIndex !== -1) {
       products.value[productIndex].quantite = stockDisponible;
-      console.log(`[selectProduct] Stock mis à jour pour ${product.nom}: ${stockDisponible}`);
+      console.log(`[selectProduct] Stock mis Ã  jour pour ${product.nom}: ${stockDisponible}`);
     }
 
     invoice.value.items.push({
@@ -935,8 +1012,8 @@ const selectProduct = async (product: Product) => {
     searchQuery.value = "";
     showProductSearch.value = false;
   } catch (err) {
-    console.error("Erreur lors de la vérification du stock:", err);
-    error("Erreur lors de la vérification du stock");
+    console.error("Erreur lors de la vÃ©rification du stock:", err);
+    error("Erreur lors de la vÃ©rification du stock");
   }
 };
 
@@ -954,7 +1031,7 @@ const taxAmount = computed(() => invoiceTotals.value.taxAmount);
 const totalDiscount = computed(() => invoiceTotals.value.totalDiscount);
 const total = computed(() => invoiceTotals.value.total);
 
-// Calcul du montant restant à payer
+// Calcul du montant restant Ã  payer
 const reste = computed(() => {
   return total.value - invoice.value.montantVerse;
 });
@@ -987,59 +1064,60 @@ const autoSaveInvoice = () => {
   saveWithExpiration('invoice-draft', invoice.value, 1)
 }
 
-// Charger les données sauvegardées au montage
+// Charger les donnÃ©es sauvegardÃ©es au montage
 onMounted(async () => {
   // Programmer le nettoyage automatique
   scheduleCleanup()
   
-  // Charger les données sauvegardées avec vérification d'expiration
+  // Charger les donnÃ©es sauvegardÃ©es avec vÃ©rification d'expiration
   const savedInvoice = loadWithExpiration('invoice-draft')
   if (savedInvoice && Object.keys(savedInvoice).length > 0) {
     invoice.value = { ...invoice.value, ...savedInvoice }
     
-    // Vérifier l'avertissement d'expiration (silencieux)
+    // VÃ©rifier l'avertissement d'expiration (silencieux)
     const warning = checkExpirationWarning('invoice-draft', 0.5) // 30 minutes avant expiration
     if (warning) {
-      console.log(`Données restaurées - Expire dans ${warning.hoursLeft}h ${warning.minutesLeft}m`)
+      console.log(`DonnÃ©es restaurÃ©es - Expire dans ${warning.hoursLeft}h ${warning.minutesLeft}m`)
     } else {
-      console.log('Données de facture restaurées depuis la sauvegarde automatique')
+      console.log('DonnÃ©es de facture restaurÃ©es depuis la sauvegarde automatique')
     }
   } else {
     invoice.value.number = generateInvoiceNumber()
   }
 
-  // Vérifier et récupérer les données utilisateur si nécessaire
-  console.log('Vérification des données utilisateur au montage...');
+  // VÃ©rifier et rÃ©cupÃ©rer les donnÃ©es utilisateur si nÃ©cessaire
+  console.log('VÃ©rification des donnÃ©es utilisateur au montage...');
   console.log('Utilisateur:', user.value);
   console.log('Boutique:', boutique.value);
   
   if (!user.value?.entreprise?.id || (!boutique.value?.id && !user.value?.boutique?.id)) {
-    console.log('Données utilisateur incomplètes, récupération depuis l\'API...');
+    console.log('DonnÃ©es utilisateur incomplÃ¨tes, rÃ©cupÃ©ration depuis l\'API...');
     await fetchUserAndBoutiqueData();
     
-    // Vérifier à nouveau après récupération
+    // VÃ©rifier Ã  nouveau aprÃ¨s rÃ©cupÃ©ration
     if (!user.value?.entreprise?.id) {
-      console.error('Impossible de récupérer les données entreprise');
+      console.error('Impossible de rÃ©cupÃ©rer les donnÃ©es entreprise');
     }
     if (!boutique.value?.id && !user.value?.boutique?.id) {
-      console.error('Impossible de récupérer les données boutique');
+      console.error('Impossible de rÃ©cupÃ©rer les donnÃ©es boutique');
     }
   }
 
-  // Chargement des données depuis les API
+  // Chargement des donnÃ©es depuis les API
   await Promise.all([fetchProducts(), fetchPartners(), fetchClients()])
 
-  // Démarrer le scanner simple (plus rapide)
+  // DÃ©marrer le scanner simple (plus rapide)
   await startSimpleScanner()
 
-  // Écouter les événements de scan
+  // Ã‰couter les Ã©vÃ©nements de scan
   if (process.client) {
     window.addEventListener('barcode-scanned', handleBarcodeScanned)
   }
 })
 
-// Nettoyer les événements au démontage
+// Nettoyer les Ã©vÃ©nements au dÃ©montage
 onUnmounted(() => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
   cleanup()
   realCleanup()
   simpleCleanup()
@@ -1048,7 +1126,7 @@ onUnmounted(() => {
   }
 })
 
-// Fonction pour gérer les codes scannés en arrière-plan
+// Fonction pour gÃ©rer les codes scannÃ©s en arriÃ¨re-plan
 const handleBarcodeScanned = (event: any) => {
   const code = event.detail.code
   handleBarcodeScan(code)
@@ -1060,15 +1138,15 @@ watch(invoice, () => {
   clearTimeout(saveTimeout)
   saveTimeout = setTimeout(() => {
     autoSaveInvoice()
-  }, 2000) // Sauvegarde après 2 secondes d'inactivité
+  }, 2000) // Sauvegarde aprÃ¨s 2 secondes d'inactivitÃ©
 }, { deep: true })
 
-// Fonction pour effacer la sauvegarde après enregistrement réussi
+// Fonction pour effacer la sauvegarde aprÃ¨s enregistrement rÃ©ussi
 const clearDraft = () => {
   clearFromLocalStorage('invoice-draft')
 }
 
-// Constantes pour la facture (données dynamiques basées sur l'entreprise connectée)
+// Constantes pour la facture (donnÃ©es dynamiques basÃ©es sur l'entreprise connectÃ©e)
 const COMPANY_INFO = computed(() => {
   const entrepriseNom = boutique.value?.entreprise?.nom || user.value?.entreprise?.nom || 'Entreprise';
   const boutiqueAdresse = boutique.value?.adresse || 'Adresse non disponible';
@@ -1083,392 +1161,62 @@ const COMPANY_INFO = computed(() => {
     nui: entrepriseNUI,
     phones: boutiqueTelephone ? [boutiqueTelephone] : [],
     site: entrepriseSite,
-    notice: "Les Marchandises vendues ne sont ni reprises ni échangées",
-    warranty: "Garantie Produit – Service Après-Vente\nCe produit est couvert par une garantie de 6 mois à compter de la date d'achat figurant sur cette facture.\nEn cas de dysfonctionnement non causé par une mauvaise utilisation, vous pouvez bénéficier d'un service après-vente en présentant cette facture.\n\n Cette garantie couvre uniquement les défauts de fabrication et ne s'applique pas aux dommages physiques ou à l'usure normale.\n\nPour toute demande de prise en charge, contactez notre service client."
+    notice: "Les Marchandises vendues ne sont ni reprises ni Ã©changÃ©es",
+    warranty: "Garantie Produit â€“ Service AprÃ¨s-Vente\nCe produit est couvert par une garantie de 6 mois Ã  compter de la date d'achat figurant sur cette facture.\nEn cas de dysfonctionnement non causÃ© par une mauvaise utilisation, vous pouvez bÃ©nÃ©ficier d'un service aprÃ¨s-vente en prÃ©sentant cette facture.\n\n Cette garantie couvre uniquement les dÃ©fauts de fabrication et ne s'applique pas aux dommages physiques ou Ã  l'usure normale.\n\nPour toute demande de prise en charge, contactez notre service client."
   };
 });
 
-// Fonction pour générer le PDF (améliorée)
-// Fonction de génération PDF adaptée aux imprimantes thermiques
-const generatePDF = async () => {
+// GÃ©nÃ©ration PDF dÃ©lÃ©guÃ©e au composable useFacturePDF
+const generatePDF = async (): Promise<boolean> => {
   try {
-    // Créer un document PDF adapté aux imprimantes thermiques (58mm = ~164 points)
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: [58, 200] // Format 58mm de largeur, hauteur variable
-    });
-    
-    // Configuration pour les imprimantes thermiques
-    const pageWidth = 58;
-    const margin = 2;
-    const contentWidth = pageWidth - (margin * 2);
-    
-    // Fonction pour centrer le texte
-    const centerText = (text: string, y: number, fontSize: number = 10) => {
-      doc.setFontSize(fontSize);
-      const textWidth = doc.getTextWidth(text);
-      const x = (pageWidth - textWidth) / 2;
-      doc.text(text, x, y);
-    };
-    
-    // Fonction pour dessiner une ligne de séparation
-    const drawLine = (y: number) => {
-      doc.line(margin, y, pageWidth - margin, y);
-    };
-    
-    let currentY = 5;
-    
-    // Logo de l'entreprise (si disponible) - chargement synchrone pour éviter les problèmes
-    try {
-      const logoUrl = '/img/logo-mura-storage.png';
-      const response = await fetch(logoUrl);
-      if (response.ok) {
-        const blob = await response.blob();
-        const reader = new FileReader();
-        
-        // Attendre que le logo soit chargé avant de continuer
-        await new Promise<void>((resolve, reject) => {
-          reader.onload = () => {
-            const img = new Image();
-            img.onload = () => {
-              try {
-                const logoWidth = 12;
-                const logoHeight = 8;
-                const logoX = (pageWidth - logoWidth) / 2;
-                doc.addImage(img, 'JPEG', logoX, currentY, logoWidth, logoHeight);
-                currentY += logoHeight + 2;
-                resolve();
-              } catch (err) {
-                console.log('Erreur ajout logo au PDF:', err);
-                resolve(); // Continuer même si le logo échoue
-              }
-            };
-            img.onerror = () => resolve(); // Continuer sans logo
-            img.src = reader.result as string;
-          };
-          reader.onerror = () => resolve(); // Continuer sans logo
-          reader.readAsDataURL(blob);
-        });
-      } else {
-        console.log('Logo non disponible, génération sans logo');
-      }
-    } catch (logoError) {
-      console.log('Erreur lors du chargement du logo:', logoError);
-      // Continuer sans logo
-    }
-    
-    // En-tête de la facture
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    centerText('FACTURE', currentY, 14);
-    currentY += 8;
-    
-    // Informations de l'entreprise (récupérées depuis les données connectées)
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    
-    // Nom de l'entreprise - récupérer depuis plusieurs sources
-    let entrepriseNom = '';
-    
-    // 1. Essayer depuis la boutique
-    if (boutique.value?.entreprise?.nom) {
-      entrepriseNom = boutique.value.entreprise.nom;
-    }
-    // 2. Essayer depuis l'utilisateur
-    else if (user.value?.entreprise?.nom) {
-      entrepriseNom = user.value.entreprise.nom;
-    }
-    // 3. Essayer depuis localStorage
-    else if (process.client) {
-      try {
-        const entrepriseData = localStorage.getItem('entreprise');
-        if (entrepriseData) {
-          const entreprise = JSON.parse(entrepriseData);
-          if (entreprise?.nom) {
-            entrepriseNom = entreprise.nom;
-          }
-        }
-      } catch (e) {
-        console.error('Erreur parsing entreprise depuis localStorage:', e);
-      }
-    }
-    
-    // Si toujours pas de nom, utiliser le nom de la boutique comme fallback
-    if (!entrepriseNom && boutique.value?.nom) {
-      entrepriseNom = boutique.value.nom;
-    }
-    
-    // Afficher le nom de l'entreprise (ne jamais afficher "Entreprise" par défaut)
-    if (entrepriseNom) {
-      centerText(entrepriseNom, currentY, 9);
-      currentY += 4;
-    }
-    
-    // Construction de l'adresse complète
-    const adresseParts = [];
-    
-    // Adresse de la boutique (priorité)
-    if (boutique.value?.adresse) {
-      adresseParts.push(boutique.value.adresse);
-    }
-    // Sinon adresse de l'entreprise
-    else if (boutique.value?.entreprise?.adresse || user.value?.entreprise?.adresse) {
-      adresseParts.push(boutique.value?.entreprise?.adresse || user.value?.entreprise?.adresse);
-    }
-    
-    // Code postal
-    if (boutique.value?.entreprise?.code_postal || user.value?.entreprise?.code_postal) {
-      adresseParts.push(boutique.value?.entreprise?.code_postal || user.value?.entreprise?.code_postal);
-    }
-    
-    // Ville
-    if (boutique.value?.ville || boutique.value?.entreprise?.ville || user.value?.entreprise?.ville) {
-      adresseParts.push(boutique.value?.ville || boutique.value?.entreprise?.ville || user.value?.entreprise?.ville);
-    }
-    
-    // Pays
-    if (boutique.value?.entreprise?.pays || user.value?.entreprise?.pays) {
-      const pays = boutique.value?.entreprise?.pays || user.value?.entreprise?.pays;
-      if (pays && pays !== 'Cameroun') { // Ne pas afficher Cameroun par défaut
-        adresseParts.push(pays);
-      }
-    }
-    
-    // Afficher l'adresse complète
-    if (adresseParts.length > 0) {
-      const adresseComplete = adresseParts.join(', ');
-      centerText(adresseComplete, currentY, 9);
-      currentY += 4;
-    }
-    
-    // NUI de l'entreprise (si disponible)
-    const entrepriseNUI = boutique.value?.entreprise?.numero_fiscal || user.value?.entreprise?.numero_fiscal || '';
-    if (entrepriseNUI) {
-      centerText(`NUI: ${entrepriseNUI}`, currentY, 9);
-      currentY += 4;
-    }
-    
-    // Téléphone de la boutique (priorité) ou entreprise
-    const telephone = boutique.value?.telephone || boutique.value?.entreprise?.telephone || user.value?.entreprise?.telephone || '';
-    if (telephone) {
-      centerText(`Tel: ${telephone}`, currentY, 9);
-      currentY += 4;
-    }
-    
-    currentY += 2;
-    
-    drawLine(currentY);
-    currentY += 3;
-    
-    // Informations de la facture
-    doc.setFontSize(8);
-    doc.text(`Facture N°: ${invoice.value.number || 'AUTO'}`, margin, currentY);
-    currentY += 4;
-    doc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, margin, currentY);
-    currentY += 4;
-    doc.text(`Boutique: ${boutique.value?.nom || 'N/A'}`, margin, currentY);
-    currentY += 6;
-    
-    drawLine(currentY);
-    currentY += 4;
-    
-    // Informations du client/partenaire
-    if (invoice.value.recipientType === 'client' && invoice.value.client) {
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CLIENT:', margin, currentY);
-      currentY += 4;
-      doc.setFont('helvetica', 'normal');
-      doc.text(`${invoice.value.client.prenom} ${invoice.value.client.nom}`, margin, currentY);
-      currentY += 4;
-      doc.text(`Tel: ${invoice.value.client.telephone}`, margin, currentY);
-      currentY += 6;
-    } else if (invoice.value.recipientType === 'partenaire') {
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PARTENAIRE:', margin, currentY);
-      currentY += 4;
-      doc.setFont('helvetica', 'normal');
-      doc.text(invoice.value.partenaire || 'N/A', margin, currentY);
-      currentY += 6;
-    }
-    
-    drawLine(currentY);
-    currentY += 3;
-    
-    // Tableau des produits (format optimisé)
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'bold');
-    
-    // En-tête du tableau optimisé - colonnes décalées pour plus d'espace référence
-    doc.text('REF', margin, currentY);
-    doc.text('PRODUIT', margin + 10, currentY);
-    doc.text('Q', margin + 25, currentY);
-    doc.text('PRIX', margin + 30, currentY);
-    doc.text('TOTAL', margin + 45, currentY);
-    currentY += 3;
-    
-    drawLine(currentY);
-    currentY += 3;
-    
-    // Produits - Vérifier que les items existent
-    if (!invoice.value.items || invoice.value.items.length === 0) {
-      console.error('Aucun produit dans la facture');
-      error('Aucun produit dans la facture. Impossible de générer le PDF.');
-      return false;
-    }
-    
-    doc.setFont('helvetica', 'normal');
-    invoice.value.items.forEach(item => {
-      // Nom du produit (tronqué si trop long)
-      const productName = (item.name || '').length > 10 ? (item.name || '').substring(0, 10) + '..' : (item.name || '');
-      
-      // S'assurer que les prix sont des nombres
-      const price = Number(item.price) || 0;
-      const quantity = Number(item.quantity) || 0;
-      const total = price * quantity;
-      
-      // Référence (plus d'espace, moins de troncature)
-      const ref = (item.reference || 'N/A').length > 8 ? (item.reference || 'N/A').substring(0, 8) : (item.reference || 'N/A');
-      
-      // Ajuster les positions: plus d'espace pour référence, colonnes décalées
-      doc.setFontSize(7); // Réduire la taille de police
-      doc.text(ref, margin, currentY);
-      doc.text(productName, margin + 10, currentY);
-      doc.text(quantity.toString(), margin + 25, currentY);
-      doc.text(`${price.toFixed(0)}`, margin + 30, currentY);
-      doc.text(`${total.toFixed(0)}`, margin + 45, currentY);
-      currentY += 3;
-    });
-    
-    currentY += 3;
-    drawLine(currentY);
-    currentY += 3;
-    
-    // Totaux (optimisés)
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    
-    // Sous-total
-    doc.text('SOUS-TOTAL:', margin, currentY);
-    doc.text(`${subtotal.value.toFixed(0)} FCFA`, margin + 30, currentY);
-    currentY += 3;
-    
-    // Remise
-    if (totalDiscount.value > 0) {
-      doc.text('REMISE:', margin, currentY);
-      doc.text(`-${totalDiscount.value.toFixed(0)} FCFA`, margin + 30, currentY);
-      currentY += 3;
-    }
-    
-    // TVA
-    if (taxAmount.value > 0) {
-      doc.text(`TVA (${taxRate.value}%):`, margin, currentY);
-      doc.text(`${taxAmount.value.toFixed(0)} FCFA`, margin + 30, currentY);
-      currentY += 3;
-    }
-    
-    // Ligne de séparation avant le total
-    drawLine(currentY);
-    currentY += 3;
-    
-    // TOTAL
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('TOTAL:', margin, currentY);
-    doc.text(`${total.value.toFixed(0)} FCFA`, margin + 25, currentY);
-    currentY += 4;
-    
-    drawLine(currentY);
-    currentY += 4;
-    
-    // Informations de paiement (optimisées)
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Versé: ${invoice.value.montantVerse?.toFixed(0) || '0'} FCFA`, margin, currentY);
-    currentY += 3;
-    doc.text(`Reste: ${reste.value.toFixed(0)} FCFA`, margin, currentY);
-    currentY += 3;
-    doc.text(`Méthode: ${paymentMethod.value || 'Espèces'}`, margin, currentY);
-    currentY += 4;
-    
-    // Notes (si présentes)
-    if (notes.value) {
-      drawLine(currentY);
-      currentY += 3;
-      doc.setFontSize(7);
-      doc.text('NOTES:', margin, currentY);
-      currentY += 3;
-      
-      // Diviser les notes en plusieurs lignes si nécessaire
-      const words = notes.value.split(' ');
-      let line = '';
-      words.forEach(word => {
-        if (doc.getTextWidth(line + word + ' ') < contentWidth) {
-          line += word + ' ';
-        } else {
-          doc.text(line.trim(), margin, currentY);
-          currentY += 3;
-          line = word + ' ';
-        }
-      });
-      if (line.trim()) {
-        doc.text(line.trim(), margin, currentY);
-        currentY += 3;
-      }
-    }
-    
-    currentY += 4;
-    drawLine(currentY);
-    currentY += 4;
-    
-    // Pied de page (optimisé)
-    doc.setFontSize(7);
-    centerText('Merci pour votre achat !', currentY, 7);
-    currentY += 3;
-    
-    // Site web de l'entreprise (si disponible)
-    const entrepriseSite = boutique.value?.entreprise?.site_web || user.value?.entreprise?.site_web || '';
-    if (entrepriseSite) {
-      centerText(entrepriseSite, currentY, 7);
-      currentY += 3;
-    }
-    
-    // Service client avec le téléphone de la boutique
-    const serviceClientTel = boutique.value?.telephone || boutique.value?.entreprise?.telephone || user.value?.entreprise?.telephone || '';
-    if (serviceClientTel) {
-      centerText(`Service: ${serviceClientTel}`, currentY, 7);
-      currentY += 4;
-    }
-    
-    // Signature "by mura storage" avec une belle police
-    doc.setFontSize(6);
-    doc.setFont('helvetica', 'italic');
-    centerText('by mura storage', currentY, 6);
-    
-    // Sauvegarder le PDF
-    const fileName = `facture_${invoice.value.number || 'AUTO'}_${new Date().toISOString().split('T')[0]}.pdf`;
-    doc.save(fileName);
-    
-    success('Facture PDF générée avec succès !');
-    return true;
-    
+    const nomDestinataire = invoice.value.recipientType === 'client'
+      ? `${invoice.value.client?.prenom || ''} ${invoice.value.client?.nom || ''}`.trim()
+      : invoice.value.partenaire || ''
+    const totalVal = total.value || 0
+    const verseVal = invoice.value.montantVerse || 0
+    const resteVal = Math.max(0, totalVal - verseVal)
+    const statut = resteVal <= 0 ? 'PayÃ©' : verseVal > 0 ? 'Partiellement payÃ©' : 'En attente'
+
+    await genererPDFFacture(
+      {
+        id: 0,
+        numero: invoice.value.number || 'AUTO',
+        date: invoice.value.date || new Date().toISOString(),
+        nom: nomDestinataire,
+        type: (invoice.value.recipientType || 'client') as 'client' | 'partenaire',
+        status: statut,
+        total: totalVal,
+        verse: verseVal,
+        reste: resteVal,
+        boutique_nom: boutique.value?.nom || '',
+      },
+      invoice.value.items.map(item => ({
+        nom: (item as any).nom || (item as any).produit_nom || '',
+        reference: (item as any).reference || '',
+        quantite: (item as any).quantite || 1,
+        prix: (item as any).prix || 0,
+      }))
+    )
+    return true
   } catch (err) {
-    console.error('Erreur lors de la génération du PDF:', err);
-    error('Erreur lors de la génération du PDF');
+    console.error('Erreur lors de la gÃ©nÃ©ration du PDF:', err);
+    // NE PAS afficher d'erreur â€” le PDF est un bonus, pas bloquer la facture
     return false;
   }
 };
 
+// â€”â€”â€” Ancienne implÃ©mentation jsPDF supprimÃ©e â€”â€”â€”
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _obsolete_generatePDF_jsPDF = async () => { /* supprimÃ©e */ };
+
 // Fonction pour convertir un nombre en lettres
 const numberToWords = (number: number): string => {
-  // Cette fonction devrait être implémentée pour convertir les nombres en lettres
-  // Pour l'instant, retourne une chaîne simple
+  // Cette fonction devrait Ãªtre implÃ©mentÃ©e pour convertir les nombres en lettres
+  // Pour l'instant, retourne une chaÃ®ne simple
   return number.toString();
 };
 
-// Fonction pour valider le prix de vente et mettre à jour les totaux
+// Fonction pour valider le prix de vente et mettre Ã  jour les totaux
 const validatePrice = (item: InvoiceItem) => {
   const prixAchat = item.prix_achat || 0;
   const prixVente = item.price;
@@ -1476,11 +1224,11 @@ const validatePrice = (item: InvoiceItem) => {
   const validation = validateSellingPrice(prixVente, prixAchat, 5); // Marge minimale de 5%
   
   if (!validation.isValid) {
-    item.priceError = `Le prix de vente doit être au moins ${formatCurrency(validation.minPrice)} FCFA (marge: ${validation.margin.toFixed(1)}%)`;
+    item.priceError = `Le prix de vente doit Ãªtre au moins ${formatCurrency(validation.minPrice)} FCFA (marge: ${validation.margin.toFixed(1)}%)`;
     return false;
   } else {
     item.priceError = undefined;
-    // Mettre à jour prix_vente_vendeur quand le prix est valide
+    // Mettre Ã  jour prix_vente_vendeur quand le prix est valide
     item.prix_vente_vendeur = item.price;
     return true;
   }
@@ -1498,7 +1246,7 @@ const getPriceValidationClass = (item: InvoiceItem) => {
 const addItem = () => {
   const product = findProductByReference(currentProductRef.value);
   if (!product) {
-    error("Produit non trouvé");
+    error("Produit non trouvÃ©");
     return;
   }
 
@@ -1532,12 +1280,12 @@ const addItem = () => {
 
 // Corriger la fonction submitInvoice
 const submitInvoice = async () => {
-  if (isSubmitting.value) return; // Empêcher les soumissions multiples
+  if (isSubmitting.value) return; // EmpÃªcher les soumissions multiples
   
   try {
-    isSubmitting.value = true; // Activer l'état de soumission
+    isSubmitting.value = true; // Activer l'Ã©tat de soumission
     
-    // Récupérer le token d'authentification
+    // RÃ©cupÃ©rer le token d'authentification
     const token = process.client ? localStorage.getItem('access_token') : null;
     
     // Validation des prix
@@ -1547,10 +1295,10 @@ const submitInvoice = async () => {
       }
     }
 
-    // Utiliser l'ID de l'utilisateur connecté pour created_by
+    // Utiliser l'ID de l'utilisateur connectÃ© pour created_by
     const userIdValue = userId.value; // Extraire la valeur du computed ref
-    if (!userIdValue) { // Vérifier si l'utilisateur est connecté
-        error("Utilisateur non connecté.");
+    if (!userIdValue) { // VÃ©rifier si l'utilisateur est connectÃ©
+        error("Utilisateur non connectÃ©.");
         return;
     }
 
@@ -1560,11 +1308,11 @@ const submitInvoice = async () => {
     }
 
     if (!invoice.value.recipientType) {
-      error("Veuillez sélectionner un type de destinataire");
+      error("Veuillez sÃ©lectionner un type de destinataire");
       return;
     }
 
-    // Vérifier le stock pour tous les articles avant de procéder
+    // VÃ©rifier le stock pour tous les articles avant de procÃ©der
     for (const item of invoice.value.items) {
       const stockData = await $fetch(`${API_BASE_URL}/api/stocks/?entrepot=${boutique.value?.id}&produit=${item.id}`, {
         method: 'GET',
@@ -1574,10 +1322,13 @@ const submitInvoice = async () => {
         }
       });
 
-      const stockDisponible = Array.isArray(stockData) && stockData.length > 0 ? stockData[0].quantite : 0;
+      const stockDisponible = getStockQuantity(
+        stockData,
+        products.value.find(p => p.id === item.id)?.quantite ?? 0
+      );
 
       if (stockDisponible < item.quantity) {
-        error(`Stock insuffisant pour ${item.name}: ${stockDisponible} disponible(s), ${item.quantity} demandé(s)`);
+        error(`Stock insuffisant pour ${item.name}: ${stockDisponible} disponible(s), ${item.quantity} demandÃ©(s)`);
         return;
       }
     }
@@ -1587,16 +1338,16 @@ const submitInvoice = async () => {
     console.log('Validation - Boutique:', boutique.value);
     
     if (!boutique.value?.id) {
-      console.log('Tentative de récupération des données depuis l\'API...');
+      console.log('Tentative de rÃ©cupÃ©ration des donnÃ©es depuis l\'API...');
       await fetchUserAndBoutiqueData();
       
       if (!boutique.value?.id) {
-        error("Boutique non trouvée. Veuillez vous reconnecter ou contacter l'administrateur.");
+        error("Boutique non trouvÃ©e. Veuillez vous reconnecter ou contacter l'administrateur.");
         return;
       }
     }
 
-    // Le numéro de facture sera généré automatiquement par le backend
+    // Le numÃ©ro de facture sera gÃ©nÃ©rÃ© automatiquement par le backend
     // Plus besoin de validation du champ number
 
     // Gestion des clients et partenaires
@@ -1604,32 +1355,33 @@ const submitInvoice = async () => {
     let partenaireId = null;
     
     if (invoice.value.recipientType === 'client') {
-      // Vérifier si le client existe déjà dans la liste locale
-      const existingClient = allClients.value.find(c => c.telephone === invoice.value.client?.telephone);
+      // VÃ©rifier si le client existe dÃ©jÃ  dans la liste locale
+      const clientsList = Array.isArray(allClients.value) ? allClients.value : parseApiList<Client>(allClients.value)
+      const existingClient = clientsList.find(c => c.telephone === invoice.value.client?.telephone);
       
       if (existingClient) {
         clientId = existingClient.id;
-        console.log('Client existant trouvé:', existingClient);
+        console.log('Client existant trouvÃ©:', existingClient);
       } else {
-        // Créer le client seulement lors de la soumission de la facture
+        // CrÃ©er le client seulement lors de la soumission de la facture
         if (!invoice.value.client?.nom || !invoice.value.client?.telephone) {
-          error("Nom et téléphone du client sont requis");
+          error("Nom et tÃ©lÃ©phone du client sont requis");
           return;
         }
         
         try {
-          console.log('Création du client lors de la soumission...');
+          console.log('CrÃ©ation du client lors de la soumission...');
           const newClient = await createClient(invoice.value.client);
           clientId = newClient.id;
-          console.log('Client créé lors de la soumission:', newClient);
+          console.log('Client crÃ©Ã© lors de la soumission:', newClient);
         } catch (err: any) {
-          console.error('Erreur lors de la création du client:', err);
-          error("Erreur lors de la création du client");
+          console.error('Erreur lors de la crÃ©ation du client:', err);
+          error("Erreur lors de la crÃ©ation du client");
           return;
         }
       }
     } else if (invoice.value.recipientType === 'partenaire') {
-      // Trouver l'ID du partenaire sélectionné
+      // Trouver l'ID du partenaire sÃ©lectionnÃ©
       const selectedPartner = partners.value.find(p => 
         `${p.prenom} ${p.nom}` === invoice.value.partenaire
       );
@@ -1638,7 +1390,7 @@ const submitInvoice = async () => {
       }
     }
     
-    // S'assurer que les valeurs numériques sont valides
+    // S'assurer que les valeurs numÃ©riques sont valides
     const totalValue = Number(total.value) || 0;
     const resteValue = Number(reste.value) || 0;
     
@@ -1649,7 +1401,7 @@ const submitInvoice = async () => {
     }
     
     if (isNaN(resteValue) || resteValue < 0) {
-      error('Le reste à payer est invalide');
+      error('Le reste Ã  payer est invalide');
       return;
     }
     
@@ -1661,7 +1413,7 @@ const submitInvoice = async () => {
       statusValue = 'Partiellement payé';
     }
     
-    // Vérifier que la boutique et l'utilisateur sont valides
+    // VÃ©rifier que la boutique et l'utilisateur sont valides
     if (!boutique.value?.id) {
       error('Boutique invalide. Veuillez vous reconnecter.');
       return;
@@ -1672,7 +1424,7 @@ const submitInvoice = async () => {
       return;
     }
     
-    // Vérifier que client ou partenaire est défini selon le type
+    // VÃ©rifier que client ou partenaire est dÃ©fini selon le type
     if (invoice.value.recipientType === 'client' && !clientId) {
       error('Client requis pour une facture client');
       return;
@@ -1695,7 +1447,7 @@ const submitInvoice = async () => {
       ...(invoice.value.recipientType === 'partenaire' && partenaireId && { partenaire: partenaireId })
     };
 
-    console.log('Données de facture envoyées:', factureData);
+    console.log('DonnÃ©es de facture envoyÃ©es:', factureData);
     console.log('Validation - Boutique ID:', boutique.value.id);
     console.log('Validation - User ID:', userIdValue);
     console.log('Validation - Client ID:', clientId);
@@ -1728,9 +1480,9 @@ const submitInvoice = async () => {
 
       facture = transactionResponse?.facture || null;
     } catch (err: any) {
-      console.error('Erreur création facture transactionnelle:', err);
+      console.error('Erreur crÃ©ation facture transactionnelle:', err);
       
-      let errorMessage = 'Erreur lors de la création de la facture. Veuillez réessayer.';
+      let errorMessage = 'Erreur lors de la crÃ©ation de la facture. Veuillez rÃ©essayer.';
       const errorData = err.data || err.response?.data;
       const isTransactionError = err.status === 500 && (
         err.message?.includes('TransactionManagementError') ||
@@ -1742,17 +1494,17 @@ const submitInvoice = async () => {
       );
       
       if (isTransactionError) {
-        errorMessage = 'Erreur temporaire. Veuillez réessayer dans quelques instants.';
+        errorMessage = 'Erreur temporaire. Veuillez rÃ©essayer dans quelques instants.';
       } else if (err.status === 401) {
-        errorMessage = 'Session expirée. Veuillez vous reconnecter.';
+        errorMessage = 'Session expirÃ©e. Veuillez vous reconnecter.';
       } else if (err.status === 403) {
-        errorMessage = 'Vous n\'avez pas les permissions pour créer une facture.';
+        errorMessage = 'Vous n\'avez pas les permissions pour crÃ©er une facture.';
       } else if (err.status === 400) {
-        errorMessage = 'Données invalides. Vérifiez les informations saisies.';
+        errorMessage = 'DonnÃ©es invalides. VÃ©rifiez les informations saisies.';
       } else if (err.status === 500 || err.status === 502 || err.status === 503) {
-        errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
+        errorMessage = 'Erreur serveur. Veuillez rÃ©essayer plus tard.';
       } else if (err.name === 'FetchError' || err.message?.includes('fetch')) {
-        errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
+        errorMessage = 'Erreur de connexion. VÃ©rifiez votre connexion internet.';
       }
       
       error(errorMessage);
@@ -1761,16 +1513,16 @@ const submitInvoice = async () => {
     }
 
     if (!facture?.id) {
-      error("Erreur lors de la création de la facture");
-      console.error("Détails:", facture);
+      error("Erreur lors de la crÃ©ation de la facture");
+      console.error("DÃ©tails:", facture);
       return;
     }
 
-    // Mettre à jour le numéro de facture avec celui retourné par le backend
+    // Mettre Ã  jour le numÃ©ro de facture avec celui retournÃ© par le backend
     invoice.value.number = facture.numero;
-    console.log('Numéro de facture généré:', facture.numero);
+    console.log('NumÃ©ro de facture gÃ©nÃ©rÃ©:', facture.numero);
     
-    // Annuler le cache après création de facture
+    // Annuler le cache aprÃ¨s crÃ©ation de facture
     if (process.client) {
       const nuxtApp = useNuxtApp()
       if (nuxtApp.$invalidateCacheByPattern) {
@@ -1780,37 +1532,26 @@ const submitInvoice = async () => {
         nuxtApp.$invalidateCacheByPattern('/api/stocks')
         nuxtApp.$invalidateCacheByPattern('/api/produits')
         nuxtApp.$invalidateCacheByPattern('/api/mouvements-stock')
-        console.log('[Cache] Cache invalidé après création de facture')
+        console.log('[Cache] Cache invalidÃ© aprÃ¨s crÃ©ation de facture')
       }
     }
 
-    // Générer le PDF
+    // GÃ©nÃ©rer le PDF
     const pdfGenerated = await generatePDF();
+    const typeLabel = invoice.value.recipientType === 'client' ? 'client' : 'partenaire';
+    const savedNumber = facture.numero || invoice.value.number;
+
     if (pdfGenerated) {
-      const typeLabel = invoice.value.recipientType === 'client' ? 'client' : 'partenaire';
-      success(`Facture ${typeLabel} ${invoice.value.number} enregistrée et téléchargée`);
-      clearDraft()
+      success(`Facture ${typeLabel} ${savedNumber} enregistrÃ©e et tÃ©lÃ©chargÃ©e`);
     } else {
-      error("Erreur lors de la génération du PDF");
+      success(`Facture ${typeLabel} ${savedNumber} enregistrÃ©e avec succÃ¨s`);
     }
-    
-    // Recharger les produits pour mettre à jour les stocks
-    console.log('[Facture] Rechargement des produits après création de facture...');
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      await fetchProducts(true);
-      console.log('[Facture] Produits rechargés avec succès, stocks mis à jour');
-      
-      const updatedProducts = [...products.value];
-      products.value = [];
-      await nextTick();
-      products.value = updatedProducts;
-      console.log('[Facture] Liste des produits mise à jour pour la réactivité');
-    } catch (err) {
-      console.error('[Facture] Erreur lors du rechargement des produits:', err);
-    }
-    
-    // Réinitialiser le formulaire
+    clearDraft();
+
+    // Recharger les produits pour mettre Ã  jour les stocks
+    await fetchProducts(true);
+
+    // RÃ©initialiser le formulaire pour une nouvelle vente
     invoice.value = {
       number: generateInvoiceNumber(),
       date: new Date().toISOString().split("T")[0],
@@ -1820,24 +1561,26 @@ const submitInvoice = async () => {
       items: [],
       montantVerse: 0,
     };
-    
-    // Réinitialiser l'état de soumission
+    searchQuery.value = '';
+    selectedClient.value = null;
+    taxRate.value = 0;
+    discountRate.value = 0;
+    discountAmount.value = 0;
+    notes.value = '';
+    paymentMethod.value = 'cash';
+
     isSubmitting.value = false;
-    
-    // Actualiser la page après un court délai pour s'assurer que tout est à jour
-    if (process.client) {
-      console.log('[Facture] Planification du rechargement de la page dans 1.5 secondes...');
-      setTimeout(() => {
-        console.log('[Facture] Rechargement de la page maintenant...');
-        window.location.href = window.location.href;
-      }, 1500);
-    }
+
+    // Proposer d'aller Ã  la liste des factures
+    setTimeout(() => {
+      navigateTo('/listes-factures');
+    }, 1200);
 
   } catch (err: any) {
     error("Erreur inattendue");
-    console.error("Erreur complète:", err);
+    console.error("Erreur complÃ¨te:", err);
   } finally {
-    isSubmitting.value = false; // Désactiver l'état de soumission
+    isSubmitting.value = false; // DÃ©sactiver l'Ã©tat de soumission
   }
 };
 
@@ -1852,12 +1595,12 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
 
 <template>
   <section class="mt-5 px-6">
-    <!-- En-tête moderne -->
+    <!-- En-tÃªte moderne -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-bold text-blue-400 mb-2"> Facturation</h1>
-          <p class="text-gray-600 dark:text-gray-400">Créez et gérez vos factures professionnelles</p>
+          <p class="text-gray-600 dark:text-gray-400">CrÃ©ez et gÃ©rez vos factures professionnelles</p>
         </div>
         <div class="flex items-center space-x-2">
           <UIcon name="i-heroicons-document-text" class="h-8 w-8 text-blue-400" />
@@ -1927,7 +1670,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
               
               <!-- Section Client avec recherche automatique -->
               <template v-if="invoice.recipientType === 'client'">
-                <!-- Client sélectionné -->
+                <!-- Client sÃ©lectionnÃ© -->
                 <div v-if="selectedClient" class="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
                   <div class="flex items-center justify-between">
                     <div>
@@ -1964,27 +1707,27 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                     </div>
                     <div>
                       <label for="clientPrenom" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                        Prénom du client
+                        PrÃ©nom du client
                       </label>
                       <UInput 
                         id="clientPrenom" 
                         color="blue" 
                         variant="outline" 
                         v-model="invoice.client.prenom" 
-                        placeholder="Prénom du client" 
+                        placeholder="PrÃ©nom du client" 
                         @input="searchClientAutomatically"
                       />
                     </div>
                     <div>
                       <label for="clientTelephone" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                        Téléphone *
+                        TÃ©lÃ©phone *
                       </label>
                       <UInput 
                         id="clientTelephone" 
                         color="blue" 
                         variant="outline" 
                         v-model="invoice.client.telephone"
-                        placeholder="Téléphone du client" 
+                        placeholder="TÃ©lÃ©phone du client" 
                         required
                         @input="searchClientAutomatically"
                       />
@@ -2019,9 +1762,9 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                     </div>
                   </div>
                   
-                  <!-- Suggestions de clients trouvés -->
+                  <!-- Suggestions de clients trouvÃ©s -->
                   <div v-if="clients.length > 0 && (invoice.client.nom || invoice.client.telephone)" class="mt-3">
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Clients trouvés :</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Clients trouvÃ©s :</div>
                     <div class="max-h-32 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md">
                       <div 
                         v-for="client in clients.slice(0, 5)" 
@@ -2035,7 +1778,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                     </div>
                   </div>
                   
-                  <!-- Liste complète des clients de l'entreprise -->
+                  <!-- Liste complÃ¨te des clients de l'entreprise -->
                   <div class="mt-4">
                     <div class="flex items-center justify-between mb-2">
                       <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Liste des clients ({{ allClients.length }})</div>
@@ -2049,25 +1792,25 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                         class="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                       >
                         <div class="font-medium text-gray-900 dark:text-white">{{ client.nom }} {{ client.prenom }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ client.telephone }} <span v-if="client.email">• {{ client.email }}</span></div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ client.telephone }} <span v-if="client.email">â€¢ {{ client.email }}</span></div>
                       </div>
                     </div>
                     <div v-else class="text-sm text-gray-500 dark:text-gray-400 p-2 text-center">
-                      Aucun client enregistré
+                      Aucun client enregistrÃ©
                     </div>
                   </div>
                   
                   <div class="mt-3 text-sm text-gray-600 dark:text-gray-400">
                     <UIcon name="i-heroicons-information-circle" class="h-4 w-4 inline mr-1" />
-                    Le client sera créé automatiquement lors de la validation de la facture
+                    Le client sera crÃ©Ã© automatiquement lors de la validation de la facture
                   </div>
                 </div>
               </template>
 
-          <!-- Champs partenaire (affichés si type partenaire est sélectionné) -->
+          <!-- Champs partenaire (affichÃ©s si type partenaire est sÃ©lectionnÃ©) -->
           <div class="sm:col-span-6" v-if="invoice.recipientType === 'partenaire'">
             <label for="partenaireSelect"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-200">Sélectionner un
+              class="block text-sm font-medium text-gray-700 dark:text-gray-200">SÃ©lectionner un
               Partenaire</label>
             <USelect id="partenaireSelect" color="blue" variant="outline" v-model="invoice.partenaire" class="mt-1"
               placeholder="Choisir un partenaire" :options="partners.map(p => `${p.prenom} ${p.nom}`)" />
@@ -2094,7 +1837,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                     <div v-else class="w-2 h-2 bg-gray-400 rounded-full"></div>
                   </div>
                   
-                  <!-- Sélecteur de type de scanner -->
+                  <!-- SÃ©lecteur de type de scanner -->
                   <div class="flex items-center space-x-2">
                     <span class="text-xs text-gray-600 dark:text-gray-400">Type:</span>
                     <USelect 
@@ -2109,7 +1852,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                   </div>
                 </div>
                 
-                <!-- Boutons de contrôle compacts -->
+                <!-- Boutons de contrÃ´le compacts -->
                 <div class="flex space-x-1">
                   <UButton 
                     v-if="!currentScanning"
@@ -2127,7 +1870,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                     color="red"
                     icon="i-heroicons-stop"
                   >
-                    Arrêter
+                    ArrÃªter
                   </UButton>
                   <UButton 
                     @click="scannerType === 'quagga' ? testScan() : testSimpleScan()"
@@ -2147,12 +1890,12 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                 <!-- Instructions -->
                 <div class="text-xs text-green-600 dark:text-green-400 mt-1">
                   {{ scannerType === 'simple' 
-                    ? 'Scanner simple: Appuyez sur Entrée pour tester' 
-                    : 'Scanner QuaggaJS: Pointez le code-barres vers la caméra' 
+                    ? 'Scanner simple: Appuyez sur EntrÃ©e pour tester' 
+                    : 'Scanner QuaggaJS: Pointez le code-barres vers la camÃ©ra' 
                   }}
                 </div>
                 
-                <!-- Zones de scan (masquées) -->
+                <!-- Zones de scan (masquÃ©es) -->
                 <div ref="scannerContainer" style="display: none;"></div>
                 <video 
                   ref="simpleVideoRef"
@@ -2163,7 +1906,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                 ></video>
               </div>
 
-      <!-- Élément vidéo caché pour la caméra -->
+      <!-- Ã‰lÃ©ment vidÃ©o cachÃ© pour la camÃ©ra -->
       <video 
         ref="videoRef"
         style="display: none;"
@@ -2180,32 +1923,67 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
           v-model="searchQuery"
           color="blue"
           variant="outline"
-          placeholder="Rechercher un produit par référence ou nom"
+          placeholder="Rechercher un produit par rÃ©fÃ©rence ou nom"
           class="w-full"
           @focus="showProductSearch = true"
-              @blur="async () => { await delay(200); showProductSearch = false }"
+          @blur="async () => { await delay(150); showProductSearch = false }"
+          @input="showProductSearch = true"
         />
         
         <!-- Liste des suggestions -->
-        <div v-if="showProductSearch && filteredProducts.length > 0" 
-             class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          <div v-for="product in filteredProducts" 
-               :key="product.id"
-               @click="selectProduct(product)"
-                   class="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700">
-                <div class="flex justify-between items-center">
-                  <div>
-                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ product.nom }}</div>
-                    <div class="text-sm text-gray-600 dark:text-gray-400">Réf: {{ product.reference }}</div>
-                  </div>
-                  <div class="text-blue-500 font-medium">{{ formatCurrency(product.prix) }}</div>
+        <div v-if="showProductSearch && (filteredProducts.length > 0 || products.length === 0 || isLoadingProducts || isSearchingProducts)"
+             class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-72 overflow-y-auto">
+          <!-- Chargement -->
+          <div v-if="isLoadingProducts || isSearchingProducts" class="p-4 text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Recherche en cours...</p>
+          </div>
+          <!-- Chargement / aucun produit -->
+          <div v-else-if="products.length === 0" class="p-4 text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Aucun produit chargÃ©.</p>
+            <button @click="fetchProducts(true)" class="text-xs text-emerald-600 hover:underline font-medium">â†º Recharger les produits</button>
+          </div>
+          <!-- Aucun rÃ©sultat -->
+          <div v-else-if="searchQuery.trim() && filteredProducts.length === 0" class="p-4 text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Aucun produit trouvÃ© pour Â« {{ searchQuery }} Â»</p>
+          </div>
+          <!-- RÃ©sultats -->
+          <template v-else>
+            <div class="px-3 py-1.5 text-xs text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+              {{ filteredProducts.length }} produit(s) â€” cliquer pour ajouter
+            </div>
+            <div v-for="product in filteredProducts"
+                 :key="product.id"
+                 @mousedown.prevent="selectProduct(product)"
+                 class="flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors"
+                 :class="product.quantite > 0
+                   ? 'hover:bg-emerald-50 dark:hover:bg-emerald-900/10 cursor-pointer'
+                   : 'hover:bg-red-50 dark:hover:bg-red-900/10 cursor-not-allowed opacity-60'"
+            >
+              <!-- Initiales produit -->
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold text-white"
+                :class="product.quantite > 0 ? 'bg-emerald-500' : 'bg-red-400'">
+                {{ (product.nom || '?').substring(0, 2).toUpperCase() }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-sm text-gray-900 dark:text-white truncate">{{ product.nom }}</span>
+                  <span v-if="product.category" class="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded flex-shrink-0">{{ product.category }}</span>
                 </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Stock disponible: {{ product.quantite || 0 }}
+                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-0.5">
+                  <span>RÃ©f: {{ product.reference || 'â€”' }}</span>
+                  <span class="font-semibold" :class="product.quantite > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'">
+                    Stock: {{ product.quantite ?? 0 }}
+                  </span>
                 </div>
               </div>
+              <div class="text-right flex-shrink-0">
+                <div class="font-semibold text-sm text-gray-900 dark:text-white">{{ formatCurrency(product.prix) }}</div>
+                <div v-if="product.quantite <= 0" class="text-xs text-red-500 font-medium">Rupture</div>
+              </div>
             </div>
-          </div>
+          </template>
+        </div>
+        </div>
 
         <!-- Recherche par code-barres -->
         <div class="flex gap-2">
@@ -2213,7 +1991,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
             v-model="barcodeInput"
             color="green"
             variant="outline"
-            placeholder="Entrer un code-barres ou référence"
+            placeholder="Entrer un code-barres ou rÃ©fÃ©rence"
             class="flex-1"
             @keyup.enter="simulateBarcodeScan"
           />
@@ -2231,7 +2009,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
             icon="i-heroicons-camera"
             :loading="isScanning"
           >
-            {{ isScanning ? 'Scan...' : 'Caméra' }}
+            {{ isScanning ? 'Scan...' : 'CamÃ©ra' }}
           </UButton>
         </div>
       </div>
@@ -2246,19 +2024,19 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
           <div class="text-center p-8">
             <div v-if="isScanning" class="space-y-4">
               <UIcon name="i-heroicons-camera" class="h-16 w-16 text-blue-500 mx-auto animate-pulse" />
-              <p class="text-gray-600">Pointez la caméra vers le code-barres...</p>
-              <UButton @click="stopBarcodeScan" color="red">Arrêter le scan</UButton>
+              <p class="text-gray-600">Pointez la camÃ©ra vers le code-barres...</p>
+              <UButton @click="stopBarcodeScan" color="red">ArrÃªter le scan</UButton>
             </div>
             
             <div v-else class="space-y-4">
               <UIcon name="i-heroicons-qr-code" class="h-16 w-16 text-gray-400 mx-auto" />
-              <p class="text-gray-600">Scanner prêt</p>
-              <UButton @click="startBarcodeScan" color="blue">Démarrer le scan</UButton>
+              <p class="text-gray-600">Scanner prÃªt</p>
+              <UButton @click="startBarcodeScan" color="blue">DÃ©marrer le scan</UButton>
             </div>
             
-            <!-- Zone pour afficher le code scanné -->
+            <!-- Zone pour afficher le code scannÃ© -->
             <div v-if="scannedCode" class="mt-4 p-4 bg-green-50 rounded-lg">
-              <p class="text-green-800 font-medium">Code scanné: {{ scannedCode }}</p>
+              <p class="text-green-800 font-medium">Code scannÃ©: {{ scannedCode }}</p>
               <UButton @click="handleBarcodeScan(scannedCode)" color="green" class="mt-2">
                 Ajouter le produit
               </UButton>
@@ -2267,17 +2045,17 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
         </UCard>
       </UModal>
 
-          <!-- Liste des articles ajoutés -->
+          <!-- Liste des articles ajoutÃ©s -->
           <div class="overflow-x-auto">
             <table class="w-full text-sm text-left text-gray-700 dark:text-gray-300 mt-3">
               <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-700">
                 <tr>
-                  <th class="px-4 py-2">Référence</th>
+                  <th class="px-4 py-2">RÃ©fÃ©rence</th>
                   <th class="px-4 py-2">Nom</th>
                   <th class="px-4 py-2">Description</th>
                   <th class="px-4 py-2">Prix de vente</th>
                   <th class="px-4 py-2">Justification</th>
-                  <th class="px-4 py-2">Quantité</th>
+                  <th class="px-4 py-2">QuantitÃ©</th>
                   <th class="px-4 py-2">Total</th>
                   <th class="px-4 py-2">Action</th>
                 </tr>
@@ -2291,7 +2069,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                       <div v-if="item.ram">RAM: {{ item.ram }}</div>
                       <div v-if="item.disque_dur">Disque dur: {{ item.disque_dur }}</div>
                       <div v-if="item.processeur">Processeur: {{ item.processeur }}</div>
-                      <div v-if="item.generation">Génération: {{ item.generation }}</div>
+                      <div v-if="item.generation">GÃ©nÃ©ration: {{ item.generation }}</div>
                       <div v-if="item.carte_graphique">Carte graphique: {{ item.carte_graphique }}</div>
                       <div v-if="item.systeme_exploitation">OS: {{ item.systeme_exploitation }}</div>
                     </div>
@@ -2347,7 +2125,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
           </div>
         </div>
 
-        <!-- Montant versé et reste à payer -->
+        <!-- Montant versÃ© et reste Ã  payer -->
         <div class="mb-6">
           <!-- Taxes et remises -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -2397,9 +2175,9 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
             </div>
           </div>
 
-          <!-- Méthode de paiement -->
+          <!-- MÃ©thode de paiement -->
           <div class="mb-4">
-            <label for="paymentMethod" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Méthode de paiement</label>
+            <label for="paymentMethod" class="block text-sm font-medium text-gray-700 dark:text-gray-200">MÃ©thode de paiement</label>
             <USelect 
               id="paymentMethod" 
               v-model="paymentMethod" 
@@ -2407,11 +2185,11 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
               variant="outline" 
               class="mt-1"
               :options="[
-                { value: 'cash', label: 'Espèces' },
+                { value: 'cash', label: 'EspÃ¨ces' },
                 { value: 'card', label: 'Carte bancaire' },
                 { value: 'mobile', label: 'Mobile Money' },
                 { value: 'transfer', label: 'Virement' },
-                { value: 'check', label: 'Chèque' }
+                { value: 'check', label: 'ChÃ¨que' }
               ]"
             />
           </div>
@@ -2430,9 +2208,9 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
             />
           </div>
 
-          <!-- Résumé des totaux -->
+          <!-- RÃ©sumÃ© des totaux -->
           <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Résumé de la facture</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">RÃ©sumÃ© de la facture</h3>
             
             <div class="space-y-2">
               <div class="flex justify-between items-center py-1">
@@ -2461,7 +2239,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
               </div>
               
               <div class="flex justify-between items-center py-1">
-                <span class="text-sm text-gray-500 dark:text-gray-300">Marge bénéficiaire :</span>
+                <span class="text-sm text-gray-500 dark:text-gray-300">Marge bÃ©nÃ©ficiaire :</span>
                 <span class="text-sm font-medium" :class="totalMargin >= 0 ? 'text-green-600' : 'text-red-600'">
                   {{ totalMargin.toFixed(1) }}%
                 </span>
@@ -2469,16 +2247,16 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
             </div>
           </div>
 
-          <!-- Montant versé -->
+          <!-- Montant versÃ© -->
           <div class="mt-4 grid grid-cols-1 gap-y-2 sm:grid-cols-2 gap-x-4">
             <div>
               <label for="montantVerse" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Montant
-                versé</label>
+                versÃ©</label>
               <UInput id="montantVerse" color="blue" variant="outline" v-model="invoice.montantVerse" type="number"
-                min="0" :max="total" class="mt-1" placeholder="Montant versé par le client" />
+                min="0" :max="total" class="mt-1" placeholder="Montant versÃ© par le client" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Reste à payer</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Reste Ã  payer</label>
               <div class="mt-3 text-lg font-bold" :class="reste > 0 ? 'text-red-500' : 'text-green-500'">
                 {{ formatCurrency(reste) }}
               </div>
@@ -2486,7 +2264,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
           </div>
         </div>
 
-        <!-- Actions (centrées et responsives) -->
+        <!-- Actions (centrÃ©es et responsives) -->
         <div class="flex flex-wrap justify-end gap-3">
           <UButton 
             @click="submitInvoice" 
@@ -2497,7 +2275,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
             :loading="isSubmitting"
             :disabled="isSubmitting"
           >
-            {{ isSubmitting ? 'Création en cours...' : 'Enregistrer la Facture' }}
+            {{ isSubmitting ? 'CrÃ©ation en cours...' : 'Enregistrer la Facture' }}
           </UButton>
         </div>
         </div>
@@ -2509,12 +2287,12 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
     <div ref="invoicePreview" class="hidden bg-white p-8 max-w-4xl mx-auto mt-8">
       <h1 class="text-3xl font-bold mb-6 text-blue-400">Facture</h1>
       <div class="mb-6">
-        <p><strong>Numéro de la Facture :</strong> {{ invoice.number }}</p>
+        <p><strong>NumÃ©ro de la Facture :</strong> {{ invoice.number }}</p>
         <p><strong>Date :</strong> {{ invoice.date }}</p>
 
         <div v-if="invoice.recipientType === 'client' && invoice.client">
           <p><strong>Client :</strong> {{ invoice.client.prenom }} {{ invoice.client.nom }}</p>
-          <p><strong>Téléphone :</strong> {{ invoice.client.telephone }}</p>
+          <p><strong>TÃ©lÃ©phone :</strong> {{ invoice.client.telephone }}</p>
         </div>
 
         <div v-if="invoice.recipientType === 'partenaire'">
@@ -2525,10 +2303,10 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
       <table class="w-full mb-6 border-collapse border">
         <thead>
           <tr class="bg-blue-50">
-            <th class="border p-2 text-left">Référence</th>
+            <th class="border p-2 text-left">RÃ©fÃ©rence</th>
             <th class="border p-2 text-left">Description</th>
             <th class="border p-2 text-right">Prix</th>
-            <th class="border p-2 text-right">Quantité</th>
+            <th class="border p-2 text-right">QuantitÃ©</th>
             <th class="border p-2 text-right">Total</th>
           </tr>
         </thead>
@@ -2541,7 +2319,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                 <div v-if="item.ram">RAM: {{ item.ram }}</div>
                 <div v-if="item.disque_dur">Disque dur: {{ item.disque_dur }}</div>
                 <div v-if="item.processeur">Processeur: {{ item.processeur }}</div>
-                <div v-if="item.generation">Génération: {{ item.generation }}</div>
+                <div v-if="item.generation">GÃ©nÃ©ration: {{ item.generation }}</div>
                 <div v-if="item.carte_graphique">Carte graphique: {{ item.carte_graphique }}</div>
                 <div v-if="item.systeme_exploitation">OS: {{ item.systeme_exploitation }}</div>
               </div>

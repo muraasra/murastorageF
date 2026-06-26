@@ -33,6 +33,44 @@ export const useApiBase = () => {
     }
   }
 
+  const parseApiList = <T = any>(data: unknown): T[] => {
+    if (Array.isArray(data)) return data as T[]
+    if (data && typeof data === 'object' && 'results' in data) {
+      const results = (data as { results?: unknown }).results
+      return Array.isArray(results) ? results as T[] : []
+    }
+    return []
+  }
+
+  const getEntrepriseId = (): number | null => {
+    if (!process.client) return null
+    try {
+      const entreprise = JSON.parse(localStorage.getItem('entreprise') || 'null')
+      if (entreprise?.id) return Number(entreprise.id)
+
+      const boutique = JSON.parse(localStorage.getItem('boutique') || 'null')
+      const ent = boutique?.entreprise
+      if (ent?.id) return Number(ent.id)
+      if (typeof ent === 'number') return ent
+
+      const user = JSON.parse(localStorage.getItem('user') || 'null')
+      const userEnt = user?.entreprise
+      if (userEnt?.id) return Number(userEnt.id)
+      if (typeof userEnt === 'number') return userEnt
+
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  const getStockQuantity = (data: unknown, fallback = 0): number => {
+    const list = parseApiList<{ quantite?: number; quantite_disponible?: number }>(data)
+    if (!list.length) return fallback
+    const row = list[0]
+    return row.quantite ?? row.quantite_disponible ?? fallback
+  }
+
   const isAuthenticated = () => {
     if (process.client) {
       const token = localStorage.getItem('access_token')
@@ -46,6 +84,9 @@ export const useApiBase = () => {
     API_BASE_URL,
     getApiUrl,
     getAuthHeaders,
+    parseApiList,
+    getEntrepriseId,
+    getStockQuantity,
     isAuthenticated
   }
 }

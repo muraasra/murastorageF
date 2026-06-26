@@ -417,6 +417,7 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { API_BASE_URL } from '@/constants'
 import { useNotification } from '@/types/useNotification'
+import { useAuthStore } from '@/stores/auth'
 
 definePageMeta({
   layout: "accueil",
@@ -453,11 +454,6 @@ const startTyping = () => {
     }
   }, 80)
 }
-
-const useAuthStore = () => ({
-  setToken: (token: string) => { if (process.client) localStorage.setItem('access_token', token) },
-  setUser: (user: any) => { if (process.client) localStorage.setItem('user', JSON.stringify(user)) }
-})
 
 const { error, success } = useNotification()
 const auth = useAuthStore()
@@ -546,45 +542,12 @@ const handleLogin = async () => {
       localStorage.setItem('entreprise', JSON.stringify(response.entreprise))
       if (response.boutique) localStorage.setItem('boutique', JSON.stringify(response.boutique))
       localStorage.setItem('permissions', JSON.stringify(response.permissions))
+      // email_verified vient directement du backend
+      localStorage.setItem('email_verified', String(response.user?.email_verified ?? false))
       if (formData.rememberMe) localStorage.setItem('remember_me', 'true')
-
-      // Email verification: forcer la vérification si aucune info n'est fournie
-      const verificationKeys = [
-        'email_verified',
-        'emailVerified',
-        'is_email_verified',
-        'is_verified',
-        'verified',
-        'isVerified'
-      ]
-      let explicitEmailVerified: boolean | undefined = undefined
-      if (response.user) {
-        for (const key of verificationKeys) {
-          if (Object.prototype.hasOwnProperty.call(response.user, key)) {
-            const value = (response.user as any)[key]
-            if (typeof value === 'boolean') explicitEmailVerified = value
-            else if (typeof value === 'string') {
-              const normalized = value.trim().toLowerCase()
-              if (normalized === 'true') explicitEmailVerified = true
-              if (normalized === 'false') explicitEmailVerified = false
-            }
-            break
-          }
-        }
-      }
-
-      if (explicitEmailVerified !== undefined) {
-        localStorage.setItem('email_verified', String(explicitEmailVerified))
-      } else if (localStorage.getItem('email_verified') === null) {
-        localStorage.setItem('email_verified', 'false')
-      }
     }
 
-    const isVerified = (response.user && (typeof (response.user as any).email_verified !== 'undefined')
-      ? (response.user as any).email_verified
-      : (response.user && (typeof (response.user as any).is_email_verified !== 'undefined')
-        ? (response.user as any).is_email_verified
-        : false))
+    const isVerified = response.user?.email_verified === true
     success('Connexion réussie !')
 
     setTimeout(() => {
@@ -597,9 +560,18 @@ const handleLogin = async () => {
 
   } catch (err: any) {
     console.error('Login error:', err)
-    if (err.statusCode === 401) error('Email ou mot de passe incorrect')
-    else if (err.statusCode === 400) error('Données invalides')
-    else error('Erreur de connexion')
+    const status = err?.statusCode ?? err?.status ?? err?.response?.status
+    const detail = err?.data?.detail ?? err?.data?.non_field_errors?.[0] ?? err?.message
+
+    if (status === 401 || (typeof detail === 'string' && detail.toLowerCase().includes('no active account'))) {
+      error('Email ou mot de passe incorrect')
+    } else if (status === 400) {
+      error('Email ou mot de passe incorrect')
+    } else if (!status && (err?.name === 'FetchError' || err?.message?.includes('fetch'))) {
+      error(`Impossible de joindre le serveur. Vérifiez votre connexion.`)
+    } else {
+      error('Erreur de connexion. Veuillez réessayer.')
+    }
   } finally {
     isLoading.value = false
   }

@@ -14,6 +14,7 @@ interface Facture {
   status: string;
   boutique_nom?: string;
   created_by_username?: string;
+  created_by_nom?: string;
 }
 
 const props = defineProps<{ factures: Facture[] }>();
@@ -23,6 +24,7 @@ const emit = defineEmits<{
   versement: [facture: Facture];
   telecharger: [facture: Facture];
   historique: [facture: Facture];
+  annuler: [facture: Facture];
 }>();
 
 const columns = 
@@ -99,9 +101,14 @@ watch([q, plageDatesSelectionnee], () => {
         </div>
       </template>
       <template #nom-data="{ row }">
-        <div class="max-w-32 truncate" :title="row.nom">
-          <span v-if="row.type === 'partenaire'" class="text-purple-600 font-medium">{{ row.nom }}</span>
-          <span v-else>{{ row.nom }}</span>
+        <div class="max-w-40">
+          <div class="truncate font-medium" :title="row.nom">
+            <span v-if="row.type === 'partenaire'" class="text-purple-600">{{ row.nom }}</span>
+            <span v-else>{{ row.nom }}</span>
+          </div>
+          <div v-if="row.created_by_nom" class="text-[10px] text-gray-400 truncate" :title="row.created_by_nom">
+            par {{ row.created_by_nom }}
+          </div>
         </div>
       </template>
       <template #status-data="{ row }">
@@ -176,7 +183,7 @@ watch([q, plageDatesSelectionnee], () => {
           
           <!-- Bouton Versement (seulement si reste > 0) -->
           <UButton
-            v-if="row.reste > 0 && row.status !== 'Payé'"
+            v-if="row.reste > 0 && row.status !== 'Payé' && row.status !== 'Annulée'"
             color="green"
             size="xs"
             @click="emit('versement', row)"
@@ -187,6 +194,17 @@ watch([q, plageDatesSelectionnee], () => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
             </svg>
             Verser
+          </UButton>
+          <!-- Bouton Annuler -->
+          <UButton
+            v-if="row.status !== 'Annulée'"
+            color="red"
+            size="xs"
+            variant="soft"
+            @click="emit('annuler', row)"
+            title="Annuler la facture"
+          >
+            Annuler
           </UButton>
         </div>
       </template>

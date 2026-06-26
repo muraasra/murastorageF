@@ -213,10 +213,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useApi } from '@/stores/useApi'
-import { API_BASE_URL } from '@/constants'
+import { useApiBase } from '@/composables/useApiBase'
 import { useNotification } from '@/types/useNotification'
 import type { Produit } from '~/types'
+
+const { getApiUrl, getAuthHeaders } = useApiBase()
 
 definePageMeta({
   layout: "superadmin",
@@ -260,40 +261,33 @@ const loadBoutiqueData = async () => {
     
     boutiqueData.value = JSON.parse(boutique)
     
-    // Charger les stocks de l'entrepôt
-    const { data: stocksData, error: stocksError } = await useApi(`${API_BASE_URL}/api/stocks/?entrepot=${boutiqueData.value.id}`, { cacheTTL: 5 * 60 * 1000 })
-    
-    if (!stocksError.value && stocksData.value && Array.isArray(stocksData.value)) {
-      const stocksAvecQuantite = stocksData.value.filter((stock: any) => stock.quantite > 0)
-      
-      if (stocksAvecQuantite.length > 0) {
-        const productIds = stocksAvecQuantite.map((stock: any) => stock.produit).join(',')
-        const { data: productsData, error: productsError } = await useApi(`${API_BASE_URL}/api/produits/?id__in=${productIds}`, { cacheTTL: 10 * 60 * 1000 })
-        
-        if (!productsError.value && productsData.value && Array.isArray(productsData.value)) {
-          const produitsAvecStock = productsData.value.map((produit: any) => {
-            const stock = stocksAvecQuantite.find((s: any) => s.produit === produit.id)
-            return {
-              ...produit,
-              quantiteStock: stock?.quantite || 0,
-              prixUnitaire: produit.prix_vente || produit.prix || 0
-            }
-          })
-          
-          produits.value = produitsAvecStock
-          produitsEnStock.value = stocksAvecQuantite.reduce((acc: number, stock: any) => acc + stock.quantite, 0)
-          
-          totalValeurStock.value = stocksAvecQuantite.reduce((acc: number, stock: any) => {
-            const produit = (productsData.value as any[]).find((p: any) => p.id === stock.produit)
-            const prix = produit?.prix_vente || produit?.prix || 0
-            return acc + (stock.quantite * prix)
-          }, 0)
-        }
-      } else {
-        produits.value = []
-        produitsEnStock.value = 0
-        totalValeurStock.value = 0
+    // Charger les stocks + produits de l'entrepôt
+    const h = getAuthHeaders()
+    const toArr = (r: any) => Array.isArray(r) ? r : (r?.results ?? [])
+
+    const stocksRaw: any = await $fetch(getApiUrl(`/api/stocks/?entrepot=${boutiqueData.value.id}`), { headers: h })
+    const stocksAvecQuantite = toArr(stocksRaw).filter((s: any) => s.quantite > 0)
+
+    if (stocksAvecQuantite.length > 0) {
+      // Récupérer les produits via l'entreprise
+      const entrepriseId = boutiqueData.value?.entreprise?.id || boutiqueData.value?.entreprise
+      let prodsRaw: any = []
+      if (entrepriseId) {
+        prodsRaw = await $fetch(getApiUrl(`/api/produits/?entreprise=${entrepriseId}`), { headers: h })
       }
+      const rawProds: any[] = toArr(prodsRaw)
+
+      produits.value = rawProds.map((p: any) => {
+        const stock = stocksAvecQuantite.find((s: any) => s.produit === p.id)
+        return { ...p, quantiteStock: stock?.quantite || 0, prixUnitaire: parseFloat(p.prix_vente || p.prix || 0) }
+      }).filter((p: any) => p.quantiteStock > 0)
+
+      produitsEnStock.value = stocksAvecQuantite.reduce((acc: number, s: any) => acc + s.quantite, 0)
+      totalValeurStock.value = produits.value.reduce((acc: number, p: any) => acc + p.quantiteStock * p.prixUnitaire, 0)
+    } else {
+      produits.value = []
+      produitsEnStock.value = 0
+      totalValeurStock.value = 0
     }
     
     // Charger les mouvements récents
@@ -310,10 +304,9 @@ const loadBoutiqueData = async () => {
 
 const loadMouvementsRecents = async () => {
   try {
-    const { data: mouvementsData } = await useApi(`${API_BASE_URL}/api/mouvements-stock/?entrepot=${boutiqueData.value.id}&limit=7`, { cacheTTL: 5 * 60 * 1000 })
-    if (mouvementsData.value && Array.isArray(mouvementsData.value)) {
-      mouvementsRecents.value = mouvementsData.value.length
-    }
+    const raw: any = await $fetch(getApiUrl(`/api/mouvements-stock/?entrepot=${boutiqueData.value.id}&limit=7`), { headers: getAuthHeaders() })
+    const arr = Array.isArray(raw) ? raw : (raw?.results ?? [])
+    mouvementsRecents.value = arr.length
   } catch (err) {
     console.error('Erreur chargement mouvements:', err)
   }
@@ -322,13 +315,14 @@ const loadMouvementsRecents = async () => {
 const loadFacturesCeMois = async () => {
   try {
     const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-    
-    const { data: facturesData } = await useApi(`${API_BASE_URL}/api/factures/?boutique=${boutiqueData.value.id}&date_facture__gte=${startOfMonth.toISOString().split('T')[0]}&date_facture__lte=${endOfMonth.toISOString().split('T')[0]}`, { cacheTTL: 5 * 60 * 1000 })
-    if (facturesData.value && Array.isArray(facturesData.value)) {
-      facturesCeMois.value = facturesData.value.length
-    }
+    const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+    const raw: any = await $fetch(
+      getApiUrl(`/api/factures/?boutique=${boutiqueData.value.id}&date_facture__gte=${start}&date_facture__lte=${end}`),
+      { headers: getAuthHeaders() }
+    )
+    const arr = Array.isArray(raw) ? raw : (raw?.results ?? [])
+    facturesCeMois.value = arr.length
   } catch (err) {
     console.error('Erreur chargement factures:', err)
   }

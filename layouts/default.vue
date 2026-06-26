@@ -6,45 +6,26 @@ import Sidebar from "@/components/Sidebar.vue";
 import notification from "@/components/notification.vue";
 import UserTopbar from "@/components/UserTopbar.vue";
 import GlobalLoader from "@/components/GlobalLoader.vue";
-import CacheIndicator from "@/components/CacheIndicator.vue";
 import MobileNavigation from "@/components/navigation.vue";
 import { useStockAlerts } from "@/composables/useStockAlerts";
+import OfflineBanner from "@/components/OfflineBanner.vue";
+import { useAuthStore } from "@/stores/auth";
 
-const user = ref(null);
-
-if (process.client) {
-  const userData = localStorage.getItem('user');
-  if (userData) {
-    user.value = JSON.parse(userData);
-  }
-}
-
-const userRole = computed(() => user.value?.role || "user");
-
-const SidebarComponent = computed(() => {
-  if (userRole.value === "user") {
-    return AdminSidebar;
-  } else if (userRole.value === "admin") {
-    return SuperAdminSidebar;
-  }
-  return Sidebar;
-});
+const auth = useAuthStore();
+const boutiqueSelected = ref(false);
 
 onMounted(() => {
-  if (user.value && process.client) {
-    // Utiliser navigateTo au lieu de useRouter pour éviter les problèmes d'injection
-    try {
-      if (user.value.role === "user") {
-        navigateTo("/admin/");
-      } else if (user.value.role === "admin") {
-        navigateTo("/admin/");
-      } else {
-        navigateTo("/user/");
-      }
-    } catch (error) {
-      console.warn('Navigation error:', error);
-    }
+  boutiqueSelected.value = !!localStorage.getItem('boutique');
+});
+
+const userRole = computed(() => auth.user?.role || "user");
+
+const SidebarComponent = computed(() => {
+  if (userRole.value === "superadmin") {
+    return boutiqueSelected.value ? AdminSidebar : SuperAdminSidebar;
   }
+  if (userRole.value === "admin") return AdminSidebar;
+  return Sidebar;
 });
 
 const toasts = ref([]);
@@ -70,6 +51,7 @@ if (process.client) {
 
 <template>
   <main class="w-full flex min-h-screen min-h-full bg-white dark:bg-gray-900">
+    <OfflineBanner />
     <!-- Sidebar desktop -->
     <component :is="SidebarComponent" />
 
@@ -88,8 +70,6 @@ if (process.client) {
       <!-- Global loader -->
       <GlobalLoader :loading="isLoading" :message="loadingMessage" />
 
-      <!-- Cache indicator -->
-      <CacheIndicator />
 
       <!-- Navigation mobile (bas de page) -->
       <MobileNavigation />

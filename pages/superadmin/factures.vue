@@ -1,298 +1,410 @@
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useApiBase } from '@/composables/useApiBase'
+import { useNotification } from '@/types/useNotification'
+
+definePageMeta({ layout: 'superadmin' })
+
+const { getApiUrl, getAuthHeaders } = useApiBase()
+const { success, error } = useNotification()
+
+async function apiFetch(path: string, opts: any = {}) {
+  return $fetch(getApiUrl(path), { headers: getAuthHeaders(), ...opts })
+}
+
+// ── Données ──────────────────────────────────────────────────────────────────
+const factures = ref<any[]>([])
+const clients = ref<any[]>([])
+const boutiques = ref<any[]>([])
+const loading = ref(true)
+const totalPages = ref(1)
+const currentPage = ref(1)
+const searchQuery = ref('')
+const statusFilter = ref('')
+
+// ── Modals ───────────────────────────────────────────────────────────────────
+const showViewModal = ref(false)
+const showDeleteConfirm = ref(false)
+const selectedFacture = ref<any>(null)
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+const stats = computed(() => {
+  const total = factures.value.length
+  const ca = factures.value.reduce((s, f) => s + (parseFloat(f.total) || 0), 0)
+  const payees = factures.value.filter(f => f.status === 'Payé').length
+  const enAttente = factures.value.filter(f => f.status === 'En attente').length
+  const reste = factures.value.reduce((s, f) => s + (parseFloat(f.reste) || 0), 0)
+  return { total, ca, payees, enAttente, reste }
+})
+
+// ── Filtres ───────────────────────────────────────────────────────────────────
+const filteredFactures = computed(() => {
+  let list = factures.value
+  if (statusFilter.value) list = list.filter(f => f.status === statusFilter.value)
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
+    list = list.filter(f =>
+      f.nom_facture?.toLowerCase().includes(q) ||
+      f.client?.nom?.toLowerCase().includes(q) ||
+      f.boutique?.nom?.toLowerCase().includes(q)
+    )
+  }
+  return list
+})
+
+// ── Chargement ────────────────────────────────────────────────────────────────
+async function load(page = 1) {
+  loading.value = true
+  try {
+    const qs = new URLSearchParams({ page: String(page) })
+    if (statusFilter.value) qs.set('status', statusFilter.value)
+    if (searchQuery.value) qs.set('search', searchQuery.value)
+    const res: any = await apiFetch(`/api/factures/?${qs}`)
+    factures.value = res.results ?? res ?? []
+    totalPages.value = res.total_pages ?? 1
+    currentPage.value = page
+  } catch {
+    error('Erreur lors du chargement des factures')
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => load())
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+function viewFacture(f: any) {
+  selectedFacture.value = f
+  showViewModal.value = true
+}
+
+function confirmDelete(f: any) {
+  selectedFacture.value = f
+  showDeleteConfirm.value = true
+}
+
+async function deleteFacture() {
+  try {
+    await apiFetch(`/api/factures/${selectedFacture.value.id}/`, { method: 'DELETE' })
+    success('Facture supprimée')
+    showDeleteConfirm.value = false
+    await load(currentPage.value)
+  } catch {
+    error('Erreur lors de la suppression')
+  }
+}
+
+// ── Utilitaires ───────────────────────────────────────────────────────────────
+function fmt(n: any) { return Number(n || 0).toLocaleString('fr-FR') }
+function fmtDate(d: string) { return d ? new Date(d).toLocaleDateString('fr-FR') : '—' }
+
+function statusClass(s: string) {
+  if (s === 'Payé') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+  if (s === 'Partiellement payé') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+  if (s === 'En attente') return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+  return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+}
+
+let searchTimer: any
+function onSearch() {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => load(1), 400)
+}
+</script>
+
 <template>
-  <div>
-    <!-- Header de la page -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gestion des Factures</h1>
-      <p class="mt-2 text-gray-600 dark:text-gray-400">Gérez les factures de votre entreprise</p>
-    </div>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-    <!-- Statistiques -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="flex items-center">
-          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-            <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Factures</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Suivi des factures de l'entreprise</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <NuxtLink
+            to="/listes-factures"
+            class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+            Nouvelle facture
+          </NuxtLink>
+          <button @click="load(currentPage)" :disabled="loading"
+            class="p-2 text-gray-400 hover:text-emerald-600 transition-colors disabled:opacity-50">
+            <svg class="w-5 h-5" :class="loading ? 'animate-spin' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Factures</p>
-            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ factures.length }}</p>
-          </div>
+          </button>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="flex items-center">
-          <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-            <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Chiffre d'Affaires</p>
-            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ chiffreAffaires }} FCFA</p>
-          </div>
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total</p>
+          <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ stats.total }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Chiffre d'affaires</p>
+          <p class="text-2xl font-extrabold text-emerald-600 mt-1">{{ fmt(stats.ca) }} <span class="text-sm font-medium text-gray-500">FCFA</span></p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Payées</p>
+          <p class="text-3xl font-extrabold text-emerald-600 mt-1">{{ stats.payees }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Reste à encaisser</p>
+          <p class="text-2xl font-extrabold text-amber-600 mt-1">{{ fmt(stats.reste) }} <span class="text-sm font-medium text-gray-500">FCFA</span></p>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="flex items-center">
-          <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-            <svg class="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Clients Uniques</p>
-            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ clientsUniques }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="flex items-center">
-          <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-            <svg class="h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Moyenne Facture</p>
-            <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ moyenneFacture }} FCFA</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Liste des factures -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Liste des Factures</h3>
-          <div class="flex space-x-3">
-            <select v-model="statusFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white">
-              <option value="">Tous les statuts</option>
-              <option value="payee">Payée</option>
-              <option value="en_attente">En attente</option>
-              <option value="annulee">Annulée</option>
-            </select>
+      <!-- Filtres + tableau -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <!-- Barre de filtres -->
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-3">
+          <div class="relative flex-1 min-w-[200px]">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input
               v-model="searchQuery"
-              type="text"
-              placeholder="Rechercher une facture..."
-              class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+              @input="onSearch"
+              type="search"
+              placeholder="Rechercher par nom, client, entrepôt..."
+              class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
-            <button @click="loadFactures" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-              <svg class="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-              </svg>
-              Actualiser
+          </div>
+          <select
+            v-model="statusFilter"
+            @change="load(1)"
+            class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          >
+            <option value="">Tous les statuts</option>
+            <option value="Payé">Payé</option>
+            <option value="Partiellement payé">Partiellement payé</option>
+            <option value="En attente">En attente</option>
+          </select>
+        </div>
+
+        <!-- Loading -->
+        <div v-if="loading" class="flex justify-center py-16">
+          <div class="w-8 h-8 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
+        </div>
+
+        <!-- Empty -->
+        <div v-else-if="filteredFactures.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
+          <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <p class="font-medium">Aucune facture trouvée</p>
+          <p class="text-sm mt-1">Modifiez les filtres ou créez une nouvelle facture</p>
+        </div>
+
+        <!-- Tableau -->
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-700 text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <tr>
+                <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Facture</th>
+                <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Client</th>
+                <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Entrepôt</th>
+                <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Date</th>
+                <th class="px-5 py-3 text-right font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Total</th>
+                <th class="px-5 py-3 text-right font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Reste</th>
+                <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Statut</th>
+                <th class="px-5 py-3"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
+              <tr
+                v-for="f in filteredFactures"
+                :key="f.id"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+              >
+                <td class="px-5 py-3">
+                  <div class="font-semibold text-gray-900 dark:text-white">{{ f.nom_facture || `#${f.id}` }}</div>
+                  <div class="text-xs text-gray-400">{{ f.items?.length || 0 }} article(s)</div>
+                </td>
+                <td class="px-5 py-3 text-gray-600 dark:text-gray-400">{{ f.client?.nom || '—' }}</td>
+                <td class="px-5 py-3 text-gray-600 dark:text-gray-400">{{ f.boutique?.nom || '—' }}</td>
+                <td class="px-5 py-3 text-gray-500 dark:text-gray-400">{{ fmtDate(f.date_facture) }}</td>
+                <td class="px-5 py-3 text-right font-semibold text-gray-900 dark:text-white">{{ fmt(f.total) }} FCFA</td>
+                <td class="px-5 py-3 text-right">
+                  <span :class="parseFloat(f.reste) > 0 ? 'text-amber-600 font-semibold' : 'text-emerald-600'">
+                    {{ fmt(f.reste) }} FCFA
+                  </span>
+                </td>
+                <td class="px-5 py-3">
+                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full" :class="statusClass(f.status)">
+                    {{ f.status || 'En attente' }}
+                  </span>
+                </td>
+                <td class="px-5 py-3">
+                  <div class="flex items-center justify-end gap-1">
+                    <button
+                      @click="viewFacture(f)"
+                      class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                      title="Voir détails"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </button>
+                    <NuxtLink
+                      :to="`/listes-factures?id=${f.id}`"
+                      class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      title="Modifier"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </NuxtLink>
+                    <button
+                      @click="confirmDelete(f)"
+                      class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="Supprimer"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="px-5 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-sm text-gray-500">
+          <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+          <div class="flex gap-2">
+            <button @click="load(currentPage - 1)" :disabled="currentPage <= 1"
+              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">
+              ← Précédent
+            </button>
+            <button @click="load(currentPage + 1)" :disabled="currentPage >= totalPages"
+              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">
+              Suivant →
             </button>
           </div>
         </div>
       </div>
+    </section>
 
-      <div class="p-6">
-        <div v-if="factures.length === 0" class="text-center py-8">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Aucune facture trouvée</p>
-        </div>
+    <!-- ── Modal Voir facture ─────────────────────────────────────────────── -->
+    <Teleport to="body">
+      <div v-if="showViewModal && selectedFacture" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showViewModal = false">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+          <!-- Header -->
+          <div class="bg-emerald-500 px-6 py-4 flex items-center justify-between flex-shrink-0">
+            <div>
+              <h3 class="text-white font-bold text-lg">{{ selectedFacture.nom_facture || `Facture #${selectedFacture.id}` }}</h3>
+              <p class="text-emerald-100 text-sm">{{ fmtDate(selectedFacture.date_facture) }}</p>
+            </div>
+            <button @click="showViewModal = false" class="text-white/70 hover:text-white p-1">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
 
-        <div v-else class="space-y-4">
-          <div v-for="facture in filteredFactures" :key="facture.id" class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center space-x-3">
-                  <div class="h-10 w-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
-                    <span class="text-white font-semibold text-sm">F</span>
-                  </div>
-                  <div>
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ facture.nom_facture }}</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ facture.client?.nom || 'Client inconnu' }} • {{ formatDate(facture.date_facture) }}</p>
-                  </div>
-                </div>
-                
-                <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span class="text-gray-500 dark:text-gray-400">Montant:</span>
-                    <span class="ml-1 font-medium text-gray-900 dark:text-white">{{ facture.montant_total }} FCFA</span>
-                  </div>
-                  <div>
-                    <span class="text-gray-500 dark:text-gray-400">Statut:</span>
-                    <span class="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" :class="getStatusBadgeClass(facture.statut)">
-                      {{ facture.statut }}
-                    </span>
-                  </div>
-                  <div>
-                    <span class="text-gray-500 dark:text-gray-400">Entrepôt:</span>
-                    <span class="ml-1 font-medium text-gray-900 dark:text-white">{{ facture.boutique?.nom || 'Non assigné' }}</span>
-                  </div>
-                  <div>
-                    <span class="text-gray-500 dark:text-gray-400">Articles:</span>
-                    <span class="ml-1 font-medium text-gray-900 dark:text-white">{{ facture.items?.length || 0 }}</span>
+          <!-- Body -->
+          <div class="p-6 overflow-y-auto space-y-5">
+            <!-- Infos principales -->
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+                <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Client</p>
+                <p class="font-semibold text-gray-900 dark:text-white">{{ selectedFacture.client?.nom || '—' }}</p>
+              </div>
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+                <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Entrepôt</p>
+                <p class="font-semibold text-gray-900 dark:text-white">{{ selectedFacture.boutique?.nom || '—' }}</p>
+              </div>
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+                <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Total</p>
+                <p class="font-bold text-xl text-emerald-600">{{ fmt(selectedFacture.total) }} FCFA</p>
+              </div>
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+                <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Reste à payer</p>
+                <p class="font-bold text-xl" :class="parseFloat(selectedFacture.reste) > 0 ? 'text-amber-600' : 'text-emerald-600'">
+                  {{ fmt(selectedFacture.reste) }} FCFA
+                </p>
+              </div>
+            </div>
+
+            <!-- Statut -->
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-medium text-gray-500">Statut :</span>
+              <span class="text-sm font-bold px-3 py-1 rounded-full" :class="statusClass(selectedFacture.status)">
+                {{ selectedFacture.status || 'En attente' }}
+              </span>
+            </div>
+
+            <!-- Articles -->
+            <div v-if="selectedFacture.items?.length">
+              <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Articles ({{ selectedFacture.items.length }})</h4>
+              <div class="space-y-2">
+                <div
+                  v-for="item in selectedFacture.items"
+                  :key="item.id"
+                  class="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-3 text-sm"
+                >
+                  <span class="font-medium text-gray-900 dark:text-white">{{ item.produit?.nom || item.nom_produit || '—' }}</span>
+                  <div class="flex items-center gap-4 text-gray-500">
+                    <span>x{{ item.quantite }}</span>
+                    <span class="font-semibold text-gray-900 dark:text-white">{{ fmt((item.prix_unitaire || 0) * (item.quantite || 0)) }} FCFA</span>
                   </div>
                 </div>
               </div>
-              
-              <div class="flex space-x-2">
-                <button @click="viewFacture(facture)" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                  </svg>
-                </button>
-                <button @click="editFacture(facture)" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                  </svg>
-                </button>
-                <button @click="deleteFacture(facture.id)" class="p-2 text-red-400 hover:text-red-600">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                </button>
+            </div>
+
+            <!-- Versements -->
+            <div v-if="selectedFacture.versements?.length">
+              <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Versements reçus</h4>
+              <div class="space-y-2">
+                <div
+                  v-for="v in selectedFacture.versements"
+                  :key="v.id"
+                  class="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 rounded-lg px-4 py-3 text-sm"
+                >
+                  <span class="text-gray-600 dark:text-gray-400">{{ fmtDate(v.date_versement) }}</span>
+                  <span class="font-semibold text-emerald-600">+{{ fmt(v.montant) }} FCFA</span>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Footer -->
+          <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 flex-shrink-0">
+            <button @click="showViewModal = false"
+              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition-colors">
+              Fermer
+            </button>
+            <NuxtLink
+              :to="`/listes-factures?id=${selectedFacture.id}`"
+              class="px-4 py-2 text-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors"
+              @click="showViewModal = false"
+            >
+              Modifier la facture →
+            </NuxtLink>
+          </div>
         </div>
       </div>
-    </div>
+
+      <!-- ── Confirm suppression ────────────────────────────────────────── -->
+      <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showDeleteConfirm = false">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm shadow-2xl p-6">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-900 dark:text-white">Supprimer la facture ?</h3>
+              <p class="text-sm text-gray-500 mt-1">{{ selectedFacture?.nom_facture }} — Cette action est irréversible.</p>
+            </div>
+          </div>
+          <div class="flex gap-3 justify-end">
+            <button @click="showDeleteConfirm = false"
+              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-xl transition-colors">
+              Annuler
+            </button>
+            <button @click="deleteFacture"
+              class="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors">
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useNotification } from '@/types/useNotification'
-import { API_BASE_URL } from '@/constants'
-
-definePageMeta({
-  layout: "superadmin",
-})
-
-const { error, success } = useNotification()
-
-// État des données
-const factures = ref([])
-const searchQuery = ref('')
-const statusFilter = ref('')
-
-// Statistiques calculées
-const chiffreAffaires = computed(() => {
-  return factures.value.reduce((total, facture) => total + (facture.montant_total || 0), 0)
-})
-
-const clientsUniques = computed(() => {
-  const clients = new Set(factures.value.map(f => f.client?.id).filter(Boolean))
-  return clients.size
-})
-
-const moyenneFacture = computed(() => {
-  if (factures.value.length === 0) return 0
-  return Math.round(chiffreAffaires.value / factures.value.length)
-})
-
-// Factures filtrées
-const filteredFactures = computed(() => {
-  let filtered = factures.value
-
-  if (statusFilter.value) {
-    filtered = filtered.filter(facture => facture.statut === statusFilter.value)
-  }
-
-  if (searchQuery.value) {
-    filtered = filtered.filter(facture =>
-      facture.nom_facture?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      facture.client?.nom?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      facture.boutique?.nom?.toLowerCase().includes(searchQuery.value.toLowerCase())
-    )
-  }
-
-  return filtered
-})
-
-// Fonctions utilitaires
-const getStatusBadgeClass = (status: string) => {
-  switch (status) {
-    case 'payee':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-    case 'en_attente':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-    case 'annulee':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
-  }
-}
-
-const formatDate = (date: string) => {
-  if (!date) return 'Date inconnue'
-  return new Date(date).toLocaleDateString('fr-FR')
-}
-
-// Charger les factures de l'entreprise
-const loadFactures = async () => {
-  try {
-    // Récupérer l'ID de l'entreprise depuis le localStorage
-    const entreprise = localStorage.getItem('entreprise')
-    if (!entreprise) {
-      error('Informations entreprise manquantes')
-      return
-    }
-    
-    const entrepriseData = JSON.parse(entreprise)
-    const entrepriseId = entrepriseData.id
-
-    try {
-      const data = await $fetch(`${API_BASE_URL}/api/factures/?entreprise=${entrepriseId}`)
-      factures.value = data || []
-    } catch (apiError: any) {
-      error('Erreur lors du chargement des factures: ' + (apiError.data?.message || apiError.message))
-      return
-    }
-  } catch (err) {
-    console.error('Erreur chargement factures:', err)
-    error('Une erreur est survenue')
-  }
-}
-
-// Actions
-const viewFacture = (facture: any) => {
-  // TODO: Implémenter la vue détaillée d'une facture
-  console.log('Voir facture:', facture)
-}
-
-const editFacture = (facture: any) => {
-  // TODO: Implémenter l'édition de facture
-  console.log('Éditer facture:', facture)
-}
-
-const deleteFacture = async (id: number) => {
-  if (confirm('Êtes-vous sûr de vouloir supprimer cette facture ? Cette action est irréversible.')) {
-    try {
-      const { error: apiError } = await useApi(`${API_BASE_URL}/api/factures/${id}/`, {
-        method: 'DELETE',
-        server: false
-      })
-
-      if (apiError.value) {
-        error('Erreur lors de la suppression')
-        return
-      }
-
-      success('Facture supprimée avec succès')
-      loadFactures()
-    } catch (err) {
-      console.error('Erreur suppression:', err)
-      error('Erreur lors de la suppression')
-    }
-  }
-}
-
-// Charger les données au montage
-onMounted(() => {
-  loadFactures()
-})
-</script>

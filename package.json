@@ -14,10 +14,11 @@
   "dependencies": {
     "@iconify-json/heroicons": "1.2.1",
     "@nuxt/ui": "2.18.4",
-    "@pinia/nuxt": "0.5.1",
     "@nuxtjs/tailwindcss": "6.8.0",
+    "@pinia/nuxt": "0.5.1",
     "autoprefixer": "10.4.16",
     "date-fns": "4.1.0",
+    "driver.js": "^1.6.0",
     "jsbarcode": "3.12.1",
     "jspdf": "2.5.1",
     "jspdf-autotable": "3.8.1",
@@ -35,7 +36,8 @@
   },
   "devDependencies": {
     "@types/jsbarcode": "3.11.4",
-    "@types/qrcode": "1.5.5"
+    "@types/qrcode": "1.5.5",
+    "terser": "^5.48.0"
   },
   "engines": {
     "node": ">=18.0.0"

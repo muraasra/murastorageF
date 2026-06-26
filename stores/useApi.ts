@@ -264,7 +264,7 @@ async function handleTokenRefresh(): Promise<boolean> {
     const refreshToken = localStorage.getItem('refresh_token')
     if (!refreshToken) return false
 
-    const response: any = await $fetch(`${API_BASE_URL}/api/token/refresh/`, {
+    const response: any = await $fetch(`${API_BASE_URL}/api/auth/jwt/refresh/`, {
       method: 'POST',
       body: { refresh: refreshToken },
       headers: {

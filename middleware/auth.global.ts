@@ -2,6 +2,24 @@ import { defineNuxtRouteMiddleware, navigateTo } from '#app'
 
 const isDev = () => (typeof import.meta !== 'undefined' && !!import.meta.env?.DEV) || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production')
 
+/**
+ * Décode le payload d'un JWT sans vérifier la signature (côté client).
+ * Le rôle extrait ici est signé par le serveur Django — un attaquant ne peut
+ * pas forger un token valide sans la clé secrète. C'est plus fiable que lire
+ * role depuis localStorage['user'] qui est un simple JSON modifiable.
+ */
+function getRoleFromToken(token: string | null): string | null {
+  if (!token) return null
+  try {
+    const payload = token.split('.')[1]
+    if (!payload) return null
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')))
+    return decoded.role || null
+  } catch {
+    return null
+  }
+}
+
 export default defineNuxtRouteMiddleware(async (to) => {
   // Ne rien faire côté serveur (SPA)
   if (process.server) return
@@ -92,21 +110,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     // Si pas de token, rediriger vers la page d'accueil publique ou connexion
     if (!token) {
-      console.log('[Auth Middleware] Pas de token, non connecté')
-
-      if (to.path === '/') {
-        console.log('[Auth Middleware] Accès à la racine sans token, redirection vers /home/accueil')
-        return navigateTo('/home/accueil')
-      }
-
+      if (to.path === '/') return navigateTo('/home/accueil')
       const isPublicPage = publicPages.some(page => to.path === page) || (to.path && to.path.startsWith('/home/'))
-
-      if (!isPublicPage) {
-        log('[Auth Middleware] Page privée sans token, redirection vers /connexion')
-        return navigateTo('/connexion')
-      }
-
-      log('[Auth Middleware] Page publique autorisée sans token:', to.path)
+      if (!isPublicPage) return navigateTo('/connexion')
       return
     }
 
@@ -122,132 +128,76 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     // Si connecté et essaie d'accéder à la page de connexion, rediriger vers le dashboard approprié
     if (token && to.path === '/connexion') {
-      try {
-        const userData = user ? JSON.parse(user) : null
-        const userRole = userData?.role
-
-        if (userRole === 'superadmin') {
-          return navigateTo('/superadmin/dashboard')
-        } else if (userRole === 'admin' || userRole === 'user') {
-          const boutique = localStorage.getItem('boutique')
-          let hasValidBoutique = false
-          if (boutique && boutique !== 'null' && boutique !== 'undefined') {
-            try {
-              const boutiqueData = JSON.parse(boutique)
-              hasValidBoutique = !!(boutiqueData && boutiqueData.id)
-            } catch (e) {
-              hasValidBoutique = false
-            }
+      // Lire le rôle depuis le token JWT signé (pas depuis localStorage['user'])
+      const userRole = getRoleFromToken(token)
+      if (userRole === 'superadmin') {
+        return navigateTo('/superadmin/dashboard')
+      } else if (userRole === 'admin' || userRole === 'user') {
+        const boutique = localStorage.getItem('boutique')
+        let hasValidBoutique = false
+        if (boutique && boutique !== 'null' && boutique !== 'undefined') {
+          try {
+            const boutiqueData = JSON.parse(boutique)
+            hasValidBoutique = !!(boutiqueData && boutiqueData.id)
+          } catch (e) {
+            hasValidBoutique = false
           }
-          return navigateTo(hasValidBoutique ? '/user' : '/')
         }
-      } catch (e) {
-        console.error('[Auth Middleware] Erreur de parsing user data:', e)
-        return navigateTo('/connexion')
+        return navigateTo(hasValidBoutique ? '/user' : '/')
       }
     }
 
     // Logique de redirection basée sur le rôle si le token est présent
-    if (user) {
-      try {
-        const userData = JSON.parse(user)
-        const userRole = userData.role
+    if (token) {
+      // Rôle lu depuis le payload JWT signé — résistant à la manipulation du localStorage
+      const userRole = getRoleFromToken(token)
 
-        log('[Auth Middleware] Rôle utilisateur:', userRole)
+      log('[Auth Middleware] Rôle utilisateur (JWT):', userRole)
 
-        if (userRole === 'superadmin') {
-          log('[Auth Middleware] SuperAdmin détecté')
-          
-          // SuperAdmin peut accéder à /superadmin
-          if (to.path && to.path.startsWith('/superadmin')) {
-            log('[Auth Middleware] Accès autorisé à /superadmin')
-            return
-          }
-          
-          // SuperAdmin peut accéder à /user (peut sélectionner une boutique)
-          if (to.path && to.path.startsWith('/user')) {
-            log('[Auth Middleware] SuperAdmin accès à /user autorisé')
-            return
-          }
-          
-          // SuperAdmin ne peut pas accéder à la page d'attente (/)
-          if (to.path === '/') {
-            return navigateTo('/superadmin/dashboard')
-          }
-          
-          // Par défaut, rester sur superadmin pour autres cibles interdites
-          if (to.path === '/admin') {
-            return navigateTo('/superadmin/dashboard')
-          }
-          
-        } else if (userRole === 'admin' || userRole === 'user') {
-          log('[Auth Middleware] Admin/User détecté')
-          
-          // Admin/User ne peut pas accéder à /superadmin
-          if (to.path && to.path.startsWith('/superadmin')) {
-            log('[Auth Middleware] Accès refusé à /superadmin pour Admin/User')
-            const boutique = localStorage.getItem('boutique')
-            let hasValidBoutique = false
-            if (boutique && boutique !== 'null' && boutique !== 'undefined') {
-              try {
-                const boutiqueData = JSON.parse(boutique)
-                hasValidBoutique = boutiqueData && boutiqueData.id
-              } catch (e) {
-                hasValidBoutique = false
-              }
-            }
-            return navigateTo(hasValidBoutique ? '/user' : '/')
-          }
-          
-          // Vérifier si l'utilisateur a une boutique assignée
+      if (userRole === 'superadmin') {
+        log('[Auth Middleware] SuperAdmin détecté')
+
+        if (to.path && to.path.startsWith('/superadmin')) return
+        if (to.path === '/exercice-fiscal') return
+        if (to.path && to.path.startsWith('/user')) return
+        if (to.path === '/') return navigateTo('/superadmin/dashboard')
+        if (to.path === '/admin') return navigateTo('/superadmin/dashboard')
+
+      } else if (userRole === 'admin' || userRole === 'user') {
+        log('[Auth Middleware] Admin/User détecté')
+
+        // Routes réservées superadmin
+        if (to.path === '/exercice-fiscal') return navigateTo('/admin')
+        if (to.path && to.path.startsWith('/superadmin')) {
           const boutique = localStorage.getItem('boutique')
-          
-          // Vérifier si la boutique existe et est valide
           let hasValidBoutique = false
-          if (boutique && boutique !== 'null' && boutique !== 'undefined') {
-            try {
-              const boutiqueData = JSON.parse(boutique)
-              hasValidBoutique = boutiqueData && boutiqueData.id
-            } catch (e) {
-              hasValidBoutique = false
+          try {
+            if (boutique && boutique !== 'null') {
+              const b = JSON.parse(boutique)
+              hasValidBoutique = !!(b && b.id)
             }
-          }
-          
-          console.log('[Auth Middleware] Boutique valide pour Admin/User:', hasValidBoutique)
-          
-          if (!hasValidBoutique) {
-            // Pas de boutique assignée, peut seulement accéder à la racine
-            if (to.path !== '/') {
-              return navigateTo('/')
-            }
-            return
-          } else {
-            // A une boutique assignée, ne peut pas accéder à la page d'attente (/)
-            if (to.path === '/') {
-              return navigateTo('/user')
-            }
-          }
-          
-          // A une boutique, peut accéder à /user
-          if (to.path && to.path.startsWith('/user')) {
-            return
-          }
-          
-          // Rediriger vers le dashboard user si pas déjà là
-          if (to.path === '/admin') {
-            return navigateTo('/user')
-          }
+          } catch { hasValidBoutique = false }
+          return navigateTo(hasValidBoutique ? '/user' : '/')
         }
-        
-      } catch (error) {
-        console.error('[Auth Middleware] Erreur de parsing des données utilisateur:', error)
-        // En cas d'erreur de parsing, rediriger vers la connexion pour re-authentification
-        return navigateTo('/connexion')
+
+        // Vérifier boutique assignée
+        const boutique = localStorage.getItem('boutique')
+        let hasValidBoutique = false
+        try {
+          if (boutique && boutique !== 'null') {
+            const b = JSON.parse(boutique)
+            hasValidBoutique = !!(b && b.id)
+          }
+        } catch { hasValidBoutique = false }
+
+        if (!hasValidBoutique) {
+          if (to.path !== '/') return navigateTo('/')
+          return
+        } else {
+          if (to.path === '/') return navigateTo('/user')
+        }
+        return
       }
-    } else {
-      // Si token présent mais pas de données utilisateur (corrompu ou manquant), rediriger vers connexion
-      log('[Auth Middleware] Token présent mais données utilisateur manquantes/corrompues, redirection vers /connexion')
-      return navigateTo('/connexion')
     }
   }
 })

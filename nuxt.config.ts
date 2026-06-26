@@ -28,12 +28,20 @@ export default defineNuxtConfig({
   },
 
   vite: {
-    // Pré-bundler les dépendances pour un démarrage plus rapide en dev et build
     optimizeDeps: {
       include: ['vue', 'vue-router', 'pinia', 'date-fns']
-    }
-    // Pas de manualChunks : le découpage personnalisé provoquait
-    // "Cannot access 'Ws' before initialization" (ordre d'init des chunks).
+    },
+    build: {
+      // Supprime tous les console.log/console.warn en production
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+          pure_funcs: ['console.log', 'console.warn', 'console.info', 'console.debug'],
+        },
+      },
+      minify: 'terser',
+    },
   },
 
   app: {

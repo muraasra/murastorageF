@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import EditProfileModal from '@/components/superadmin/EditProfileModal.vue'
+import ThemeSwitcher from '@/components/blocks/ThemeSwitcher.vue'
 import { API_BASE_URL } from '@/constants'
+import { useAuthStore } from '@/stores/auth'
+const authStore = useAuthStore()
 
 const userData = ref<any>(null)
 const entrepriseData = ref<any>(null)
@@ -31,17 +34,7 @@ onMounted(() => {
   }
 })
 
-const logout = () => {
-  if (process.client) {
-    localStorage.removeItem('user')
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    localStorage.removeItem('entreprise')
-    localStorage.removeItem('boutique')
-    localStorage.removeItem('permissions')
-  }
-  navigateTo('/connexion')
-}
+const logout = () => authStore.logout()
 
 const openLogoPreview = () => {
   if (!entrepriseData.value?.logo) return
@@ -54,7 +47,7 @@ const openLogoPreview = () => {
 <template>
   <div class="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center py-4">
+      <div class="flex justify-between items-center py-3">
         <div class="flex items-center">
           <div class="h-10 w-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg flex items-center justify-center mr-3 overflow-hidden shadow-sm cursor-pointer" @click="openLogoPreview">
             <img v-if="entrepriseData?.logo" :src="entrepriseData.logo" alt="Logo entreprise" class="h-full w-full object-contain p-1" title="Agrandir le logo">
@@ -68,18 +61,23 @@ const openLogoPreview = () => {
           </div>
         </div>
 
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center gap-2">
+          <!-- Logo MuRa StoRage -->
+          <NuxtLink to="/" class="hidden md:flex items-center mr-1">
+            <img src="/img/logo-mura-storage.png" alt="MuRa StoRage" class="h-8 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity" />
+          </NuxtLink>
+          <ThemeSwitcher />
           <button v-if="userData?.role === 'superadmin'" @click="navigateTo('/superadmin/dashboard')" class="px-3 py-1.5 text-xs sm:text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
             Retour superadmin
           </button>
-          <div class="text-right">
+          <div class="hidden sm:block text-right">
             <button @click="showEditProfile = true" class="text-sm font-medium text-gray-900 dark:text-white hover:underline">
               {{ userData?.first_name || 'Utilisateur' }} {{ userData?.last_name || '' }}
             </button>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ userData?.role === 'admin' ? 'Administrateur' : (userData?.role === 'superadmin' ? 'SuperAdmin' : 'Utilisateur') }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ userData?.role === 'admin' ? 'Admin' : (userData?.role === 'superadmin' ? 'SuperAdmin' : 'Utilisateur') }}</p>
           </div>
-          <button @click="logout" class="px-3 py-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-            Déconnexion
+          <button @click="logout" title="Se déconnecter" class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5" />
           </button>
         </div>
       </div>

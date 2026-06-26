@@ -8,7 +8,7 @@ export async function useTokenCheck(): Promise<boolean> {
 
   try {
     // Utiliser $fetch au lieu de useFetch pour éviter les problèmes d'injection
-    const response = await $fetch(`${API_BASE_URL}/api/token/verify/`, {
+    const response = await $fetch(`${API_BASE_URL}/api/auth/jwt/verify/`, {
       method: 'POST',
       body: { token: auth.token },
       headers: {
@@ -39,7 +39,7 @@ async function tryRefreshToken(): Promise<boolean> {
     const refreshToken = localStorage.getItem('refresh_token')
     if (!refreshToken) return false
 
-    const response = await $fetch(`${API_BASE_URL}/api/token/refresh/`, {
+    const response = await $fetch(`${API_BASE_URL}/api/auth/jwt/refresh/`, {
       method: 'POST',
       body: { refresh: refreshToken },
       headers: {
