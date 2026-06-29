@@ -123,7 +123,7 @@ function mapFacture(facture: any): Facture {
 }
 
 function mapCommande(cmd: any) {
-  let nomProduit = 'Produit inconnu';
+  let nomProduit = '';
   if (cmd.produit_nom && cmd.produit_nom !== 'Produit inconnu') {
     nomProduit = cmd.produit_nom;
   } else if (cmd.produit && typeof cmd.produit === 'object' && cmd.produit.nom) {
@@ -131,9 +131,11 @@ function mapCommande(cmd: any) {
   } else if (typeof cmd.produit === 'string' && cmd.produit.length > 0) {
     nomProduit = cmd.produit;
   }
+  const varianteNom = cmd.variante_nom || null;
   return {
     nom: nomProduit,
-    prix: cmd.prix_unitaire_fcfa ?? cmd.prix ?? 0,
+    varianteNom,
+    prix: Number(cmd.prix_unitaire_fcfa ?? cmd.prix ?? 0),
     quantite: cmd.quantite ?? 0,
     reference: cmd.produit_reference || cmd.produit?.reference || '',
   };
@@ -672,14 +674,27 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
         <div class="overflow-x-auto">
           <table class="w-full table-auto border-collapse border border-gray-300">
             <thead class="bg-gray-100">
-              <tr class="text-left">
-                <th class="border border-gray-300 px-4 py-3 font-semibold">Produit(s)</th>
+              <tr class="text-left text-xs text-gray-600 dark:text-gray-400">
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Produit</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-right">Qté</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-right">Prix unit.</th>
+                <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-right">Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(prod, index) in produitsFactures" :key="index" class="hover:bg-gray-50">
-                <td class="border border-gray-300 px-4 py-3 capitalize">
-                  {{ prod.nom }} | Qté: {{ prod.quantite }} × {{ prod.prix.toFixed(2) }} FCFA
+              <tr v-for="(prod, index) in produitsFactures" :key="index" class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ prod.nom || '—' }}</div>
+                  <div v-if="prod.varianteNom" class="text-xs text-blue-600 dark:text-blue-400 mt-0.5">↘ {{ prod.varianteNom }}</div>
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right text-sm">
+                  {{ prod.quantite }}
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right text-sm">
+                  {{ prod.prix.toFixed(0) }} F
+                </td>
+                <td class="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right font-semibold text-sm">
+                  {{ (prod.quantite * prod.prix).toFixed(0) }} F
                 </td>
               </tr>
             </tbody>

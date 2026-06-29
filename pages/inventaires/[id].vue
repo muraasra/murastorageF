@@ -227,7 +227,6 @@
 
 <script setup lang="ts">
 import { useNotification } from '@/types/useNotification'
-import * as XLSX from 'xlsx'
 
 definePageMeta({
   layout: "default"
@@ -486,6 +485,8 @@ const exportToExcel = async () => {
       return sum + (prixAchat * (p.quantite_reelle || 0))
     }, 0)
     
+    // Charger xlsx à la demande (évite ~408KB au chargement initial)
+    const XLSX = await import('xlsx')
     // Créer le workbook
     const wb = XLSX.utils.book_new()
     

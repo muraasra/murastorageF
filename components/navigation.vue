@@ -9,6 +9,7 @@ const auth = useAuthStore()
 const route = useRoute()
 
 const role = ref<string | null>(null)
+const boutiqueSelected = ref(false)
 const showSheet = ref(false)
 
 onMounted(() => {
@@ -16,11 +17,14 @@ onMounted(() => {
   try {
     const user = localStorage.getItem('user')
     role.value = user ? JSON.parse(user)?.role || null : null
+    boutiqueSelected.value = !!localStorage.getItem('boutique')
   } catch { role.value = null }
 })
 
 const navGroups = computed((): NavGroup[] => {
-  if (role.value === 'superadmin') return NAVIGATION_ITEMS_SUPERADMIN
+  if (role.value === 'superadmin') {
+    return boutiqueSelected.value ? NAVIGATION_ITEMS_ADMIN : NAVIGATION_ITEMS_SUPERADMIN
+  }
   if (role.value === 'admin') return NAVIGATION_ITEMS_ADMIN
   return NAVIGATION_ITEMS
 })
@@ -32,13 +36,13 @@ const allItems = computed(() =>
 
 // 4 raccourcis fixes selon le rôle — les plus utilisés
 const pinnedLinks = computed(() => {
-  if (role.value === 'superadmin') return [
+  if (role.value === 'superadmin' && !boutiqueSelected.value) return [
     '/superadmin/dashboard',
     '/stock_produit',
     '/facturation',
     '/analytics',
   ]
-  if (role.value === 'admin') return [
+  if (role.value === 'superadmin' || role.value === 'admin') return [
     '/admin',
     '/stock_produit',
     '/facturation',

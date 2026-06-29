@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { onMounted } from 'vue'
 definePageMeta({
     layout: "accueil",
@@ -215,57 +215,58 @@ onMounted(() => {
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
           <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">Plans adaptés à votre croissance</h2>
-          <p class="text-lg text-gray-600 dark:text-gray-300">Free, Basic, Premium et Organisation en XAF.</p>
+          <p class="text-lg text-gray-600 dark:text-gray-300">Essai Gratuit · Starter · Business · Pro — paiement en XAF.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <!-- Free -->
+          <!-- Essai Gratuit -->
           <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-8">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Free</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Essai Gratuit</h3>
             <p class="text-3xl font-extrabold mt-3 text-gray-900 dark:text-white">Gratuit</p>
+            <p class="text-sm text-emerald-600 font-medium mt-1">3 mois offerts</p>
             <ul class="mt-6 space-y-2 text-gray-600 dark:text-gray-300">
-              <li>1 entreprise, 1 boutique</li>
-              <li>2 utilisateurs, 50 produits</li>
-              <li>100 factures/mois</li>
+              <li>1 boutique, 3 utilisateurs</li>
+              <li>30 produits</li>
+              <li>30 factures/mois</li>
             </ul>
-            <NuxtLink to="/home/inscription" class="mt-6 inline-block w-full text-center px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700">Essayer</NuxtLink>
+            <NuxtLink to="/home/inscription" class="mt-6 inline-block w-full text-center px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700">Essayer gratuitement</NuxtLink>
           </div>
 
-          <!-- Basic -->
+          <!-- Starter -->
           <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-8">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Basic</h3>
-            <p class="text-3xl font-extrabold mt-3 text-gray-900 dark:text-white">9 900 XAF<span class="text-lg font-normal">/mois</span></p>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Starter</h3>
+            <p class="text-3xl font-extrabold mt-3 text-gray-900 dark:text-white">4 900 XAF<span class="text-lg font-normal">/mois</span></p>
             <ul class="mt-6 space-y-2 text-gray-600 dark:text-gray-300">
-              <li>3 boutiques, 5 utilisateurs</li>
-              <li>500 produits</li>
-              <li>1 000 factures/mois</li>
+              <li>2 boutiques, 5 utilisateurs</li>
+              <li>200 produits</li>
+              <li>200 factures/mois</li>
             </ul>
             <NuxtLink to="/home/inscription" class="mt-6 inline-block w-full text-center px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700">Choisir</NuxtLink>
           </div>
 
-          <!-- Premium -->
+          <!-- Business -->
           <div class="bg-gradient-to-b from-emerald-600 to-emerald-700 text-white rounded-2xl shadow-xl p-8 border-2 border-emerald-500">
             <div class="inline-block px-3 py-1 text-xs font-semibold bg-white/10 rounded-full">Le plus populaire</div>
-            <h3 class="text-xl font-semibold mt-3">Premium</h3>
-            <p class="text-3xl font-extrabold mt-3">29 900 XAF<span class="text-lg font-normal">/mois</span></p>
+            <h3 class="text-xl font-semibold mt-3">Business</h3>
+            <p class="text-3xl font-extrabold mt-3">9 900 XAF<span class="text-lg font-normal">/mois</span></p>
             <ul class="mt-6 space-y-2 text-emerald-50">
-              <li>10 boutiques, 25 utilisateurs</li>
-              <li>Produits et factures illimités</li>
-              <li>Exports CSV/Excel, import CSV</li>
+              <li>3 boutiques, 15 utilisateurs</li>
+              <li>1 000 produits, factures illimitées</li>
+              <li>Import/Export CSV &amp; Excel</li>
             </ul>
             <NuxtLink to="/home/inscription" class="mt-6 inline-block w-full text-center px-6 py-3 bg-white text-emerald-700 rounded-xl hover:bg-emerald-50">Commencer</NuxtLink>
           </div>
 
-          <!-- Organisation -->
+          <!-- Pro -->
           <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-8">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Organisation</h3>
-            <p class="text-3xl font-extrabold mt-3 text-gray-900 dark:text-white">55 000 XAF<span class="text-lg font-normal">/mois</span></p>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Pro</h3>
+            <p class="text-3xl font-extrabold mt-3 text-gray-900 dark:text-white">19 900 XAF<span class="text-lg font-normal">/mois</span></p>
             <ul class="mt-6 space-y-2 text-gray-600 dark:text-gray-300">
-              <li>Entreprises/boutiques/utilisateurs illimités</li>
-              <li>Exports/Imports et API</li>
-              <li>Analyses avancées, support dédié</li>
+              <li>10 boutiques, 50 utilisateurs</li>
+              <li>Produits &amp; factures illimités</li>
+              <li>Analytiques avancées + API</li>
             </ul>
-            <NuxtLink to="/home/contact_accueil" class="mt-6 inline-block w-full text-center px-6 py-3 border-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20">Parler à un expert</NuxtLink>
+            <NuxtLink to="/home/inscription" class="mt-6 inline-block w-full text-center px-6 py-3 border-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20">Choisir Pro</NuxtLink>
           </div>
         </div>
 

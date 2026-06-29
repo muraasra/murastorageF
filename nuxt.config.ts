@@ -29,10 +29,9 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['vue', 'vue-router', 'pinia', 'date-fns']
+      include: ['vue', 'vue-router', 'pinia']
     },
     build: {
-      // Supprime tous les console.log/console.warn en production
       terserOptions: {
         compress: {
           drop_console: true,
@@ -41,6 +40,21 @@ export default defineNuxtConfig({
         },
       },
       minify: 'terser',
+      // Isoler les libs lourdes dans leurs propres chunks — téléchargés seulement si utilisés
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/xlsx')) return 'vendor-xlsx'
+            if (id.includes('node_modules/jspdf')) return 'vendor-jspdf'
+            if (id.includes('node_modules/jszip')) return 'vendor-jszip'
+            if (id.includes('node_modules/jsbarcode')) return 'vendor-jsbarcode'
+            if (id.includes('node_modules/qrcode')) return 'vendor-qrcode'
+            if (id.includes('node_modules/quagga')) return 'vendor-quagga'
+            if (id.includes('node_modules/@nuxt/ui') || id.includes('node_modules/@headlessui')) return 'vendor-ui'
+            if (id.includes('node_modules/vue') || id.includes('node_modules/@vue')) return 'vendor-vue'
+          }
+        }
+      }
     },
   },
 

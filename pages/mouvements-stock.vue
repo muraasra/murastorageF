@@ -6,7 +6,6 @@ import { useNotification } from "../types/useNotification";
 import { API_BASE_URL } from "@/constants";
 import selecteur_date from "@/components/selecteur_date.vue";
 import LoadingSkeleton from "@/components/LoadingSkeleton.vue";
-import * as XLSX from 'xlsx';
 
 // Interface pour les mouvements de stock
 interface MouvementStock {
@@ -1024,7 +1023,8 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
                 </span>
               </td>
               <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900 dark:text-white">
-                {{ mouvement.produit_nom }}
+                <div>{{ mouvement.produit_nom }}</div>
+                <div v-if="mouvement.variante_nom" class="text-xs text-blue-500 dark:text-blue-400 mt-0.5">↘ {{ mouvement.variante_nom }}</div>
               </td>
               <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-white">
                 <span :class="getSignedQuantity(mouvement) >= 0 ? 'text-green-600' : 'text-red-600'" class="font-semibold">
@@ -1242,9 +1242,8 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Produit
               </label>
-              <p class="text-sm text-gray-900 dark:text-white">
-                {{ selectedMouvement.produit_nom }}
-              </p>
+              <p class="text-sm text-gray-900 dark:text-white">{{ selectedMouvement.produit_nom }}</p>
+              <p v-if="selectedMouvement.variante_nom" class="text-xs text-blue-500 dark:text-blue-400 mt-0.5">↘ {{ selectedMouvement.variante_nom }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

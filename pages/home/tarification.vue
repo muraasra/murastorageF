@@ -1,6 +1,8 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useSubscriptionStore } from '@/stores/subscription'
+import { useAuthStore } from '@/stores/auth'
 
 definePageMeta({ layout: 'accueil' })
 
@@ -11,7 +13,43 @@ useSeoMeta({
 })
 
 const router = useRouter()
+const authStore = useAuthStore()
+const subStore = useSubscriptionStore()
 const billingPeriod = ref<'monthly' | 'yearly'>('monthly')
+
+const isLoggedIn = computed(() => !!authStore.token)
+
+onMounted(async () => {
+  if (isLoggedIn.value) {
+    try {
+      await Promise.all([subStore.fetchCurrentLimits(), subStore.fetchCurrentUsage()])
+    } catch {}
+  }
+})
+
+function usagePct(current: number, limit: number | null) {
+  if (!limit) return null
+  return Math.min(Math.round((current / limit) * 100), 100)
+}
+
+function usageColor(pct: number | null) {
+  if (pct === null) return 'bg-emerald-500'
+  if (pct >= 90) return 'bg-red-500'
+  if (pct >= 70) return 'bg-orange-400'
+  return 'bg-emerald-500'
+}
+
+const usageItems = computed(() => {
+  const u = subStore.currentUsage
+  const l = subStore.currentLimits
+  if (!u || !l) return []
+  return [
+    { label: 'Boutiques', current: u.boutiques_count, limit: l.max_boutiques, pct: usagePct(u.boutiques_count, l.max_boutiques) },
+    { label: 'Utilisateurs', current: u.users_count, limit: l.max_users, pct: usagePct(u.users_count, l.max_users) },
+    { label: 'Produits', current: u.produits_count, limit: l.max_produits, pct: usagePct(u.produits_count, l.max_produits) },
+    { label: 'Factures/mois', current: u.factures_count, limit: l.max_factures_per_month, pct: usagePct(u.factures_count, l.max_factures_per_month) },
+  ]
+})
 const showPaymentModal = ref(false)
 const selectedPlan = ref<any>(null)
 const paymentMethod = ref('')
@@ -52,7 +90,7 @@ const PLANS = [
     highlight: false,
     description: 'Pour les petits commerces qui veulent gérer leur stock sérieusement.',
     features: [
-      { label: '1 boutique', ok: true },
+      { label: '2 boutiques', ok: true },
       { label: '5 utilisateurs', ok: true },
       { label: '200 produits', ok: true },
       { label: '200 factures/mois', ok: true },
@@ -183,6 +221,45 @@ async function pay() {
       </div>
     </section>
 
+    <!-- Utilisation du compte (utilisateurs connectés uniquement) -->
+    <section v-if="isLoggedIn && subStore.currentLimits" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-2">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="text-base font-bold text-gray-900">Votre utilisation actuelle</h2>
+            <p class="text-sm text-gray-500 mt-0.5">
+              Plan <span class="font-semibold text-emerald-700">{{ subStore.currentLimits.display_name }}</span>
+            </p>
+          </div>
+          <span class="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Ce mois-ci</span>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div v-for="item in usageItems" :key="item.label">
+            <div class="flex items-end justify-between mb-1.5">
+              <span class="text-xs font-medium text-gray-600">{{ item.label }}</span>
+              <span class="text-xs text-gray-500">
+                {{ item.current }}
+                <span v-if="item.limit !== null"> / {{ item.limit }}</span>
+                <span v-else class="text-emerald-600 font-medium"> / ∞</span>
+              </span>
+            </div>
+            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                v-if="item.limit !== null && item.pct !== null"
+                class="h-full rounded-full transition-all"
+                :class="usageColor(item.pct)"
+                :style="{ width: item.pct + '%' }"
+              />
+              <div v-else class="h-full w-full bg-emerald-100 rounded-full" />
+            </div>
+            <p v-if="item.pct !== null && item.pct >= 90" class="text-xs text-red-500 font-medium mt-1">Limite atteinte</p>
+            <p v-else-if="item.pct !== null && item.pct >= 70" class="text-xs text-orange-500 mt-1">{{ item.pct }}% utilisé</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Grille des plans -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -190,8 +267,16 @@ async function pay() {
           v-for="plan in PLANS"
           :key="plan.key"
           class="flex flex-col rounded-2xl border bg-white overflow-hidden transition-shadow hover:shadow-lg"
-          :class="plan.highlight ? 'border-emerald-500 shadow-emerald-100 shadow-lg ring-2 ring-emerald-500' : 'border-gray-200'"
+          :class="[
+            plan.highlight ? 'border-emerald-500 shadow-emerald-100 shadow-lg ring-2 ring-emerald-500' : 'border-gray-200',
+            isLoggedIn && subStore.currentLimits?.plan_name === plan.key ? 'ring-2 ring-violet-400 border-violet-300' : ''
+          ]"
         >
+          <!-- Badge plan actuel -->
+          <div v-if="isLoggedIn && subStore.currentLimits?.plan_name === plan.key" class="bg-violet-600 text-white text-xs font-semibold text-center py-1.5 tracking-wide">
+            Votre plan actuel
+          </div>
+
           <!-- En-tête -->
           <div class="px-6 pt-6 pb-4" :class="plan.highlight ? 'bg-emerald-50' : ''">
             <div class="flex items-center justify-between mb-3">

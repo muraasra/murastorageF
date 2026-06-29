@@ -76,65 +76,65 @@ const formData = ref({
 const packs = [
   {
     id: 'free',
-    nom: 'Free',
+    nom: 'Essai Gratuit',
     prix: 0,
     devise: 'XAF',
     duree: '3 mois',
-    description: 'Plan gratuit pour 3 mois',
+    description: 'Découvrez MuraStorage sans engagement ni carte bancaire.',
     fonctionnalites: [
-      '1 entreprise, 1 boutique',
-      '2 utilisateurs',
-      '15 produits',
-      '100 factures',
+      '1 boutique, 3 utilisateurs',
+      '30 produits',
+      '30 factures/mois',
+      'Gestion des partenaires',
       'Support Email'
     ],
     populaire: false
   },
   {
-    id: 'basic',
-    nom: 'Basic',
-    prix: 9900,
+    id: 'starter',
+    nom: 'Starter',
+    prix: 4900,
     devise: 'XAF',
     duree: 'mois',
-    description: 'Accès aux fonctionnalités de base',
+    description: 'Pour les petits commerces qui veulent gérer leur stock sérieusement.',
     fonctionnalites: [
-      '2 boutiques, 3 utilisateurs',
-      '100 produits',
-      '500 factures/mois',
-      'Codes-barres',
-      'Import/Export CSV/Excel'
+      '2 boutiques, 5 utilisateurs',
+      '200 produits',
+      '200 factures/mois',
+      '1 inventaire/mois',
+      'Export CSV'
     ],
     populaire: false
   },
   {
-    id: 'premium',
-    nom: 'Premium',
-    prix: 29000,
+    id: 'business',
+    nom: 'Business',
+    prix: 9900,
     devise: 'XAF',
     duree: 'mois',
-    description: 'Accès complet à toutes les fonctionnalités',
+    description: 'Pour les PME avec plusieurs points de vente et une équipe structurée.',
     fonctionnalites: [
-      '5 boutiques, 10 utilisateurs',
-      '500 produits',
-      '2,000 factures/mois',
-      '1 inventaire/mois',
-      'Support prioritaire'
+      '3 boutiques, 15 utilisateurs',
+      '1 000 produits',
+      'Factures illimitées',
+      'Import/Export CSV & Excel',
+      'Transferts entre boutiques'
     ],
     populaire: true
   },
   {
-    id: 'organisation',
-    nom: 'Organisation',
-    prix: 55000,
+    id: 'pro',
+    nom: 'Pro',
+    prix: 19900,
     devise: 'XAF',
     duree: 'mois',
-    description: 'Plan personnalisable illimité',
+    description: 'Toutes les fonctionnalités sans limite pour les entreprises ambitieuses.',
     fonctionnalites: [
-      'Entreprises, boutiques illimitées',
-      'Utilisateurs illimités',
-      'Produits illimités',
-      'API accès',
-      'Support dédié'
+      '10 boutiques, 50 utilisateurs',
+      'Produits & factures illimités',
+      'Inventaires illimités',
+      'Analytiques avancées',
+      'Support dédié + Accès API'
     ],
     populaire: false
   }

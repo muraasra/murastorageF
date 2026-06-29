@@ -97,12 +97,36 @@ const loadData = async () => {
       const stockProduit = stocksProduit.find((s: any) => s.produit === p.id)
       const variantesStockDuProduit = stocksVariante.filter((s: any) => s.produit === p.id)
 
-      const variantesStock = variantesStockDuProduit.map((s: any) => ({
+      // Stocks issus des enregistrements Stock avec variante
+      let variantesStock = variantesStockDuProduit.map((s: any) => ({
         varianteId: s.variante,
         varianteNom: s.variante_nom || `Variante ${s.variante}`,
         quantite: s.quantite || 0,
-        prixVente: s.prix_vente || p.prix_vente || p.prix || 0,
+        prixVente: parseFloat(s.variante_prix_vente) || p.prix_vente || p.prix || 0,
+        prixAchat: parseFloat(s.variante_prix_achat) || p.prix_achat || 0,
+        sku: s.variante_sku || '',
+        attributs: null as any,
       }))
+
+      // Enrichir avec attributs depuis p.variantes + ajouter celles sans stock
+      if (p.variantes && p.variantes.length > 0) {
+        for (const v of p.variantes) {
+          const existing = variantesStock.find((vs: any) => vs.varianteId === v.id)
+          if (existing) {
+            existing.attributs = v.attributs || null
+          } else {
+            variantesStock.push({
+              varianteId: v.id,
+              varianteNom: v.nom,
+              quantite: 0,
+              prixVente: parseFloat(v.prix_vente) || p.prix_vente || p.prix || 0,
+              prixAchat: parseFloat(v.prix_achat) || p.prix_achat || 0,
+              sku: v.sku || '',
+              attributs: v.attributs || null,
+            })
+          }
+        }
+      }
 
       const nbVariantes = p.nb_variantes ?? variantesStock.length
       // Si variantes : quantiteStock = somme des variantes ; sinon stock produit-niveau
@@ -188,15 +212,26 @@ const lignesPageSorted = computed(() =>
 const { error: notifError, success: notifSuccess } = useNotification()
 import { useNotification } from '@/types/useNotification'
 
+// ─── Expand variantes ─────────────────────────────────────────────────────────
+const expandedProducts = ref<Set<number>>(new Set())
+const toggleExpand = (id: number) => {
+  const s = new Set(expandedProducts.value)
+  if (s.has(id)) s.delete(id)
+  else s.add(id)
+  expandedProducts.value = s
+}
+
 const showAjustModal = ref(false)
 const ajustProduit = ref<any>(null)
+const ajustVariante = ref<{ varianteId: number, varianteNom: string } | null>(null)
 const ajustType = ref<'entree' | 'sortie' | 'ajustement'>('entree')
 const ajustQuantite = ref(1)
 const ajustMotif = ref('')
 const ajustLoading = ref(false)
 
-const ouvrirAjustement = (p: any) => {
+const ouvrirAjustement = (p: any, variante?: { varianteId: number, varianteNom: string, quantite: number }) => {
   ajustProduit.value = p
+  ajustVariante.value = variante ? { varianteId: variante.varianteId, varianteNom: variante.varianteNom } : null
   ajustType.value = 'entree'
   ajustQuantite.value = 1
   ajustMotif.value = ''
@@ -208,22 +243,21 @@ const confirmerAjustement = async () => {
   ajustLoading.value = true
   try {
     const h = getAuthHeaders()
-    await $fetch(getApiUrl('/api/mouvements-stock/'), {
-      method: 'POST',
-      headers: h,
-      body: {
-        produit: ajustProduit.value.id,
-        entrepot: boutiqueData.value?.id,
-        type_mouvement: ajustType.value,
-        quantite: ajustQuantite.value,
-        motif: ajustMotif.value || `${ajustType.value === 'entree' ? 'Entrée' : ajustType.value === 'sortie' ? 'Sortie' : 'Ajustement'} manuel`
-      }
-    })
-    notifSuccess(`Stock mis à jour : ${ajustProduit.value.nomProduit}`)
+    const body: any = {
+      produit: ajustProduit.value.id,
+      entrepot: boutiqueData.value?.id,
+      type_mouvement: ajustType.value,
+      quantite: ajustQuantite.value,
+      motif: ajustMotif.value || `${ajustType.value === 'entree' ? 'Entrée' : ajustType.value === 'sortie' ? 'Sortie' : 'Ajustement'} manuel`
+    }
+    if (ajustVariante.value?.varianteId) body.variante = ajustVariante.value.varianteId
+    await $fetch(getApiUrl('/api/mouvements-stock/'), { method: 'POST', headers: h, body })
+    notifSuccess(`Stock mis à jour : ${ajustProduit.value.nomProduit}${ajustVariante.value ? ` — ${ajustVariante.value.varianteNom}` : ''}`)
     showAjustModal.value = false
     await loadData()
   } catch (e: any) {
-    notifError(e?.data?.error || 'Erreur lors de l\'ajustement')
+    const msg = e?.data?.error || e?.data?.detail || e?.data?.non_field_errors?.[0] || e?.message || 'Erreur lors de l\'ajustement'
+    notifError(msg)
   } finally {
     ajustLoading.value = false
   }
@@ -431,14 +465,22 @@ const exporterCSV = () => {
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                <template v-for="p in lignesPageSorted" :key="p.id">
+                <!-- Ligne produit principale -->
                 <tr
-                  v-for="p in lignesPageSorted"
-                  :key="p.id"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors group"
                   :class="{ 'bg-red-50/50 dark:bg-red-900/5': (p.quantiteStock || 0) === 0 }"
                 >
                   <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">{{ p.reference }}</td>
-                  <td class="px-4 py-3 font-medium text-gray-900 dark:text-white max-w-[180px] truncate" :title="p.nomProduit">{{ p.nomProduit }}</td>
+                  <td class="px-4 py-3 max-w-[200px]">
+                    <div class="flex items-center gap-1.5">
+                      <button v-if="p.nbVariantes > 0" @click="toggleExpand(p.id)" class="flex-shrink-0 text-blue-500 hover:text-blue-700 transition-colors">
+                        <UIcon :name="expandedProducts.has(p.id) ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'" class="w-4 h-4" />
+                      </button>
+                      <span class="font-medium text-gray-900 dark:text-white truncate" :title="p.nomProduit">{{ p.nomProduit }}</span>
+                      <span v-if="p.nbVariantes > 0" class="flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">{{ p.nbVariantes }} var.</span>
+                    </div>
+                  </td>
                   <td class="px-4 py-3 text-gray-500 dark:text-gray-400 hidden md:table-cell">{{ p.category }}</td>
                   <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ (p.prix || 0).toLocaleString() }} F</td>
                   <td class="px-4 py-3 text-right">
@@ -463,11 +505,15 @@ const exporterCSV = () => {
                   <td class="px-4 py-3 text-center">
                     <div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
+                        v-if="!p.nbVariantes"
                         @click="ouvrirAjustement(p)"
                         class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 transition-colors"
                         title="Ajuster le stock"
                       >
                         <UIcon name="i-heroicons-pencil-square" class="w-3 h-3" /> Ajuster
+                      </button>
+                      <button v-else @click="toggleExpand(p.id)" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 transition-colors">
+                        <UIcon name="i-heroicons-squares-2x2" class="w-3 h-3" /> Variantes
                       </button>
                       <button
                         @click="ouvrirSeuil(p)"
@@ -479,6 +525,49 @@ const exporterCSV = () => {
                     </div>
                   </td>
                 </tr>
+
+                <!-- Sous-lignes variantes dépliables -->
+                <template v-if="p.nbVariantes > 0 && expandedProducts.has(p.id)">
+                  <tr v-for="v in p.variantesStock" :key="v.varianteId"
+                    class="bg-blue-50/40 dark:bg-blue-900/10 border-l-4 border-blue-300 dark:border-blue-700 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                    <td class="px-4 py-2.5 font-mono text-xs text-gray-400 dark:text-gray-500 pl-8">—</td>
+                    <td class="px-4 py-2.5 pl-8">
+                      <div class="flex items-center gap-2">
+                        <UIcon name="i-heroicons-arrow-right-circle" class="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                          <div>
+                          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ v.varianteNom }}</span>
+                          <span v-if="v.sku" class="ml-1.5 text-xs text-gray-400 dark:text-gray-500 font-mono">{{ v.sku }}</span>
+                        </div>
+                        <div v-if="v.attributs && Object.keys(v.attributs).length" class="text-xs text-blue-500 dark:text-blue-400 mt-0.5">
+                          {{ Object.entries(v.attributs).map(([k, val]) => `${k}: ${val}`).join(' · ') }}
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5 text-xs text-gray-400 dark:text-gray-500 hidden md:table-cell italic">variante</td>
+                    <td class="px-4 py-2.5 text-right text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ (v.prixVente || 0).toLocaleString() }} F</td>
+                    <td class="px-4 py-2.5 text-right">
+                      <span class="font-bold text-sm" :class="{
+                        'text-red-600 dark:text-red-400': v.quantite === 0,
+                        'text-orange-600 dark:text-orange-400': v.quantite > 0 && v.quantite < 5,
+                        'text-emerald-600 dark:text-emerald-400': v.quantite >= 5,
+                      }">{{ v.quantite }}</span>
+                    </td>
+                    <td class="px-4 py-2.5 text-right text-sm text-gray-500 dark:text-gray-500 hidden lg:table-cell">{{ formatCurrency(v.quantite * (v.prixVente || 0)) }}</td>
+                    <td class="px-4 py-2.5 text-center">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+                        :class="v.quantite === 0 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'">
+                        {{ v.quantite === 0 ? 'Rupture' : 'En stock' }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-2.5 text-center">
+                      <button @click="ouvrirAjustement(p, v)"
+                        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 transition-colors">
+                        <UIcon name="i-heroicons-pencil-square" class="w-3 h-3" /> Ajuster
+                      </button>
+                    </td>
+                  </tr>
+                </template>
+                </template>
               </tbody>
               <!-- Total -->
               <tfoot>
@@ -519,6 +608,10 @@ const exporterCSV = () => {
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Ajustement de stock</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-xs">{{ ajustProduit?.nomProduit }}</p>
+            <div v-if="ajustVariante" class="mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+              <UIcon name="i-heroicons-tag" class="w-3 h-3" />
+              {{ ajustVariante.varianteNom }}
+            </div>
           </div>
           <button @click="showAjustModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
             <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
@@ -527,9 +620,12 @@ const exporterCSV = () => {
         <div class="px-6 py-5 space-y-4">
           <!-- Stock actuel -->
           <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Stock actuel</span>
-            <span class="text-xl font-bold" :class="statusBadge(ajustProduit?.quantiteStock || 0).cls.split(' ').slice(2).join(' ')">
-              {{ ajustProduit?.quantiteStock || 0 }} unités
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ ajustVariante ? 'Stock variante' : 'Stock actuel' }}</span>
+            <span class="text-xl font-bold">
+              {{ ajustVariante
+                ? (ajustProduit?.variantesStock?.find((v: any) => v.varianteId === ajustVariante?.varianteId)?.quantite ?? 0)
+                : (ajustProduit?.quantiteStock || 0)
+              }} unités
             </span>
           </div>
           <!-- Type de mouvement -->
