@@ -1,0 +1,19 @@
+{
+  "name": "Mura Storage",
+  "short_name": "MuraStorage",
+  "description": "Logiciel de gestion de stock, inventaire et facturation pour PME africaines.",
+  "start_url": "/home/accueil",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "icons": [
+    { "src": "/img/logo-mura-storage.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/img/logo-mura-storage.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [
+    { "src": "/img/logo-mura-storage.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide" }
+  ]
+}

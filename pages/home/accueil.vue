@@ -7,18 +7,28 @@ import Avis from "~/components/home/Avis.vue";
 import { useMuraTracking } from '@/composables/useMuraTracking'
 
 // Métadonnées SEO optimisées avec composable
-import { useSeo, createWebPageStructuredData, createWebSiteStructuredData } from '@/composables/useSeo'
+import { useSeo, createWebPageStructuredData, createWebSiteStructuredData, createSoftwareApplicationData, createFAQData, SITE_URL } from '@/composables/useSeo'
 
 useSeo({
-  title: 'Mura Storage - Gestion Stock Multi-Entrepôts | Essai Gratuit',
-  description: 'Solution complète de gestion de stock, inventaire et facturation pour entreprises. Multi-entrepôts, codes-barres, alertes. Essai gratuit 3 mois. Sécurité RGPD, support 24/7.',
-  keywords: 'gestion de stock, logiciel stock, inventaire, facturation, gestion entrepôt, multi-entrepôts, codes-barres, transfert stock, alertes stock, Mura Storage, Groupe Mura, ERP stock, suivi stock, gestion inventaire, logiciel facturation, gestion produits, stock management, inventory management, warehouse management, point de vente, POS, Cameroun, Afrique, logiciel stock Cameroun, gestion stock Afrique, wilfried tayou, tayou fom',
-  canonical: 'https://murastorage.netlify.app/home/accueil',
-  structuredData: createWebPageStructuredData(
-    'Mura Storage - Logiciel de Gestion Stock Multi-Entrepôts',
-    'Solution complète de gestion de stock, inventaire et facturation pour entreprises',
-    'https://murastorage.netlify.app/home/accueil'
-  )
+  title: 'Mura Storage — Logiciel de gestion de stock pour PME africaines | Essai gratuit 3 mois',
+  description: 'Mura Storage : gérez stocks, inventaires et factures de toutes vos boutiques en un seul endroit. Conçu pour les PME d\'Afrique. Essai gratuit 3 mois, sans carte bancaire.',
+  keywords: 'gestion de stock Afrique, logiciel stock Cameroun, inventaire multi-boutiques, facturation PME africaine, Mura Storage, Groupe Mura, gestion entrepôt, codes-barres, transfert stock, logiciel stock gratuit',
+  canonical: `${SITE_URL}/home/accueil`,
+  ogImage: `${SITE_URL}/img/logo-mura-storage.png`,
+  structuredData: [
+    createWebPageStructuredData(
+      'Mura Storage — Logiciel de gestion de stock pour PME africaines',
+      'Gérez stocks, inventaires et factures de toutes vos boutiques. Essai gratuit 3 mois.',
+      `${SITE_URL}/home/accueil`
+    ),
+    createSoftwareApplicationData(),
+    createFAQData([
+      { question: 'Qu\'est-ce que Mura Storage ?', answer: 'Mura Storage est un logiciel de gestion de stock, d\'inventaire et de facturation multi-boutiques conçu pour les PME africaines. Il permet de suivre les stocks en temps réel, générer des codes-barres, transférer des marchandises entre boutiques et créer des factures.' },
+      { question: 'Mura Storage est-il gratuit ?', answer: 'Oui, Mura Storage propose un plan Essai Gratuit pendant 3 mois sans carte bancaire. Des plans payants (Starter 4 900 FCFA, Business 9 900 FCFA, Pro 19 900 FCFA) sont disponibles ensuite.' },
+      { question: 'Mura Storage fonctionne-t-il sur mobile ?', answer: 'Oui, Mura Storage est entièrement responsive et fonctionne sur smartphone, tablette et ordinateur. Il est accessible depuis n\'importe quel navigateur sans installation.' },
+      { question: 'Puis-je gérer plusieurs boutiques avec Mura Storage ?', answer: 'Oui, Mura Storage supporte la gestion multi-boutiques. Le plan Starter gère 2 boutiques, Business 3 boutiques et Pro jusqu\'à 10 boutiques.' },
+    ])
+  ]
 });
 
 // Structured Data WebSite
@@ -117,7 +127,7 @@ onUnmounted(() => { if (twTimer) clearTimeout(twTimer) })
       </div>
       
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <!-- Content -->
           <div class="text-center lg:text-left">
             <div class="inline-flex items-center px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-6 animate-fade-in-up border border-emerald-200/50 dark:border-emerald-700/30">
@@ -214,8 +224,8 @@ onUnmounted(() => { if (twTimer) clearTimeout(twTimer) })
                 class="w-full max-w-lg mx-auto lg:max-w-none drop-shadow-2xl"
               >
             </div>
-            <!-- Floating cards -->
-            <div class="absolute -top-4 right-0 lg:-right-8 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 transform hover:scale-105 transition-all duration-300 animate-float">
+            <!-- Floating cards (cachées sur mobile pour éviter le débordement) -->
+            <div class="hidden sm:block absolute -top-4 right-0 lg:-right-8 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 transform hover:scale-105 transition-all duration-300 animate-float">
               <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
                   <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,7 +238,7 @@ onUnmounted(() => { if (twTimer) clearTimeout(twTimer) })
                 </div>
               </div>
             </div>
-            <div class="absolute bottom-20 lg:bottom-10 -left-4 lg:left-auto lg:-right-12 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 transform hover:scale-105 transition-all duration-300 animate-float-delayed">
+            <div class="hidden sm:block absolute bottom-20 lg:bottom-10 -left-4 lg:left-auto lg:-right-12 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 transform hover:scale-105 transition-all duration-300 animate-float-delayed">
               <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
                   <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -617,7 +627,7 @@ onUnmounted(() => { if (twTimer) clearTimeout(twTimer) })
           </p>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <!-- Contact Info -->
           <div class="space-y-8">
             <div class="flex items-start space-x-4">

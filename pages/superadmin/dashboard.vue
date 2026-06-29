@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useNotification } from '@/types/useNotification'
 import { useApiBase } from '@/composables/useApiBase'
@@ -12,7 +12,7 @@ definePageMeta({ layout: 'superadmin' })
 
 const { error: notifError, success: notifSuccess } = useNotification()
 
-// ─── State ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const entrepriseData = ref<any>(null)
 const boutiques = ref<any[]>([])
 const users = ref<any[]>([])
@@ -28,7 +28,7 @@ const selectedBoutique = ref<any>(null)
 const isAccessingBoutique = ref(false)
 let refreshTimer: ReturnType<typeof setInterval> | null = null
 
-// ─── Computed KPIs globaux ────────────────────────────────────────────────────
+// â”€â”€â”€ Computed KPIs globaux â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const totalStock = computed(() =>
   Object.values(boutiquesStats.value).reduce((a, s) => a + s.stockCount, 0)
 )
@@ -44,16 +44,16 @@ const totalSalesToday = computed(() =>
 const lastUpdatedLabel = computed(() => {
   if (!lastUpdated.value) return ''
   const diff = Math.floor((Date.now() - lastUpdated.value.getTime()) / 1000)
-  if (diff < 5) return 'À l\'instant'
+  if (diff < 5) return 'Ã€ l\'instant'
   if (diff < 60) return `Il y a ${diff}s`
   return `Il y a ${Math.floor(diff / 60)}min`
 })
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const formatFCFA = (n: number) => new Intl.NumberFormat('fr-FR').format(Math.round(n)) + ' FCFA'
-const formatDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'
+const formatDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'â€”'
 
-// ─── Data loading ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Data loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const loadEntreprise = async () => {
   if (process.client) {
     const e = localStorage.getItem('entreprise')
@@ -137,12 +137,12 @@ const loadAllData = async () => {
 
 const refreshData = async () => {
   await loadAllData()
-  notifSuccess('Données rafraîchies')
+  notifSuccess('DonnÃ©es rafraÃ®chies')
 }
 
 const onEntrepriseUpdated = async () => {
   await loadEntreprise()
-  notifSuccess('Entreprise mise à jour')
+  notifSuccess('Entreprise mise Ã  jour')
 }
 
 onMounted(async () => {
@@ -151,13 +151,13 @@ onMounted(async () => {
 })
 onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 
-// ─── Accès entrepôt ───────────────────────────────────────────────────────────
+// â”€â”€â”€ AccÃ¨s entrepÃ´t â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const accessBoutique = async (boutique: any) => {
   if (isAccessingBoutique.value) return
   isAccessingBoutique.value = true
   try {
     if (process.client) localStorage.setItem('boutique', JSON.stringify(boutique))
-    notifSuccess(`Accès à « ${boutique.nom} »`)
+    notifSuccess(`AccÃ¨s Ã  Â« ${boutique.nom} Â»`)
     window.location.href = '/user'
   } finally {
     setTimeout(() => { isAccessingBoutique.value = false }, 1500)
@@ -168,11 +168,11 @@ const editBoutique = (b: any) => { selectedBoutique.value = b; showEditBoutique.
 
 const getBoutiqueResponsible = (boutiqueId: number) => {
   const u = users.value.find((usr: any) => usr.boutique?.id === boutiqueId && ['admin', 'superadmin'].includes(usr.role))
-  if (!u) return 'Non assigné'
-  return `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || 'Non assigné'
+  if (!u) return 'Non assignÃ©'
+  return `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || 'Non assignÃ©'
 }
 
-// ─── Bar chart comparaison ────────────────────────────────────────────────────
+// â”€â”€â”€ Bar chart comparaison â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const maxStockValue = computed(() =>
   Math.max(1, ...boutiques.value.map(b => boutiquesStats.value[b.id]?.stockValue || 0))
 )
@@ -182,7 +182,7 @@ const maxStockValue = computed(() =>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-      <!-- ── En-tête ──────────────────────────────────────────────────────── -->
+      <!-- â”€â”€ En-tÃªte â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Global</h1>
@@ -201,7 +201,7 @@ const maxStockValue = computed(() =>
             class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
             <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" :class="{ 'animate-spin': isRefreshing }" />
-            Rafraîchir
+            RafraÃ®chir
           </button>
           <button
             @click="showCreateUser = true"
@@ -215,21 +215,21 @@ const maxStockValue = computed(() =>
             class="inline-flex items-center gap-2 px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors shadow-sm"
           >
             <UIcon name="i-heroicons-plus" class="w-4 h-4" />
-            Entrepôt
+            EntrepÃ´t
           </button>
           <button
             @click="showSettings = true"
             class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            title="Paramètres entreprise"
+            title="ParamÃ¨tres entreprise"
           >
             <UIcon name="i-heroicons-cog-6-tooth" class="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      <!-- ── Skeleton ─────────────────────────────────────────────────────── -->
+      <!-- â”€â”€ Skeleton â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <template v-if="isLoading">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div v-for="i in 4" :key="i" class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 animate-pulse h-28"></div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -239,26 +239,26 @@ const maxStockValue = computed(() =>
 
       <template v-else>
 
-        <!-- ── KPIs globaux ────────────────────────────────────────────────── -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCardEnhanced title="Entrepôts actifs" :value="boutiques.length" format="number" icon="i-heroicons-building-storefront" color="blue" :subtitle="`${users.length} utilisateurs`" />
-          <KpiCardEnhanced title="Unités en stock" :value="totalStock" format="number" icon="i-heroicons-cube" color="green" subtitle="Tous entrepôts" />
-          <KpiCardEnhanced title="Valeur totale stock" :value="totalValeur" format="currency" icon="i-heroicons-banknotes" color="purple" subtitle="Tous entrepôts" />
+        <!-- â”€â”€ KPIs globaux â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCardEnhanced title="EntrepÃ´ts actifs" :value="boutiques.length" format="number" icon="i-heroicons-building-storefront" color="blue" :subtitle="`${users.length} utilisateurs`" />
+          <KpiCardEnhanced title="UnitÃ©s en stock" :value="totalStock" format="number" icon="i-heroicons-cube" color="green" subtitle="Tous entrepÃ´ts" />
+          <KpiCardEnhanced title="Valeur totale stock" :value="totalValeur" format="currency" icon="i-heroicons-banknotes" color="purple" subtitle="Tous entrepÃ´ts" />
           <KpiCardEnhanced title="Ventes du jour" :value="totalSalesToday" format="currency" icon="i-heroicons-chart-bar-square" :color="totalSalesToday > 0 ? 'green' : 'gray'" subtitle="Toutes boutiques" />
         </div>
 
-        <!-- ── Alerte ruptures ─────────────────────────────────────────────── -->
+        <!-- â”€â”€ Alerte ruptures â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div
           v-if="totalRuptures > 0"
           class="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3"
         >
           <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-500 flex-shrink-0" />
           <p class="text-sm font-medium text-red-700 dark:text-red-400">
-            {{ totalRuptures }} rupture{{ totalRuptures > 1 ? 's' : '' }} de stock détectée{{ totalRuptures > 1 ? 's' : '' }} sur l'ensemble des entrepôts
+            {{ totalRuptures }} rupture{{ totalRuptures > 1 ? 's' : '' }} de stock dÃ©tectÃ©e{{ totalRuptures > 1 ? 's' : '' }} sur l'ensemble des entrepÃ´ts
           </p>
         </div>
 
-        <!-- ── Carte entreprise ────────────────────────────────────────────── -->
+        <!-- â”€â”€ Carte entreprise â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -270,8 +270,8 @@ const maxStockValue = computed(() =>
                 <UIcon v-else name="i-heroicons-building-office-2" class="w-7 h-7 text-gray-400" />
               </div>
               <div>
-                <p class="text-lg font-bold text-gray-900 dark:text-white">{{ entrepriseData?.nom || '—' }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ entrepriseData?.ville }} <span v-if="entrepriseData?.numero_fiscal">· NUI: {{ entrepriseData.numero_fiscal }}</span></p>
+                <p class="text-lg font-bold text-gray-900 dark:text-white">{{ entrepriseData?.nom || 'â€”' }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ entrepriseData?.ville }} <span v-if="entrepriseData?.numero_fiscal">Â· NUI: {{ entrepriseData.numero_fiscal }}</span></p>
               </div>
             </div>
             <button @click="showSettings = true" class="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
@@ -281,9 +281,9 @@ const maxStockValue = computed(() =>
           </div>
         </div>
 
-        <!-- ── Comparaison entrepôts (barres) ─────────────────────────────── -->
+        <!-- â”€â”€ Comparaison entrepÃ´ts (barres) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div v-if="boutiques.length > 0" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-5">Valeur du stock par entrepôt</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-5">Valeur du stock par entrepÃ´t</h2>
           <div class="space-y-3">
             <div v-for="b in boutiques" :key="b.id" class="flex items-center gap-3">
               <span class="text-sm text-gray-700 dark:text-gray-300 w-32 truncate flex-shrink-0" :title="b.nom">{{ b.nom }}</span>
@@ -304,16 +304,16 @@ const maxStockValue = computed(() =>
           </div>
         </div>
 
-        <!-- ── Cards entrepôts ────────────────────────────────────────────── -->
+        <!-- â”€â”€ Cards entrepÃ´ts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div>
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Entrepôts ({{ boutiques.length }})</h2>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">EntrepÃ´ts ({{ boutiques.length }})</h2>
           </div>
 
           <div v-if="boutiques.length === 0" class="bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
             <UIcon name="i-heroicons-building-storefront" class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p class="text-gray-500 dark:text-gray-400 font-medium">Aucun entrepôt créé</p>
-            <button @click="showCreateBoutique = true" class="mt-3 text-sm text-emerald-600 dark:text-emerald-400 hover:underline">Créer le premier entrepôt →</button>
+            <p class="text-gray-500 dark:text-gray-400 font-medium">Aucun entrepÃ´t crÃ©Ã©</p>
+            <button @click="showCreateBoutique = true" class="mt-3 text-sm text-emerald-600 dark:text-emerald-400 hover:underline">CrÃ©er le premier entrepÃ´t â†’</button>
           </div>
 
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -326,7 +326,7 @@ const maxStockValue = computed(() =>
               <div class="flex items-start justify-between mb-4">
                 <div class="min-w-0 flex-1">
                   <h3 class="font-semibold text-gray-900 dark:text-white truncate">{{ b.nom }}</h3>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ b.ville || '—' }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ b.ville || 'â€”' }}</p>
                 </div>
                 <div class="flex items-center gap-1 ml-2 flex-shrink-0">
                   <button
@@ -342,15 +342,15 @@ const maxStockValue = computed(() =>
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
                   >
                     <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-3.5 h-3.5" />
-                    Accéder
+                    AccÃ©der
                   </button>
                 </div>
               </div>
 
-              <!-- Métriques -->
+              <!-- MÃ©triques -->
               <div class="grid grid-cols-2 gap-2 mb-4">
                 <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                  <p class="text-xs text-blue-600 dark:text-blue-400 font-medium">Unités stock</p>
+                  <p class="text-xs text-blue-600 dark:text-blue-400 font-medium">UnitÃ©s stock</p>
                   <p class="text-lg font-bold text-blue-700 dark:text-blue-300">{{ (boutiquesStats[b.id]?.stockCount || 0).toLocaleString() }}</p>
                 </div>
                 <div class="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3">
@@ -379,7 +379,7 @@ const maxStockValue = computed(() =>
                   <span class="font-medium text-gray-700 dark:text-gray-300 truncate ml-2">{{ getBoutiqueResponsible(b.id) }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span>Dernière activité</span>
+                  <span>DerniÃ¨re activitÃ©</span>
                   <span>{{ formatDate(b.updated_at || b.created_at) }}</span>
                 </div>
               </div>
@@ -387,13 +387,13 @@ const maxStockValue = computed(() =>
           </div>
         </div>
 
-        <!-- ── Activité récente & Utilisateurs ────────────────────────────── -->
+        <!-- â”€â”€ ActivitÃ© rÃ©cente & Utilisateurs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Derniers utilisateurs -->
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-base font-semibold text-gray-900 dark:text-white">Utilisateurs ({{ users.length }})</h2>
-              <NuxtLink to="/superadmin/utilisateurs" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Gérer →</NuxtLink>
+              <NuxtLink to="/superadmin/utilisateurs" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">GÃ©rer â†’</NuxtLink>
             </div>
             <div v-if="users.length === 0" class="text-sm text-gray-400 dark:text-gray-600 py-4 text-center">Aucun utilisateur</div>
             <div v-else class="space-y-2">
@@ -411,7 +411,7 @@ const maxStockValue = computed(() =>
                   <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {{ `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username }}
                   </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ u.email || '—' }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ u.email || 'â€”' }}</p>
                 </div>
                 <span
                   class="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium"
@@ -437,8 +437,8 @@ const maxStockValue = computed(() =>
                   <UIcon name="i-heroicons-cog-6-tooth" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Paramètres entreprise</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Logo, nom, coordonnées</p>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">ParamÃ¨tres entreprise</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Logo, nom, coordonnÃ©es</p>
                 </div>
               </button>
               <NuxtLink
@@ -449,8 +449,8 @@ const maxStockValue = computed(() =>
                   <UIcon name="i-heroicons-users" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Gérer les utilisateurs</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Créer, modifier, supprimer</p>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">GÃ©rer les utilisateurs</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">CrÃ©er, modifier, supprimer</p>
                 </div>
               </NuxtLink>
               <NuxtLink
@@ -461,8 +461,8 @@ const maxStockValue = computed(() =>
                   <UIcon name="i-heroicons-building-storefront" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Gérer les entrepôts</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Créer, configurer, assigner</p>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">GÃ©rer les entrepÃ´ts</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">CrÃ©er, configurer, assigner</p>
                 </div>
               </NuxtLink>
             </div>
@@ -479,3 +479,4 @@ const maxStockValue = computed(() =>
     <EditEntrepriseModal :isOpen="showSettings" @close="showSettings = false" @updated="onEntrepriseUpdated" />
   </div>
 </template>
+

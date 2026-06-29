@@ -190,7 +190,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
       </div>
 
       <!-- KPIs -->
-      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <p class="text-xs text-gray-500 mb-1">Total</p>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total }}</p>
@@ -226,7 +226,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 
       <!-- Filtres -->
       <div class="flex flex-wrap gap-3">
-        <div class="relative flex-1 min-w-[200px]">
+        <div class="relative w-full sm:flex-1 sm:min-w-[200px]">
           <UIcon name="i-heroicons-magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input v-model="searchQuery" type="text" placeholder="Rechercher par nom, téléphone..."
             class="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
@@ -240,7 +240,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
       </div>
 
       <!-- Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden overflow-x-auto">
         <div v-if="loading" class="p-8 text-center text-gray-500">
           <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 animate-spin mx-auto mb-2" /> Chargement...
         </div>
@@ -497,3 +497,4 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 .modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
 </style>
+

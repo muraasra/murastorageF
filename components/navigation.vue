@@ -64,8 +64,16 @@ const pinnedItems = computed(() =>
 
 const isActive = (link: string) => route.path === link || route.path.startsWith(link + '/')
 
-// Fermer la sheet quand on navigue
-watch(() => route.path, () => { showSheet.value = false })
+// Fermer la sheet + rafraîchir rôle/boutique à chaque navigation
+watch(() => route.path, () => {
+  showSheet.value = false
+  if (!process.client) return
+  try {
+    const user = localStorage.getItem('user')
+    role.value = user ? JSON.parse(user)?.role || null : null
+    boutiqueSelected.value = !!localStorage.getItem('boutique')
+  } catch { /* ignore */ }
+})
 </script>
 
 <template>

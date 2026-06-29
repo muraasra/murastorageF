@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useApi } from '@/stores/useApi';
 import { API_BASE_URL } from '@/constants';
@@ -27,7 +27,7 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen bg-gray-50 flex items-center justify-center">
-    <div class="bg-white rounded-2xl shadow-xl p-10 max-w-xl w-full text-center">
+    <div class="bg-white rounded-2xl shadow-xl p-4 sm:p-10 max-w-xl w-full text-center">
       <h1 class="text-3xl md:text-4xl font-extrabold mb-4 text-blue-600">
         Bienvenue sur le Dashboard<br>
         <span class="text-gray-800">Super Admin</span>
@@ -37,7 +37,7 @@ onMounted(async () => {
       </h1>
       <p class="mb-8 text-gray-600">
         Vous pouvez superviser l'ensemble de la plateforme ici.<br>
-        Utilisez le menu à gauche pour accéder à toutes les fonctionnalités.
+        Utilisez le menu Ã  gauche pour accÃ©der Ã  toutes les fonctionnalitÃ©s.
       </p>
       <!-- Widgets de stats -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

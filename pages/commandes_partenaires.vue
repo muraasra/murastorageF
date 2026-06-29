@@ -172,7 +172,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     </div>
 
     <!-- KPIs -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <p class="text-xs text-gray-500 font-medium mb-1">CA Total</p>
         <p class="text-xl font-bold text-gray-900 dark:text-white">{{ totalCA.toLocaleString('fr-FR') }} <span class="text-sm font-normal text-gray-500">FCFA</span></p>
@@ -294,3 +294,4 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 
   </div>
 </template>
+

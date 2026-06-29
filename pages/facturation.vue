@@ -1223,10 +1223,10 @@ const generatePDF = async (): Promise<boolean> => {
         boutique_nom: boutique.value?.nom || '',
       },
       invoice.value.items.map(item => ({
-        nom: (item as any).nom || (item as any).produit_nom || '',
-        reference: (item as any).reference || '',
-        quantite: (item as any).quantite || 1,
-        prix: (item as any).prix || 0,
+        nom: item.name || (item as any).nom || (item as any).produit_nom || '',
+        reference: item.reference || '',
+        quantite: item.quantity || (item as any).quantite || 1,
+        prix: item.prix_vente_vendeur || item.price || (item as any).prix || 0,
       }))
     )
     return true

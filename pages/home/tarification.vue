@@ -3,13 +3,28 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { useAuthStore } from '@/stores/auth'
+import { useSeo, createSoftwareApplicationData, createFAQData, createPricingData, SITE_URL } from '@/composables/useSeo'
 
 definePageMeta({ layout: 'accueil' })
 
-useSeoMeta({
-  title: 'Tarification MuraStorage — Starter 4 900 FCFA, Business 9 900 FCFA, Pro 19 900 FCFA',
-  description: 'Plans abordables pour tous les commerces africains. Essai gratuit 3 mois sans carte bancaire. Paiement Orange Money, MTN Money, carte bancaire.',
-  robots: 'index, follow',
+// SEO/AEO/GEO complet
+useSeo({
+  title: 'Tarification Mura Storage — Starter 4 900, Business 9 900, Pro 19 900 FCFA/mois',
+  description: 'Plans de gestion de stock abordables pour PME africaines. Essai gratuit 3 mois. Starter 4 900 FCFA, Business 9 900 FCFA, Pro 19 900 FCFA. Paiement Orange Money, MTN, carte.',
+  keywords: 'tarif gestion stock Cameroun, prix logiciel stock, abonnement Mura Storage, Starter Business Pro, logiciel facturation prix',
+  canonical: `${SITE_URL}/home/tarification`,
+  ogImage: `${SITE_URL}/img/logo-mura-storage.png`,
+  structuredData: [
+    createSoftwareApplicationData(),
+    ...createPricingData(),
+    createFAQData([
+      { question: 'Combien coûte Mura Storage ?', answer: 'Mura Storage propose 4 plans : Essai Gratuit (0 FCFA, 3 mois), Starter (4 900 FCFA/mois), Business (9 900 FCFA/mois) et Pro (19 900 FCFA/mois). Paiement par Orange Money, MTN Money ou carte bancaire.' },
+      { question: 'Y a-t-il une période d\'essai gratuite ?', answer: 'Oui, le plan Essai Gratuit donne accès à Mura Storage pendant 3 mois sans carte bancaire ni engagement.' },
+      { question: 'Puis-je changer de plan à tout moment ?', answer: 'Oui, vous pouvez passer à un plan supérieur ou inférieur à tout moment. Le changement prend effet immédiatement.' },
+      { question: 'Quels moyens de paiement acceptez-vous ?', answer: 'Nous acceptons Orange Money, MTN Mobile Money, Stripe et carte bancaire classique. Aucun prélèvement automatique sans accord.' },
+      { question: 'Combien de boutiques puis-je gérer avec le plan Starter ?', answer: 'Le plan Starter permet de gérer 2 boutiques avec 5 utilisateurs et jusqu\'à 200 produits.' },
+    ])
+  ]
 })
 
 const router = useRouter()
@@ -234,7 +249,7 @@ async function pay() {
           <span class="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Ce mois-ci</span>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div v-for="item in usageItems" :key="item.label">
             <div class="flex items-end justify-between mb-1.5">
               <span class="text-xs font-medium text-gray-600">{{ item.label }}</span>

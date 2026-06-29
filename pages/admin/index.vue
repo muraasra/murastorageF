@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useApiBase } from '@/composables/useApiBase'
 
@@ -16,7 +16,7 @@ const isRefreshing = ref(false)
 const lastUpdated = ref<Date | null>(null)
 let refreshTimer: ReturnType<typeof setInterval> | null = null
 
-// ─── KPIs ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ KPIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const totalUnites = computed(() => produits.value.reduce((a, p) => a + (p.quantiteStock || 0), 0))
 const totalValeur = computed(() => produits.value.reduce((a, p) => a + (p.quantiteStock || 0) * (p.prixUnitaire || 0), 0))
 const produitsFaibleStock = computed(() => produits.value.filter(p => (p.quantiteStock || 0) > 0 && (p.quantiteStock || 0) < 10).length)
@@ -32,7 +32,7 @@ const maxQty = computed(() => Math.max(1, ...topByQuantity.value.map(p => p.quan
 const lastUpdatedLabel = computed(() => {
   if (!lastUpdated.value) return ''
   const diff = Math.floor((Date.now() - lastUpdated.value.getTime()) / 1000)
-  if (diff < 5) return 'À l\'instant'
+  if (diff < 5) return 'Ã€ l\'instant'
   if (diff < 60) return `Il y a ${diff}s`
   return `Il y a ${Math.floor(diff / 60)}min`
 })
@@ -46,7 +46,7 @@ const stockStatusClass = (qty: number) => {
 }
 const stockStatusLabel = (qty: number) => qty === 0 ? 'Rupture' : qty < 10 ? 'Critique' : 'Faible'
 
-// ─── Data loading ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Data loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const loadData = async () => {
   if (!boutiqueData.value?.id) return
   isRefreshing.value = true
@@ -63,7 +63,7 @@ const loadData = async () => {
     const stocks: any[] = parseApiList(stocksRes.status === 'fulfilled' ? stocksRes.value : null)
     factures.value = parseApiList(facturesRes.status === 'fulfilled' ? facturesRes.value : null)
 
-    // Récupérer les produits de l'entreprise pour les croiser avec les stocks
+    // RÃ©cupÃ©rer les produits de l'entreprise pour les croiser avec les stocks
     const entrepriseId = boutiqueData.value?.entreprise?.id || boutiqueData.value?.entreprise || getEntrepriseId()
     if (stocks.length > 0 && entrepriseId) {
       const prodsRaw: any = await Promise.race([
@@ -71,13 +71,13 @@ const loadData = async () => {
         timeout(12000)
       ])
       const rawProds: any[] = parseApiList(prodsRaw)
-      // Croiser produits × stocks par boutique
+      // Croiser produits Ã— stocks par boutique
       produits.value = rawProds.map((p: any) => {
         const stock = stocks.find((s: any) => s.produit === p.id)
         return { ...p, quantiteStock: stock?.quantite ?? 0, prixUnitaire: parseFloat(p.prix_vente || p.prix || 0) }
       })
     } else if (stocks.length > 0) {
-      // Fallback : afficher avec les données de stock directement
+      // Fallback : afficher avec les donnÃ©es de stock directement
       produits.value = stocks.map((s: any) => ({
         id: s.produit, nom: s.produit_nom || `Produit #${s.produit}`,
         quantiteStock: s.quantite ?? 0, prixUnitaire: 0,
@@ -85,7 +85,7 @@ const loadData = async () => {
     } else {
       produits.value = []
     }
-    // Mouvements récents (derniers 8)
+    // Mouvements rÃ©cents (derniers 8)
     try {
       const mvRaw: any = await $fetch(getApiUrl(`/api/mouvements-stock/?entrepot=${boutiqueData.value.id}&ordering=-created_at&limit=8`), fetchOpts)
       const mvArr = parseApiList(mvRaw)
@@ -119,14 +119,14 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-      <!-- En-tête -->
+      <!-- En-tÃªte -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Bonjour, {{ userData?.first_name || 'Administrateur' }} 👋
+            Bonjour, {{ userData?.first_name || 'Administrateur' }} ðŸ‘‹
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2">
-            Entrepôt <span class="font-semibold text-gray-700 dark:text-gray-300">{{ boutiqueData?.nom || '—' }}</span>
+            EntrepÃ´t <span class="font-semibold text-gray-700 dark:text-gray-300">{{ boutiqueData?.nom || 'â€”' }}</span>
             <span v-if="lastUpdatedLabel" class="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-600">
               <UIcon name="i-heroicons-arrow-path" class="w-3 h-3" :class="{ 'animate-spin': isRefreshing }" />
               {{ lastUpdatedLabel }}
@@ -136,7 +136,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
         <div class="flex gap-2">
           <button @click="loadData" :disabled="isRefreshing" class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50">
             <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" :class="{ 'animate-spin': isRefreshing }" />
-            Rafraîchir
+            RafraÃ®chir
           </button>
           <NuxtLink to="/facturation" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
             <UIcon name="i-heroicons-plus" class="w-4 h-4" />
@@ -152,20 +152,20 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
           <p class="text-sm font-semibold text-red-700 dark:text-red-400">{{ alertesProduits.length }} article{{ alertesProduits.length > 1 ? 's' : '' }} en stock faible ou critique</p>
           <p class="text-xs text-red-600 dark:text-red-400 mt-0.5 truncate">{{ alertesProduits.map(p => p.nom).join(', ') }}</p>
         </div>
-        <NuxtLink to="/stock_produit" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline whitespace-nowrap">Voir →</NuxtLink>
+        <NuxtLink to="/stock_produit" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline whitespace-nowrap">Voir â†’</NuxtLink>
       </div>
 
       <!-- Skeleton -->
       <template v-if="isLoading">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div v-for="i in 4" :key="i" class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 animate-pulse h-28"></div>
         </div>
       </template>
 
       <template v-else>
         <!-- KPIs -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCardEnhanced title="Unités en stock" :value="totalUnites" format="number" icon="i-heroicons-cube" color="blue" :subtitle="`${produits.length} références`" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCardEnhanced title="UnitÃ©s en stock" :value="totalUnites" format="number" icon="i-heroicons-cube" color="blue" :subtitle="`${produits.length} rÃ©fÃ©rences`" />
           <KpiCardEnhanced title="Valeur du stock" :value="totalValeur" format="currency" icon="i-heroicons-banknotes" color="green" />
           <KpiCardEnhanced title="Ventes du jour" :value="ventesJour" format="currency" icon="i-heroicons-chart-bar-square" :color="ventesJour > 0 ? 'green' : 'gray'" :subtitle="`${nbVentesJour} facture${nbVentesJour > 1 ? 's' : ''}`" />
           <KpiCardEnhanced title="Ruptures" :value="produitsRupture" format="number" icon="i-heroicons-x-circle" :color="produitsRupture > 0 ? 'red' : 'gray'" :subtitle="produitsFaibleStock > 0 ? `${produitsFaibleStock} en faible stock` : 'Niveaux OK'" />
@@ -176,11 +176,11 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
           <!-- Top produits barres -->
           <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-5">
-              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Top produits — Quantité en stock</h2>
-              <NuxtLink to="/stock_produit" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Voir tout →</NuxtLink>
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Top produits â€” QuantitÃ© en stock</h2>
+              <NuxtLink to="/stock_produit" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Voir tout â†’</NuxtLink>
             </div>
             <div v-if="topByQuantity.length === 0" class="flex items-center justify-center h-32 text-gray-400 dark:text-gray-600">
-              <p class="text-sm">Aucune donnée</p>
+              <p class="text-sm">Aucune donnÃ©e</p>
             </div>
             <div v-else class="space-y-3">
               <div v-for="(p, i) in topByQuantity" :key="p.id" class="flex items-center gap-3">
@@ -222,7 +222,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
               <div v-for="p in alertesProduits" :key="p.id" class="flex items-center justify-between p-2.5 rounded-lg border" :class="(p.quantiteStock||0)===0 ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800' : 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800'">
                 <div class="min-w-0 flex-1">
                   <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ p.nom }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ p.quantiteStock || 0 }} unité{{ (p.quantiteStock||0)!==1?'s':'' }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ p.quantiteStock || 0 }} unitÃ©{{ (p.quantiteStock||0)!==1?'s':'' }}</p>
                 </div>
                 <span class="ml-2 px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0" :class="stockStatusClass(p.quantiteStock || 0)">
                   {{ stockStatusLabel(p.quantiteStock || 0) }}
@@ -233,10 +233,10 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
         </div>
 
         <!-- Actions rapides -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <NuxtLink v-for="action in [
             { to: '/stock_produit', icon: 'i-heroicons-square-2-stack', label: 'Stock', desc: 'Consulter & ajuster', color: 'blue' },
-            { to: '/facturation', icon: 'i-heroicons-document-currency-dollar', label: 'Nouvelle vente', desc: 'Créer une facture', color: 'emerald' },
+            { to: '/facturation', icon: 'i-heroicons-document-currency-dollar', label: 'Nouvelle vente', desc: 'CrÃ©er une facture', color: 'emerald' },
             { to: '/mouvements-stock', icon: 'i-heroicons-arrows-right-left', label: 'Mouvements', desc: 'Historique flux', color: 'purple' },
             { to: '/inventaire', icon: 'i-heroicons-clipboard-document-check', label: 'Inventaire', desc: 'Lancer un inventaire', color: 'amber' },
           ]" :key="action.to" :to="action.to"
@@ -266,11 +266,11 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
           </NuxtLink>
         </div>
 
-        <!-- Mouvements récents -->
+        <!-- Mouvements rÃ©cents -->
         <div v-if="mouvementsRecents.length > 0" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-base font-semibold text-gray-900 dark:text-white">Derniers mouvements de stock</h2>
-            <NuxtLink to="/mouvements-stock" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Voir tout →</NuxtLink>
+            <NuxtLink to="/mouvements-stock" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Voir tout â†’</NuxtLink>
           </div>
           <div class="space-y-2">
             <div v-for="m in mouvementsRecents" :key="m.id" class="flex items-center gap-3 py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
@@ -281,11 +281,11 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
                   'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400': m.type_mouvement === 'transfert',
                   'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400': !['entree','sortie','transfert'].includes(m.type_mouvement),
                 }">
-                {{ m.type_mouvement === 'entree' ? '↑' : m.type_mouvement === 'sortie' ? '↓' : m.type_mouvement === 'transfert' ? '⇄' : '~' }}
+                {{ m.type_mouvement === 'entree' ? 'â†‘' : m.type_mouvement === 'sortie' ? 'â†“' : m.type_mouvement === 'transfert' ? 'â‡„' : '~' }}
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ m.produit_nom || 'Produit' }}</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ m.motif || m.reference_document || '—' }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ m.motif || m.reference_document || 'â€”' }}</p>
               </div>
               <div class="text-right flex-shrink-0">
                 <p class="text-xs font-semibold"
@@ -302,3 +302,4 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
     </div>
   </div>
 </template>
+

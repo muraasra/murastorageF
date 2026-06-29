@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, computed, onMounted } from "vue";
 import AdminSidebar from "@/components/admin/AdminSidebar.vue";
 import SuperAdminSidebar from "@/components/superadmin/SuperAdminSidebar.vue";
@@ -43,7 +43,7 @@ const loadingMessage = ref('')
 provide('isLoading', isLoading)
 provide('loadingMessage', loadingMessage)
 
-// Activer l'écoute des alertes de stock pour tous les utilisateurs connectés
+// Activer l'Ã©coute des alertes de stock pour tous les utilisateurs connectÃ©s
 if (process.client) {
   useStockAlerts()
 }
@@ -56,7 +56,7 @@ if (process.client) {
     <component :is="SidebarComponent" />
 
     <!-- Contenu principal -->
-    <div class="flex-1 h-full pl-0 md:pl-[250px] pb-20 md:pb-10">
+    <div class="flex-1 h-full pl-0 md:pl-[250px] pb-16 md:pb-10">
       <UserTopbar />
       <slot />
 
@@ -76,4 +76,5 @@ if (process.client) {
     </div>
   </main>
 </template>
+
 

@@ -8,18 +8,19 @@ definePageMeta({
     layout: "accueil",
 })
 
-// Métadonnées SEO optimisées
-useSeoMeta({
-  title: 'Inscription Mura Storage - Créez votre Compte Gratuit | Essai 14 Jours',
-  description: 'Inscrivez-vous gratuitement à Mura Storage et commencez votre essai de 3 mois. Créez votre compte entreprise, gérez vos stocks, inventaires et factures. Sans engagement, sans carte bancaire requise.',
-  ogTitle: 'Inscription Mura Storage - Créez votre Compte Gratuit',
-  ogDescription: 'Inscrivez-vous gratuitement à Mura Storage. Essai 3 mois sans engagement. Gestion de stock, inventaires, facturation.',
-  ogType: 'website',
-  ogUrl: 'https://murastorage.netlify.app/home/inscription',
-  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
-  keywords: 'inscription Mura Storage, créer compte gestion stock, inscription gratuite stock, essai gratuit stock, compte entreprise stock, s\'inscrire Mura Storage, inscription logiciel stock, créer compte inventaire',
-  robots: 'index, follow',
-  canonical: 'https://murastorage.netlify.app/home/inscription'
+import { useSeo, createWebPageStructuredData, SITE_URL } from '@/composables/useSeo'
+
+useSeo({
+  title: 'Créer un compte Mura Storage — Essai gratuit 3 mois sans carte bancaire',
+  description: 'Inscrivez-vous gratuitement à Mura Storage. 3 mois d\'essai, sans carte bancaire, sans engagement. Gérez vos stocks, inventaires et factures dès aujourd\'hui.',
+  keywords: 'inscription Mura Storage, créer compte gestion stock, essai gratuit stock, s\'inscrire logiciel stock Cameroun',
+  canonical: `${SITE_URL}/home/inscription`,
+  ogImage: `${SITE_URL}/img/logo-mura-storage.png`,
+  structuredData: createWebPageStructuredData(
+    'Inscription Mura Storage',
+    'Créez votre compte gratuitement et commencez votre essai de 3 mois. Sans carte bancaire.',
+    `${SITE_URL}/home/inscription`
+  )
 });
 
 const { error, success } = useNotification()
@@ -519,21 +520,21 @@ onMounted(() => {
             <div v-if="step < 3" class="w-16 h-1 mx-2 bg-gray-200 dark:bg-gray-700"></div>
           </div>
         </div>
-        <div class="flex justify-center mt-4 space-x-16">
-          <span :class="currentStep >= 1 ? 'text-emerald-600 font-medium' : 'text-gray-500'">
+        <div class="flex justify-center mt-4 gap-2 sm:gap-8 flex-wrap text-center">
+          <span class="text-xs sm:text-sm" :class="currentStep >= 1 ? 'text-emerald-600 font-medium' : 'text-gray-400'">
             Informations personnelles
           </span>
-          <span :class="currentStep >= 2 ? 'text-emerald-600 font-medium' : 'text-gray-500'">
+          <span class="text-xs sm:text-sm" :class="currentStep >= 2 ? 'text-emerald-600 font-medium' : 'text-gray-400'">
             Informations entreprise
           </span>
-          <span :class="currentStep >= 3 ? 'text-emerald-600 font-medium' : 'text-gray-500'">
+          <span class="text-xs sm:text-sm" :class="currentStep >= 3 ? 'text-emerald-600 font-medium' : 'text-gray-400'">
             Choix du pack
           </span>
         </div>
       </div>
 
       <!-- Formulaire -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-8">
         <!-- Étape 1: Informations utilisateur -->
         <div v-if="currentStep === 1" class="space-y-6">
           <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">

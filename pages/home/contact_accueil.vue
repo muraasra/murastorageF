@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { Icon } from "@iconify/vue";
 import { API_BASE_URL } from '@/constants'
 import { useNotification } from '@/types/useNotification'
@@ -9,17 +9,22 @@ definePageMeta({
 
 const notif = useNotification()
 
-useSeoMeta({
-  title: 'Contactez Mura Storage - Support et Assistance | Groupe Mura',
-  description: 'Contactez l\'équipe Mura Storage pour obtenir de l\'aide, des informations sur nos solutions de gestion de stock, support technique, questions commerciales. Support expert Groupe Mura disponible pour vous accompagner.',
-  ogTitle: 'Contact Mura Storage - Support et Assistance',
-  ogDescription: 'Contactez notre équipe Mura Storage pour obtenir de l\'aide et des informations sur nos solutions de gestion de stock. Support expert disponible.',
-  ogType: 'website',
-  ogUrl: 'https://murastorage.netlify.app/home/contact_accueil',
-  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
-  keywords: 'contact Mura Storage, support gestion stock, assistance logiciel stock, aide Mura Storage, support technique stock, contact Groupe Mura, service client stock, support 24/7, assistance entreprise',
-  robots: 'index, follow',
-  canonical: 'https://murastorage.netlify.app/home/contact_accueil'
+import { useSeo, createLocalBusinessData, createWebPageStructuredData, SITE_URL } from '@/composables/useSeo'
+
+useSeo({
+  title: 'Contacter Mura Storage — Support client, questions commerciales | Groupe Mura',
+  description: 'Contactez l\'équipe Mura Storage : support technique, questions commerciales, démonstration. Email, téléphone, formulaire. Réponse en moins de 24h.',
+  keywords: 'contact Mura Storage, support gestion stock, assistance Mura Storage, Groupe Mura contact',
+  canonical: `${SITE_URL}/home/contact_accueil`,
+  ogImage: `${SITE_URL}/img/logo-mura-storage.png`,
+  structuredData: [
+    createLocalBusinessData(),
+    createWebPageStructuredData(
+      'Contact Mura Storage',
+      'Contactez notre équipe pour du support, des informations commerciales ou une démonstration.',
+      `${SITE_URL}/home/contact_accueil`
+    )
+  ]
 });
 
 const form = ref({
@@ -386,13 +391,10 @@ const submitForm = async () => {
                   <Icon icon="material-symbols:schedule" width="48" height="48" class="mx-auto mb-4 opacity-90" />
                   <h3 class="text-2xl font-bold mb-2">Réponse rapide</h3>
                   <p class="text-emerald-100 mb-4">Nous nous engageons à vous répondre dans les 24 heures</p>
-                  <div class="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div class="text-2xl font-bold">24h</div>
+                  <div class="flex gap-4 justify-center flex-wrap text-center"><div class="min-w-[80px]"><div class="text-2xl font-bold">24h</div>
                       <div class="text-sm text-emerald-100">Réponse email</div>
                     </div>
-                    <div>
-                      <div class="text-2xl font-bold">2h</div>
+                    <div class="min-w-[80px]"><div class="text-2xl font-bold">2h</div>
                       <div class="text-sm text-emerald-100">Support urgent</div>
                     </div>
                   </div>
@@ -404,8 +406,7 @@ const submitForm = async () => {
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
                   Ils nous font confiance
                 </h3>
-                <div class="grid grid-cols-2 gap-4 text-center">
-                  <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="grid grid-cols-2 sm:grid-cols-2 gap-4 text-center"><div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div class="text-2xl font-bold text-emerald-600">500+</div>
                     <div class="text-sm text-gray-600 dark:text-gray-300">Entreprises</div>
                   </div>

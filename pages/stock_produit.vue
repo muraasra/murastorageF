@@ -355,7 +355,7 @@ const exporterCSV = () => {
 
       <!-- ── Skeleton ─────────────────────────────────────────────────────── -->
       <template v-if="isLoading">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div v-for="i in 4" :key="i" class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 animate-pulse h-24"></div>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 animate-pulse h-96"></div>
@@ -364,7 +364,7 @@ const exporterCSV = () => {
       <template v-else>
 
         <!-- ── KPI chips ──────────────────────────────────────────────────── -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
             <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Unités en stock</p>
             <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ totalUnites.toLocaleString() }}</p>
@@ -743,3 +743,4 @@ const exporterCSV = () => {
     </div>
   </Teleport>
 </template>
+

@@ -5,17 +5,24 @@ definePageMeta({
     layout: "accueil",
 })
 
-useSeoMeta({
-  title: 'FAQ Mura Storage - Questions Fréquentes sur la Gestion de Stock',
-  description: 'Trouvez les réponses aux questions fréquentes sur Mura Storage : essai gratuit, sécurité des données, tarification, facturation, fonctionnalités, support, conformité RGPD, gestion multi-entrepôts, codes-barres, inventaires.',
-  ogTitle: 'FAQ Mura Storage - Questions Fréquentes',
-  ogDescription: 'Réponses aux questions fréquentes sur Mura Storage : essai gratuit, sécurité, tarification, fonctionnalités, support.',
-  ogType: 'website',
-  ogUrl: 'https://murastorage.netlify.app/home/faq',
-  ogImage: 'https://murastorage.netlify.app/img/logo-mura-storage.png',
-  keywords: 'FAQ Mura Storage, questions fréquentes gestion stock, aide logiciel stock, FAQ gestion inventaire, questions Mura Storage, support FAQ, assistance utilisateur stock, guide utilisation stock',
-  robots: 'index, follow',
-  canonical: 'https://murastorage.netlify.app/home/faq'
+import { useSeo, createFAQData, SITE_URL } from '@/composables/useSeo'
+
+// AEO : FAQPage schema → featured snippets Google + réponses IA (ChatGPT, Perplexity, Gemini)
+useSeo({
+  title: 'FAQ Mura Storage — Toutes les réponses sur le logiciel de gestion de stock',
+  description: 'Questions fréquentes sur Mura Storage : essai gratuit 3 mois, tarification, sécurité des données, moyens de paiement, multi-boutiques, support technique.',
+  keywords: 'FAQ Mura Storage, questions gestion stock, aide logiciel stock, essai gratuit stock, tarif Mura Storage',
+  canonical: `${SITE_URL}/home/faq`,
+  ogImage: `${SITE_URL}/img/logo-mura-storage.png`,
+  structuredData: createFAQData([
+    { question: 'Mura Storage propose-t-il un essai gratuit ?', answer: 'Oui, Mura Storage propose un essai gratuit de 3 mois sans carte bancaire requise. Vous pouvez annuler à tout moment depuis votre espace compte. Aucun engagement, aucune surprise.' },
+    { question: 'Mura Storage s\'intègre-t-il avec mes outils existants ?', answer: 'Mura Storage propose des intégrations avec les principaux ERP et plateformes e-commerce, ainsi qu\'une API complète pour les développements personnalisés (plan Pro).' },
+    { question: 'Comment sont sécurisées mes données ?', answer: 'Vos données bénéficient d\'un chiffrement TLS en transit et AES-256 au repos. Des sauvegardes répliquées quotidiennes sont effectuées. Conformité RGPD.' },
+    { question: 'Quels moyens de paiement acceptez-vous ?', answer: 'Nous acceptons Orange Money, MTN Mobile Money, les cartes bancaires (Visa, Mastercard) et les virements bancaires. Facturation mensuelle ou annuelle, sans engagement.' },
+    { question: 'Puis-je changer de plan à tout moment ?', answer: 'Oui, vous pouvez passer d\'un plan à un autre à tout moment. La facturation s\'ajuste automatiquement. Aucuns frais de changement.' },
+    { question: 'Quel est votre engagement de disponibilité ?', answer: 'Mura Storage garantit un uptime de 99.9%. Les maintenances programmées sont annoncées à l\'avance par email.' },
+    { question: 'Offrez-vous un support technique ?', answer: 'Oui. Support email pour les plans Free et Starter, support prioritaire pour Business, et support dédié avec SLA personnalisé pour Pro.' },
+  ])
 });
 
 const isVisible = ref(false)

@@ -193,7 +193,7 @@ function showTip(e: MouseEvent, bar: any) {
 
     <template v-else-if="data">
       <!-- KPIs cards -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <div class="flex items-center justify-between mb-3">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">CA Total</p>
@@ -420,3 +420,4 @@ function showTip(e: MouseEvent, bar: any) {
   </section>
   </div>
 </template>
+

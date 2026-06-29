@@ -38,7 +38,7 @@
     </div>
 
     <!-- Statistiques -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
       <UCard>
         <div class="p-4">
           <div class="flex items-center justify-between">
@@ -207,7 +207,7 @@
               </template>
             </UFormGroup>
             
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <UFormGroup label="Date de début *" name="date_debut">
                 <UInput
                   v-model="formState.date_debut"
@@ -573,4 +573,5 @@ onMounted(() => {
 })
 onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 </script>
+
 

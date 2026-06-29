@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useApiBase } from '@/composables/useApiBase'
 import { useNotification } from '@/types/useNotification'
@@ -14,7 +14,7 @@ async function apiFetch(path: string, opts: any = {}) {
   return $fetch(getApiUrl(path), { headers: getAuthHeaders(), ...opts })
 }
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const users = ref<any[]>([])
 const loading = ref(true)
 const searchQuery = ref('')
@@ -22,13 +22,13 @@ const roleFilter = ref('')
 const totalPages = ref(1)
 const currentPage = ref(1)
 
-// ── Modals ────────────────────────────────────────────────────────────────────
+// â”€â”€ Modals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const showCreate = ref(false)
 const showEdit = ref(false)
 const showDeleteConfirm = ref(false)
 const selectedUser = ref<any>(null)
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const stats = computed(() => ({
   total: users.value.length,
   superAdmins: users.value.filter(u => u.role === 'superadmin').length,
@@ -50,7 +50,7 @@ const filtered = computed(() => {
   return list
 })
 
-// ── Load ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function load(page = 1) {
   loading.value = true
   try {
@@ -67,14 +67,14 @@ async function load(page = 1) {
 
 onMounted(() => load())
 
-// ── Actions ───────────────────────────────────────────────────────────────────
+// â”€â”€ Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openEdit(u: any) { selectedUser.value = u; showEdit.value = true }
 function openDelete(u: any) { selectedUser.value = u; showDeleteConfirm.value = true }
 
 async function deleteUser() {
   try {
     await apiFetch(`/api/users/${selectedUser.value.id}/`, { method: 'DELETE' })
-    success('Utilisateur supprimé')
+    success('Utilisateur supprimÃ©')
     showDeleteConfirm.value = false
     await load(currentPage.value)
   } catch {
@@ -86,9 +86,9 @@ async function toggleActive(u: any) {
   try {
     await apiFetch(`/api/users/${u.id}/`, { method: 'PATCH', body: { is_active: !u.is_active } })
     u.is_active = !u.is_active
-    success(`Utilisateur ${u.is_active ? 'activé' : 'désactivé'}`)
+    success(`Utilisateur ${u.is_active ? 'activÃ©' : 'dÃ©sactivÃ©'}`)
   } catch {
-    error('Erreur lors de la mise à jour')
+    error('Erreur lors de la mise Ã  jour')
   }
 }
 
@@ -120,7 +120,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
       <div class="flex items-start justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Utilisateurs</h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Gérez les membres de votre entreprise</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">GÃ©rez les membres de votre entreprise</p>
         </div>
         <div class="flex items-center gap-2">
           <button
@@ -139,7 +139,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
       </div>
 
       <!-- KPIs -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total</p>
           <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ stats.total }}</p>
@@ -162,14 +162,14 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <!-- Filtres -->
         <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-3">
-          <div class="relative flex-1 min-w-[200px]">
+          <div class="relative flex-1 min-w-0 sm:min-w-[160px]">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input v-model="searchQuery" @input="onSearch" type="search" placeholder="Rechercher par nom, email..."
               class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" />
           </div>
           <select v-model="roleFilter" @change="load(1)"
             class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400">
-            <option value="">Tous les rôles</option>
+            <option value="">Tous les rÃ´les</option>
             <option value="superadmin">Super Admin</option>
             <option value="admin">Admin</option>
             <option value="user">Utilisateur</option>
@@ -184,7 +184,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
         <!-- Empty -->
         <div v-else-if="filtered.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
           <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
-          <p class="font-medium">Aucun utilisateur trouvé</p>
+          <p class="font-medium">Aucun utilisateur trouvÃ©</p>
         </div>
 
         <!-- Liste -->
@@ -210,14 +210,14 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
               <p v-if="u.boutique_nom" class="text-xs text-gray-400 mt-0.5">{{ u.boutique_nom }}</p>
             </div>
 
-            <!-- Téléphone -->
-            <div class="hidden md:block text-sm text-gray-500 dark:text-gray-400">{{ u.telephone || '—' }}</div>
+            <!-- TÃ©lÃ©phone -->
+            <div class="hidden md:block text-sm text-gray-500 dark:text-gray-400">{{ u.telephone || 'â€”' }}</div>
 
             <!-- Actions -->
             <div class="flex items-center gap-1 flex-shrink-0">
               <button
                 @click="toggleActive(u)"
-                :title="u.is_active ? 'Désactiver' : 'Activer'"
+                :title="u.is_active ? 'DÃ©sactiver' : 'Activer'"
                 class="p-1.5 rounded-lg transition-colors"
                 :class="u.is_active ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'"
               >
@@ -243,9 +243,9 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
           <span>Page {{ currentPage }} / {{ totalPages }}</span>
           <div class="flex gap-2">
             <button @click="load(currentPage - 1)" :disabled="currentPage <= 1"
-              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">← Précédent</button>
+              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">â† PrÃ©cÃ©dent</button>
             <button @click="load(currentPage + 1)" :disabled="currentPage >= totalPages"
-              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">Suivant →</button>
+              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">Suivant â†’</button>
           </div>
         </div>
       </div>
@@ -265,7 +265,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
             </div>
             <div>
               <h3 class="font-bold text-gray-900 dark:text-white">Supprimer l'utilisateur ?</h3>
-              <p class="text-sm text-gray-500 mt-1">{{ selectedUser?.first_name }} {{ selectedUser?.last_name }} sera définitivement supprimé.</p>
+              <p class="text-sm text-gray-500 mt-1">{{ selectedUser?.first_name }} {{ selectedUser?.last_name }} sera dÃ©finitivement supprimÃ©.</p>
             </div>
           </div>
           <div class="flex gap-3 justify-end">
@@ -277,3 +277,4 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
     </Teleport>
   </div>
 </template>
+
