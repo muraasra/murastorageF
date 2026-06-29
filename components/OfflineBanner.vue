@@ -10,7 +10,7 @@
   >
     <div
       v-if="showMainBanner"
-      class="fixed top-0 inset-x-0 z-50 flex items-center justify-center gap-3 px-4 py-2.5 text-sm font-medium shadow-md"
+      class="fixed top-0 inset-x-0 z-[10000] flex items-center justify-center gap-3 px-4 py-2.5 text-sm font-medium shadow-md"
       :class="bannerClass"
     >
       <!-- Hors ligne -->

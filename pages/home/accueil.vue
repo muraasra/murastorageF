@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref, onUnmounted } from 'vue'
 definePageMeta({
     layout: "accueil",
   });
@@ -35,9 +35,40 @@ useHead({
 // Tracking Google Analytics
 const { trackHomePage } = useMuraTracking()
 
+// Typewriter "Mura Storage" — boucle infinie
+const FULL_TEXT = 'Mura Storage'
+const typedText = ref('')
+let twTimer: ReturnType<typeof setTimeout> | null = null
+let charIndex = 0
+let isDeleting = false
+
+function typeStep() {
+  if (!isDeleting) {
+    typedText.value = FULL_TEXT.slice(0, ++charIndex)
+    if (charIndex === FULL_TEXT.length) {
+      // Pause avant d'effacer
+      twTimer = setTimeout(() => { isDeleting = true; typeStep() }, 2200)
+      return
+    }
+  } else {
+    typedText.value = FULL_TEXT.slice(0, --charIndex)
+    if (charIndex === 0) {
+      isDeleting = false
+      // Pause avant de retaper
+      twTimer = setTimeout(typeStep, 500)
+      return
+    }
+  }
+  const speed = isDeleting ? 55 : 90
+  twTimer = setTimeout(typeStep, speed)
+}
+
 onMounted(() => {
   trackHomePage()
+  twTimer = setTimeout(typeStep, 600)
 })
+
+onUnmounted(() => { if (twTimer) clearTimeout(twTimer) })
 </script>
 
 <template>
@@ -98,9 +129,14 @@ onMounted(() => {
             </div>
             
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 animate-fade-in-up animation-delay-200">
-              Mura
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-blue-500 to-emerald-500 bg-[length:200%_auto] animate-gradient-x">
-                Storage
+              <!-- Typewriter : "Mura" en noir, "Storage" en dégradé, curseur clignotant -->
+              <span>
+                <span>{{ typedText.slice(0, 4) }}</span><span
+                  v-if="typedText.length > 4"
+                  class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-blue-500 to-emerald-500 bg-[length:200%_auto] animate-gradient-x"
+                >{{ typedText.slice(4) }}</span><span
+                  class="inline-block w-[3px] h-[0.85em] bg-emerald-500 align-middle ml-1 animate-pulse"
+                ></span>
               </span>
               <br>
               <span class="text-2xl md:text-3xl lg:text-4xl font-normal text-gray-600 dark:text-gray-300 animate-fade-in-up animation-delay-400">
