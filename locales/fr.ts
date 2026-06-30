@@ -1,0 +1,88 @@
+export default {
+  // Navigation groups
+  nav: {
+    stock: 'Stock',
+    catalogue: 'Catalogue',
+    sales: 'Ventes',
+    billing: 'Ventes & Facturation',
+    reports: 'Rapports',
+    reportsAnalysis: 'Rapports & Analyses',
+    system: 'Système',
+
+    // Nav items
+    dashboard: 'Tableau de bord',
+    products: 'Produits',
+    stockProducts: 'Stock des Produits',
+    stockMovements: 'Mouvements de Stock',
+    inventories: 'Inventaires',
+    transfers: 'Transferts',
+    invoicing: 'Facturation',
+    invoiceList: 'Listes des factures',
+    partnerOrders: 'Commandes partenaires',
+    partners: 'Partenaires',
+    analytics: 'Analytiques',
+    journal: 'Journal',
+    subscription: 'Abonnement',
+    warehouses: 'Entrepôts',
+    users: 'Utilisateurs',
+    pricing: 'Tarification',
+    fiscalYear: 'Exercice Fiscal',
+    logout: 'Déconnexion',
+  },
+
+  // Profile dropdown
+  profile: {
+    title: 'Profil',
+    appearance: 'Apparence',
+    dark: 'Sombre',
+    light: 'Clair',
+    language: 'Langue',
+    editProfile: 'Modifier le profil',
+    logout: 'Se déconnecter',
+    roles: {
+      admin: 'Administrateur',
+      superadmin: 'Super Admin',
+      user: 'Utilisateur',
+    },
+  },
+
+  // Logout modal
+  logoutModal: {
+    title: 'Confirmer la déconnexion',
+    message: 'Vous allez être déconnecté. Assurez-vous d\'avoir sauvegardé vos données.',
+    confirm: 'Se déconnecter',
+    cancel: 'Annuler',
+  },
+
+  // Common
+  common: {
+    save: 'Enregistrer',
+    cancel: 'Annuler',
+    delete: 'Supprimer',
+    edit: 'Modifier',
+    add: 'Ajouter',
+    search: 'Rechercher',
+    filter: 'Filtrer',
+    export: 'Exporter',
+    import: 'Importer',
+    close: 'Fermer',
+    confirm: 'Confirmer',
+    yes: 'Oui',
+    no: 'Non',
+    loading: 'Chargement...',
+    noData: 'Aucune donnée',
+    error: 'Erreur',
+    success: 'Succès',
+    all: 'Tous',
+    actions: 'Actions',
+    details: 'Détails',
+    status: 'Statut',
+    date: 'Date',
+    total: 'Total',
+    quantity: 'Quantité',
+    price: 'Prix',
+    name: 'Nom',
+    description: 'Description',
+    reference: 'Référence',
+  },
+}

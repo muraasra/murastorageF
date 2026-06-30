@@ -52,6 +52,7 @@ if (process.client) {
 <template>
   <main class="w-full flex min-h-screen min-h-full bg-white dark:bg-gray-900">
     <OfflineBanner />
+    <LogoutConfirmModal />
     <!-- Sidebar desktop -->
     <component :is="SidebarComponent" />
 
@@ -76,5 +77,6 @@ if (process.client) {
     </div>
   </main>
 </template>
+
 
 

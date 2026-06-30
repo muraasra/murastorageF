@@ -1,10 +1,12 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
+import { useLogoutConfirm } from '~/composables/useLogoutConfirm'
 import { NAVIGATION_ITEMS_SUPERADMIN } from '~/constants'
 import { useApiBase } from '@/composables/useApiBase'
 
 const auth = useAuthStore()
+const { requestLogout } = useLogoutConfirm()
 const { getApiUrl, getAuthHeaders } = useApiBase()
 const boutiqueData = ref<any>(null)
 const lowStockCount = ref(0)
@@ -39,7 +41,7 @@ const isLogout = (item: any) => item.name === 'Logout'
       </span>
     </div>
 
-    <!-- Navigation thématique -->
+    <!-- Navigation thÃ©matique -->
     <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
       <template v-for="(group, gi) in NAVIGATION_ITEMS_SUPERADMIN" :key="gi">
         <!-- Label de groupe -->
@@ -51,17 +53,17 @@ const isLogout = (item: any) => item.name === 'Logout'
         <div v-else-if="gi > 0" class="border-t border-gray-100 dark:border-gray-800 my-2" />
 
         <template v-for="item in group.items" :key="item.link || item.name">
-          <!-- Déconnexion -->
+          <!-- DÃ©connexion -->
           <button
             v-if="isLogout(item)"
-            @click="auth.logout()"
+            @click="requestLogout()"
             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors mt-1"
           >
             <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
-            <span class="text-sm font-medium">Déconnexion</span>
+            <span class="text-sm font-medium">DÃ©connexion</span>
           </button>
 
-          <!-- Lien normal — amber active pour superadmin -->
+          <!-- Lien normal â€” amber active pour superadmin -->
           <NuxtLink
             v-else
             :to="item.link"
@@ -94,3 +96,4 @@ const isLogout = (item: any) => item.name === 'Logout'
 .scrollbar-thin::-webkit-scrollbar-thumb { background-color: rgb(209 213 219); border-radius: 3px; }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background-color: rgb(156 163 175); }
 </style>
+

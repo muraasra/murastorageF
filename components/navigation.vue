@@ -1,11 +1,13 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from '#imports'
 import { NAVIGATION_ITEMS, NAVIGATION_ITEMS_ADMIN, NAVIGATION_ITEMS_SUPERADMIN } from '~/constants'
 import type { NavGroup } from '~/constants'
 import { useAuthStore } from '~/stores/auth'
+import { useLogoutConfirm } from '~/composables/useLogoutConfirm'
 
 const auth = useAuthStore()
+const { requestLogout } = useLogoutConfirm()
 const route = useRoute()
 
 const role = ref<string | null>(null)
@@ -34,7 +36,7 @@ const allItems = computed(() =>
   navGroups.value.flatMap(g => g.items).filter(i => i.link && i.name !== 'Logout')
 )
 
-// 4 raccourcis fixes selon le rôle — les plus utilisés
+// 4 raccourcis fixes selon le rÃ´le â€” les plus utilisÃ©s
 const pinnedLinks = computed(() => {
   if (role.value === 'superadmin' && !boutiqueSelected.value) return [
     '/superadmin/dashboard',
@@ -64,7 +66,7 @@ const pinnedItems = computed(() =>
 
 const isActive = (link: string) => route.path === link || route.path.startsWith(link + '/')
 
-// Fermer la sheet + rafraîchir rôle/boutique à chaque navigation
+// Fermer la sheet + rafraÃ®chir rÃ´le/boutique Ã  chaque navigation
 watch(() => route.path, () => {
   showSheet.value = false
   if (!process.client) return
@@ -77,7 +79,7 @@ watch(() => route.path, () => {
 </script>
 
 <template>
-  <!-- Barre fixe en bas — 4 raccourcis + bouton "Menu" -->
+  <!-- Barre fixe en bas â€” 4 raccourcis + bouton "Menu" -->
   <nav class="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-700 md:hidden safe-area-pb">
     <div class="flex items-stretch justify-around h-16">
       <!-- 4 raccourcis fixes -->
@@ -112,7 +114,7 @@ watch(() => route.path, () => {
     </div>
   </nav>
 
-  <!-- Bottom Sheet — tous les menus groupés -->
+  <!-- Bottom Sheet â€” tous les menus groupÃ©s -->
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="showSheet" class="fixed inset-0 z-50 md:hidden flex flex-col justify-end">
@@ -121,7 +123,7 @@ watch(() => route.path, () => {
 
         <!-- Sheet -->
         <div class="relative bg-white dark:bg-gray-900 rounded-t-2xl max-h-[80vh] flex flex-col shadow-2xl">
-          <!-- Poignée -->
+          <!-- PoignÃ©e -->
           <div class="flex justify-center pt-3 pb-1 flex-shrink-0">
             <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
           </div>
@@ -148,14 +150,14 @@ watch(() => route.path, () => {
               <!-- Items du groupe -->
               <div class="grid grid-cols-3 gap-2">
                 <template v-for="item in group.items" :key="item.link || item.name">
-                  <!-- Déconnexion -->
+                  <!-- DÃ©connexion -->
                   <button
                     v-if="item.name === 'Logout'"
-                    @click="auth.logout()"
+                    @click="requestLogout()"
                     class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 transition-colors"
                   >
                     <UIcon :name="item.icon" class="w-6 h-6" />
-                    <span class="text-[10px] font-medium text-center leading-tight">Déconnexion</span>
+                    <span class="text-[10px] font-medium text-center leading-tight">DÃ©connexion</span>
                   </button>
 
                   <!-- Lien normal -->
@@ -188,3 +190,4 @@ watch(() => route.path, () => {
 /* Safe area iOS */
 .safe-area-pb { padding-bottom: env(safe-area-inset-bottom, 0px); }
 </style>
+

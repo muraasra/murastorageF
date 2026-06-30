@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { NAVIGATION_ITEMS, NAVIGATION_ITEMS_ADMIN, NAVIGATION_ITEMS_SUPERADMIN } from '~/constants'
 import type { NavGroup } from '~/constants'
@@ -6,6 +6,7 @@ import { useApiBase } from '@/composables/useApiBase'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const { requestLogout } = useLogoutConfirm()
 const { getApiUrl, getAuthHeaders } = useApiBase()
 
 const role = ref<string | null>(null)
@@ -48,10 +49,10 @@ const isLogout = (item: any) => item.name === 'Logout'
       </NuxtLink>
     </div>
 
-    <!-- Groupes thématiques -->
+    <!-- Groupes thÃ©matiques -->
     <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
       <template v-for="(group, gi) in navGroups" :key="gi">
-        <!-- Séparateur + label de groupe -->
+        <!-- SÃ©parateur + label de groupe -->
         <div v-if="group.label" class="pt-3 pb-1 first:pt-1">
           <p class="px-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
             {{ group.label }}
@@ -60,14 +61,14 @@ const isLogout = (item: any) => item.name === 'Logout'
         <div v-else-if="gi > 0" class="border-t border-gray-100 dark:border-gray-800 my-2" />
 
         <template v-for="item in group.items" :key="item.link || item.name">
-          <!-- Déconnexion -->
+          <!-- DÃ©connexion -->
           <button
             v-if="isLogout(item)"
-            @click="auth.logout()"
+            @click="requestLogout()"
             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors mt-1"
           >
             <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
-            <span class="text-sm font-medium">Déconnexion</span>
+            <span class="text-sm font-medium">DÃ©connexion</span>
           </button>
 
           <!-- Lien normal -->
@@ -103,3 +104,4 @@ const isLogout = (item: any) => item.name === 'Logout'
 .scrollbar-thin::-webkit-scrollbar-thumb { background-color: rgb(209 213 219); border-radius: 3px; }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background-color: rgb(156 163 175); }
 </style>
+

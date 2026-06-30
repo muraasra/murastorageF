@@ -1,0 +1,88 @@
+export default {
+  // Navigation groups
+  nav: {
+    stock: 'Stock',
+    catalogue: 'Catalogue',
+    sales: 'Sales',
+    billing: 'Sales & Billing',
+    reports: 'Reports',
+    reportsAnalysis: 'Reports & Analytics',
+    system: 'System',
+
+    // Nav items
+    dashboard: 'Dashboard',
+    products: 'Products',
+    stockProducts: 'Product Stock',
+    stockMovements: 'Stock Movements',
+    inventories: 'Inventories',
+    transfers: 'Transfers',
+    invoicing: 'Invoicing',
+    invoiceList: 'Invoice List',
+    partnerOrders: 'Partner Orders',
+    partners: 'Partners',
+    analytics: 'Analytics',
+    journal: 'Journal',
+    subscription: 'Subscription',
+    warehouses: 'Warehouses',
+    users: 'Users',
+    pricing: 'Pricing',
+    fiscalYear: 'Fiscal Year',
+    logout: 'Logout',
+  },
+
+  // Profile dropdown
+  profile: {
+    title: 'Profile',
+    appearance: 'Appearance',
+    dark: 'Dark',
+    light: 'Light',
+    language: 'Language',
+    editProfile: 'Edit Profile',
+    logout: 'Log out',
+    roles: {
+      admin: 'Administrator',
+      superadmin: 'Super Admin',
+      user: 'User',
+    },
+  },
+
+  // Logout modal
+  logoutModal: {
+    title: 'Confirm Logout',
+    message: 'You are about to be logged out. Make sure you have saved your work.',
+    confirm: 'Log out',
+    cancel: 'Cancel',
+  },
+
+  // Common
+  common: {
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    edit: 'Edit',
+    add: 'Add',
+    search: 'Search',
+    filter: 'Filter',
+    export: 'Export',
+    import: 'Import',
+    close: 'Close',
+    confirm: 'Confirm',
+    yes: 'Yes',
+    no: 'No',
+    loading: 'Loading...',
+    noData: 'No data',
+    error: 'Error',
+    success: 'Success',
+    all: 'All',
+    actions: 'Actions',
+    details: 'Details',
+    status: 'Status',
+    date: 'Date',
+    total: 'Total',
+    quantity: 'Quantity',
+    price: 'Price',
+    name: 'Name',
+    description: 'Description',
+    reference: 'Reference',
+  },
+}
