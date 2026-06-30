@@ -37,7 +37,7 @@ onMounted(async () => {
       </h1>
       <p class="mb-8 text-gray-600">
         Vous pouvez superviser l'ensemble de la plateforme ici.<br>
-        Utilisez le menu Ã  gauche pour accÃ©der Ã  toutes les fonctionnalitÃ©s.
+        Utilisez le menu Ã  gauche pour accéder Ã  toutes les fonctionnalités.
       </p>
       <!-- Widgets de stats -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

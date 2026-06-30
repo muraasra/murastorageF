@@ -1825,7 +1825,7 @@ const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, 
                         class="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                       >
                         <div class="font-medium text-gray-900 dark:text-white">{{ client.nom }} {{ client.prenom }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ client.telephone }} <span v-if="client.email">â€¢ {{ client.email }}</span></div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ client.telephone }} <span v-if="client.email">• {{ client.email }}</span></div>
                       </div>
                     </div>
                     <div v-else class="text-sm text-gray-500 dark:text-gray-400 p-2 text-center">

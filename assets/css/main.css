@@ -2,11 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Primary color overrides: use green as primary for utilities that rely on CSS vars */
+/* ── Variables globales ── */
 :root {
-  --color-primary: 16 185 129; /* tailwind emerald-500 */
+  --color-primary: 16 185 129; /* emerald-500 */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.text-primary { color: rgb(var(--color-primary)); }
-.bg-primary { background-color: rgb(var(--color-primary)); }
+/* ── Typographie de base ── */
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Variantes calligraphiques Inter : a/g ouverts, i droit — meilleure lisibilité */
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* Chiffres tabulaires pour stats et tableaux */
+.tabular-nums {
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Couleurs primaires ── */
+.text-primary   { color: rgb(var(--color-primary)); }
+.bg-primary     { background-color: rgb(var(--color-primary)); }
 .border-primary { border-color: rgb(var(--color-primary)); }

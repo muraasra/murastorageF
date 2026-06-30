@@ -44,7 +44,7 @@ const totalSalesToday = computed(() =>
 const lastUpdatedLabel = computed(() => {
   if (!lastUpdated.value) return ''
   const diff = Math.floor((Date.now() - lastUpdated.value.getTime()) / 1000)
-  if (diff < 5) return 'Ã€ l\'instant'
+  if (diff < 5) return 'À l\'instant'
   if (diff < 60) return `Il y a ${diff}s`
   return `Il y a ${Math.floor(diff / 60)}min`
 })
@@ -137,7 +137,7 @@ const loadAllData = async () => {
 
 const refreshData = async () => {
   await loadAllData()
-  notifSuccess('DonnÃ©es rafraÃ®chies')
+  notifSuccess('Données rafraîchies')
 }
 
 const onEntrepriseUpdated = async () => {
@@ -151,13 +151,13 @@ onMounted(async () => {
 })
 onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 
-// â”€â”€â”€ AccÃ¨s entrepÃ´t â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ Accès entrepôt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const accessBoutique = async (boutique: any) => {
   if (isAccessingBoutique.value) return
   isAccessingBoutique.value = true
   try {
     if (process.client) localStorage.setItem('boutique', JSON.stringify(boutique))
-    notifSuccess(`AccÃ¨s Ã  Â« ${boutique.nom} Â»`)
+    notifSuccess(`Accès Ã  Â« ${boutique.nom} Â»`)
     window.location.href = '/user'
   } finally {
     setTimeout(() => { isAccessingBoutique.value = false }, 1500)
@@ -168,8 +168,8 @@ const editBoutique = (b: any) => { selectedBoutique.value = b; showEditBoutique.
 
 const getBoutiqueResponsible = (boutiqueId: number) => {
   const u = users.value.find((usr: any) => usr.boutique?.id === boutiqueId && ['admin', 'superadmin'].includes(usr.role))
-  if (!u) return 'Non assignÃ©'
-  return `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || 'Non assignÃ©'
+  if (!u) return 'Non assigné'
+  return `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || 'Non assigné'
 }
 
 // â”€â”€â”€ Bar chart comparaison â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -201,7 +201,7 @@ const maxStockValue = computed(() =>
             class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
             <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" :class="{ 'animate-spin': isRefreshing }" />
-            RafraÃ®chir
+            Rafraîchir
           </button>
           <button
             @click="showCreateUser = true"
@@ -215,12 +215,12 @@ const maxStockValue = computed(() =>
             class="inline-flex items-center gap-2 px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors shadow-sm"
           >
             <UIcon name="i-heroicons-plus" class="w-4 h-4" />
-            EntrepÃ´t
+            Entrepôt
           </button>
           <button
             @click="showSettings = true"
             class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            title="ParamÃ¨tres entreprise"
+            title="Paramètres entreprise"
           >
             <UIcon name="i-heroicons-cog-6-tooth" class="w-5 h-5" />
           </button>
@@ -241,9 +241,9 @@ const maxStockValue = computed(() =>
 
         <!-- â”€â”€ KPIs globaux â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCardEnhanced title="EntrepÃ´ts actifs" :value="boutiques.length" format="number" icon="i-heroicons-building-storefront" color="blue" :subtitle="`${users.length} utilisateurs`" />
-          <KpiCardEnhanced title="UnitÃ©s en stock" :value="totalStock" format="number" icon="i-heroicons-cube" color="green" subtitle="Tous entrepÃ´ts" />
-          <KpiCardEnhanced title="Valeur totale stock" :value="totalValeur" format="currency" icon="i-heroicons-banknotes" color="purple" subtitle="Tous entrepÃ´ts" />
+          <KpiCardEnhanced title="Entrepôts actifs" :value="boutiques.length" format="number" icon="i-heroicons-building-storefront" color="blue" :subtitle="`${users.length} utilisateurs`" />
+          <KpiCardEnhanced title="Unités en stock" :value="totalStock" format="number" icon="i-heroicons-cube" color="green" subtitle="Tous entrepôts" />
+          <KpiCardEnhanced title="Valeur totale stock" :value="totalValeur" format="currency" icon="i-heroicons-banknotes" color="purple" subtitle="Tous entrepôts" />
           <KpiCardEnhanced title="Ventes du jour" :value="totalSalesToday" format="currency" icon="i-heroicons-chart-bar-square" :color="totalSalesToday > 0 ? 'green' : 'gray'" subtitle="Toutes boutiques" />
         </div>
 
@@ -254,7 +254,7 @@ const maxStockValue = computed(() =>
         >
           <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-500 flex-shrink-0" />
           <p class="text-sm font-medium text-red-700 dark:text-red-400">
-            {{ totalRuptures }} rupture{{ totalRuptures > 1 ? 's' : '' }} de stock dÃ©tectÃ©e{{ totalRuptures > 1 ? 's' : '' }} sur l'ensemble des entrepÃ´ts
+            {{ totalRuptures }} rupture{{ totalRuptures > 1 ? 's' : '' }} de stock détectée{{ totalRuptures > 1 ? 's' : '' }} sur l'ensemble des entrepôts
           </p>
         </div>
 
@@ -281,9 +281,9 @@ const maxStockValue = computed(() =>
           </div>
         </div>
 
-        <!-- â”€â”€ Comparaison entrepÃ´ts (barres) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+        <!-- â”€â”€ Comparaison entrepôts (barres) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div v-if="boutiques.length > 0" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-5">Valeur du stock par entrepÃ´t</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-5">Valeur du stock par entrepôt</h2>
           <div class="space-y-3">
             <div v-for="b in boutiques" :key="b.id" class="flex items-center gap-3">
               <span class="text-sm text-gray-700 dark:text-gray-300 w-32 truncate flex-shrink-0" :title="b.nom">{{ b.nom }}</span>
@@ -304,16 +304,16 @@ const maxStockValue = computed(() =>
           </div>
         </div>
 
-        <!-- â”€â”€ Cards entrepÃ´ts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+        <!-- â”€â”€ Cards entrepôts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div>
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">EntrepÃ´ts ({{ boutiques.length }})</h2>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Entrepôts ({{ boutiques.length }})</h2>
           </div>
 
           <div v-if="boutiques.length === 0" class="bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
             <UIcon name="i-heroicons-building-storefront" class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p class="text-gray-500 dark:text-gray-400 font-medium">Aucun entrepÃ´t crÃ©Ã©</p>
-            <button @click="showCreateBoutique = true" class="mt-3 text-sm text-emerald-600 dark:text-emerald-400 hover:underline">CrÃ©er le premier entrepÃ´t â†’</button>
+            <p class="text-gray-500 dark:text-gray-400 font-medium">Aucun entrepôt créé</p>
+            <button @click="showCreateBoutique = true" class="mt-3 text-sm text-emerald-600 dark:text-emerald-400 hover:underline">Créer le premier entrepôt â†’</button>
           </div>
 
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -342,15 +342,15 @@ const maxStockValue = computed(() =>
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
                   >
                     <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-3.5 h-3.5" />
-                    AccÃ©der
+                    Accéder
                   </button>
                 </div>
               </div>
 
-              <!-- MÃ©triques -->
+              <!-- Métriques -->
               <div class="grid grid-cols-2 gap-2 mb-4">
                 <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                  <p class="text-xs text-blue-600 dark:text-blue-400 font-medium">UnitÃ©s stock</p>
+                  <p class="text-xs text-blue-600 dark:text-blue-400 font-medium">Unités stock</p>
                   <p class="text-lg font-bold text-blue-700 dark:text-blue-300">{{ (boutiquesStats[b.id]?.stockCount || 0).toLocaleString() }}</p>
                 </div>
                 <div class="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3">
@@ -379,7 +379,7 @@ const maxStockValue = computed(() =>
                   <span class="font-medium text-gray-700 dark:text-gray-300 truncate ml-2">{{ getBoutiqueResponsible(b.id) }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span>DerniÃ¨re activitÃ©</span>
+                  <span>Dernière activité</span>
                   <span>{{ formatDate(b.updated_at || b.created_at) }}</span>
                 </div>
               </div>
@@ -387,13 +387,13 @@ const maxStockValue = computed(() =>
           </div>
         </div>
 
-        <!-- â”€â”€ ActivitÃ© rÃ©cente & Utilisateurs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+        <!-- â”€â”€ Activité récente & Utilisateurs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Derniers utilisateurs -->
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-base font-semibold text-gray-900 dark:text-white">Utilisateurs ({{ users.length }})</h2>
-              <NuxtLink to="/superadmin/utilisateurs" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">GÃ©rer â†’</NuxtLink>
+              <NuxtLink to="/superadmin/utilisateurs" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Gérer â†’</NuxtLink>
             </div>
             <div v-if="users.length === 0" class="text-sm text-gray-400 dark:text-gray-600 py-4 text-center">Aucun utilisateur</div>
             <div v-else class="space-y-2">
@@ -437,8 +437,8 @@ const maxStockValue = computed(() =>
                   <UIcon name="i-heroicons-cog-6-tooth" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p class="text-sm font-semibold text-gray-900 dark:text-white">ParamÃ¨tres entreprise</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Logo, nom, coordonnÃ©es</p>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Paramètres entreprise</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Logo, nom, coordonnées</p>
                 </div>
               </button>
               <NuxtLink
@@ -449,8 +449,8 @@ const maxStockValue = computed(() =>
                   <UIcon name="i-heroicons-users" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p class="text-sm font-semibold text-gray-900 dark:text-white">GÃ©rer les utilisateurs</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">CrÃ©er, modifier, supprimer</p>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Gérer les utilisateurs</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Créer, modifier, supprimer</p>
                 </div>
               </NuxtLink>
               <NuxtLink
@@ -461,8 +461,8 @@ const maxStockValue = computed(() =>
                   <UIcon name="i-heroicons-building-storefront" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p class="text-sm font-semibold text-gray-900 dark:text-white">GÃ©rer les entrepÃ´ts</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">CrÃ©er, configurer, assigner</p>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Gérer les entrepôts</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Créer, configurer, assigner</p>
                 </div>
               </NuxtLink>
             </div>

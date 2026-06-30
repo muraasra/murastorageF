@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
@@ -175,28 +175,28 @@
           <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Utilisation actuelle</h2>
             
-            <div v-if="currentUsage && currentLimits" class="space-y-6">
+            <div v-if="hasUsageData" class="space-y-6">
               <UsageIndicator 
                 label="Utilisateurs"
-                :current="currentUsage.users_count"
+                :current="usageObject.users_count"
                 :limit="currentLimits.max_users"
               />
               
               <UsageIndicator 
                 label="Boutiques/Entrepôts"
-                :current="currentUsage.boutiques_count"
+                :current="usageObject.boutiques_count"
                 :limit="currentLimits.max_boutiques"
               />
               
               <UsageIndicator 
                 label="Produits"
-                :current="currentUsage.produits_count"
+                :current="usageObject.produits_count"
                 :limit="currentLimits.max_produits"
               />
               
               <UsageIndicator 
                 label="Factures ce mois"
-                :current="currentUsage.factures_count"
+                :current="usageObject.factures_count"
                 :limit="currentLimits.max_factures_per_month"
               />
             </div>
@@ -369,6 +369,24 @@ const filteredPlans = computed(() => {
   const currentPrice = currentLimits.value.price_monthly
   return availablePlans.value.filter(plan => plan.price_monthly > currentPrice)
 })
+
+// Convertir currentUsage (UsageItem[]) en objet pour le template
+const usageObject = computed(() => {
+  const result: Record<string, number> = { users_count: 0, boutiques_count: 0, produits_count: 0, factures_count: 0 }
+  for (const item of currentUsage.value || []) {
+    const n = item.name.toLowerCase()
+    if (n.includes('utilisateur')) result.users_count = item.current
+    else if (n.includes('boutique') || n.includes('entrep')) result.boutiques_count = item.current
+    else if (n.includes('produit')) result.produits_count = item.current
+    else if (n.includes('facture')) result.factures_count = item.current
+  }
+  return result
+})
+
+const hasUsageData = computed(() =>
+  Array.isArray(currentUsage.value) && currentUsage.value.length > 0 &&
+  Object.keys(currentLimits.value || {}).length > 0
+)
 
 // Methods
 async function handleUpgrade(planId: number) {

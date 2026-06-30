@@ -145,47 +145,47 @@ interface Testimonial {
 }
 
 const testimonials: Testimonial[] = [
-  { 
-    id: 1, 
-    name: 'Jean Dupont', 
-    content: 'Grâce à Mura Storage, ma gestion des stocks est impeccable et je gagne un temps précieux chaque mois. L\'interface est intuitive et le support est exceptionnel.',
+  {
+    id: 1,
+    name: 'Aristide Nguemo',
+    content: 'Avant Mura Storage, je perdais 2 heures par jour à réconcilier mes fichiers Excel entre mes 3 boutiques. Maintenant tout est centralisé, je vois mes stocks en temps réel.',
     stars: 5,
-    role: 'Gérant de boutique'
+    role: 'Gérant de 3 boutiques — Bafoussam',
   },
-  { 
-    id: 2, 
-    name: 'Marie Curie', 
-    content: 'Une équipe experte et à l\'écoute. J\'ai enfin trouvé des conseils adaptés à mes besoins. Je recommande vivement !',
+  {
+    id: 2,
+    name: 'Fatoumata Diallo',
+    content: 'La facturation prend 10 secondes au lieu de 5 minutes. Mes clients ne font plus la queue. Le support répond vite et en français — c\'est rare pour un logiciel africain.',
     stars: 5,
-    role: 'Directrice commerciale'
+    role: 'Propriétaire pharmacie — Douala',
   },
-  { 
-    id: 3, 
-    name: 'Pierre Martin', 
-    content: 'Ils m\'ont aidé à optimiser la gestion de mes produits dans toutes mes entreprises. Service exceptionnel et résultats immédiats.',
+  {
+    id: 3,
+    name: 'Rodrigue Mbida',
+    content: 'J\'ai pu détecter des pertes dans mon entrepôt grâce aux alertes de rupture. En 2 mois, j\'ai économisé plus que le coût annuel de l\'abonnement.',
     stars: 5,
-    role: 'Entrepreneur'
+    role: 'Responsable logistique — Yaoundé',
   },
-  { 
-    id: 4, 
-    name: 'Sophie Durand', 
-    content: 'Des solutions personnalisées pour mon entreprise. La facturation automatique m\'a fait gagner des heures de travail.',
+  {
+    id: 4,
+    name: 'Aminata Koné',
+    content: 'L\'inventaire de ma boutique de cosmétiques prenait 3 jours. Avec les codes-barres Mura Storage, on le fait en 4 heures sans fermer. Exceptionnel.',
     stars: 5,
-    role: 'Responsable logistique'
+    role: 'Gérante boutique cosmétiques — Abidjan',
   },
-  { 
-    id: 5, 
-    name: 'Lucie Bernard', 
-    content: 'Leur expertise m\'a permis de réduire mes coûts tout en améliorant la traçabilité de mon stock. Excellent rapport qualité-prix.',
+  {
+    id: 5,
+    name: 'Emmanuel Fokou',
+    content: 'Mura Storage m\'a permis de passer de 2 à 5 points de vente en toute sérénité. Je vois les performances de chaque site depuis mon téléphone.',
+    stars: 5,
+    role: 'Entrepreneur — Bafoussam',
+  },
+  {
+    id: 6,
+    name: 'Mariam Ouédraogo',
+    content: 'Interface simple, même mes employés qui ne sont pas à l\'aise avec l\'informatique s\'en sortent parfaitement. La formation a duré 30 minutes.',
     stars: 4,
-    role: 'Propriétaire de restaurant'
-  },
-  { 
-    id: 6, 
-    name: 'Marc Lemoine', 
-    content: 'Une équipe professionnelle et réactive. Ils m\'ont accompagné à chaque étape de la mise en place. Parfait !',
-    stars: 5,
-    role: 'Gestionnaire de stock'
+    role: 'Gérante restaurant — Ouagadougou',
   },
 ];
 

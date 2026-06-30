@@ -32,7 +32,7 @@ const maxQty = computed(() => Math.max(1, ...topByQuantity.value.map(p => p.quan
 const lastUpdatedLabel = computed(() => {
   if (!lastUpdated.value) return ''
   const diff = Math.floor((Date.now() - lastUpdated.value.getTime()) / 1000)
-  if (diff < 5) return 'Ã€ l\'instant'
+  if (diff < 5) return 'À l\'instant'
   if (diff < 60) return `Il y a ${diff}s`
   return `Il y a ${Math.floor(diff / 60)}min`
 })
@@ -63,7 +63,7 @@ const loadData = async () => {
     const stocks: any[] = parseApiList(stocksRes.status === 'fulfilled' ? stocksRes.value : null)
     factures.value = parseApiList(facturesRes.status === 'fulfilled' ? facturesRes.value : null)
 
-    // RÃ©cupÃ©rer les produits de l'entreprise pour les croiser avec les stocks
+    // Récupérer les produits de l'entreprise pour les croiser avec les stocks
     const entrepriseId = boutiqueData.value?.entreprise?.id || boutiqueData.value?.entreprise || getEntrepriseId()
     if (stocks.length > 0 && entrepriseId) {
       const prodsRaw: any = await Promise.race([
@@ -77,7 +77,7 @@ const loadData = async () => {
         return { ...p, quantiteStock: stock?.quantite ?? 0, prixUnitaire: parseFloat(p.prix_vente || p.prix || 0) }
       })
     } else if (stocks.length > 0) {
-      // Fallback : afficher avec les donnÃ©es de stock directement
+      // Fallback : afficher avec les données de stock directement
       produits.value = stocks.map((s: any) => ({
         id: s.produit, nom: s.produit_nom || `Produit #${s.produit}`,
         quantiteStock: s.quantite ?? 0, prixUnitaire: 0,
@@ -85,7 +85,7 @@ const loadData = async () => {
     } else {
       produits.value = []
     }
-    // Mouvements rÃ©cents (derniers 8)
+    // Mouvements récents (derniers 8)
     try {
       const mvRaw: any = await $fetch(getApiUrl(`/api/mouvements-stock/?entrepot=${boutiqueData.value.id}&ordering=-created_at&limit=8`), fetchOpts)
       const mvArr = parseApiList(mvRaw)
@@ -126,7 +126,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
             Bonjour, {{ userData?.first_name || 'Administrateur' }} ðŸ‘‹
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2">
-            EntrepÃ´t <span class="font-semibold text-gray-700 dark:text-gray-300">{{ boutiqueData?.nom || 'â€”' }}</span>
+            Entrepôt <span class="font-semibold text-gray-700 dark:text-gray-300">{{ boutiqueData?.nom || 'â€”' }}</span>
             <span v-if="lastUpdatedLabel" class="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-600">
               <UIcon name="i-heroicons-arrow-path" class="w-3 h-3" :class="{ 'animate-spin': isRefreshing }" />
               {{ lastUpdatedLabel }}
@@ -136,7 +136,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
         <div class="flex gap-2">
           <button @click="loadData" :disabled="isRefreshing" class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50">
             <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" :class="{ 'animate-spin': isRefreshing }" />
-            RafraÃ®chir
+            Rafraîchir
           </button>
           <NuxtLink to="/facturation" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
             <UIcon name="i-heroicons-plus" class="w-4 h-4" />
@@ -165,7 +165,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
       <template v-else>
         <!-- KPIs -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCardEnhanced title="UnitÃ©s en stock" :value="totalUnites" format="number" icon="i-heroicons-cube" color="blue" :subtitle="`${produits.length} rÃ©fÃ©rences`" />
+          <KpiCardEnhanced title="Unités en stock" :value="totalUnites" format="number" icon="i-heroicons-cube" color="blue" :subtitle="`${produits.length} références`" />
           <KpiCardEnhanced title="Valeur du stock" :value="totalValeur" format="currency" icon="i-heroicons-banknotes" color="green" />
           <KpiCardEnhanced title="Ventes du jour" :value="ventesJour" format="currency" icon="i-heroicons-chart-bar-square" :color="ventesJour > 0 ? 'green' : 'gray'" :subtitle="`${nbVentesJour} facture${nbVentesJour > 1 ? 's' : ''}`" />
           <KpiCardEnhanced title="Ruptures" :value="produitsRupture" format="number" icon="i-heroicons-x-circle" :color="produitsRupture > 0 ? 'red' : 'gray'" :subtitle="produitsFaibleStock > 0 ? `${produitsFaibleStock} en faible stock` : 'Niveaux OK'" />
@@ -176,11 +176,11 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
           <!-- Top produits barres -->
           <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-5">
-              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Top produits â€” QuantitÃ© en stock</h2>
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Top produits â€” Quantité en stock</h2>
               <NuxtLink to="/stock_produit" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">Voir tout â†’</NuxtLink>
             </div>
             <div v-if="topByQuantity.length === 0" class="flex items-center justify-center h-32 text-gray-400 dark:text-gray-600">
-              <p class="text-sm">Aucune donnÃ©e</p>
+              <p class="text-sm">Aucune donnée</p>
             </div>
             <div v-else class="space-y-3">
               <div v-for="(p, i) in topByQuantity" :key="p.id" class="flex items-center gap-3">
@@ -222,7 +222,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
               <div v-for="p in alertesProduits" :key="p.id" class="flex items-center justify-between p-2.5 rounded-lg border" :class="(p.quantiteStock||0)===0 ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800' : 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800'">
                 <div class="min-w-0 flex-1">
                   <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ p.nom }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ p.quantiteStock || 0 }} unitÃ©{{ (p.quantiteStock||0)!==1?'s':'' }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ p.quantiteStock || 0 }} unité{{ (p.quantiteStock||0)!==1?'s':'' }}</p>
                 </div>
                 <span class="ml-2 px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0" :class="stockStatusClass(p.quantiteStock || 0)">
                   {{ stockStatusLabel(p.quantiteStock || 0) }}
@@ -236,7 +236,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <NuxtLink v-for="action in [
             { to: '/stock_produit', icon: 'i-heroicons-square-2-stack', label: 'Stock', desc: 'Consulter & ajuster', color: 'blue' },
-            { to: '/facturation', icon: 'i-heroicons-document-currency-dollar', label: 'Nouvelle vente', desc: 'CrÃ©er une facture', color: 'emerald' },
+            { to: '/facturation', icon: 'i-heroicons-document-currency-dollar', label: 'Nouvelle vente', desc: 'Créer une facture', color: 'emerald' },
             { to: '/mouvements-stock', icon: 'i-heroicons-arrows-right-left', label: 'Mouvements', desc: 'Historique flux', color: 'purple' },
             { to: '/inventaire', icon: 'i-heroicons-clipboard-document-check', label: 'Inventaire', desc: 'Lancer un inventaire', color: 'amber' },
           ]" :key="action.to" :to="action.to"
@@ -266,7 +266,7 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
           </NuxtLink>
         </div>
 
-        <!-- Mouvements rÃ©cents -->
+        <!-- Mouvements récents -->
         <div v-if="mouvementsRecents.length > 0" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-base font-semibold text-gray-900 dark:text-white">Derniers mouvements de stock</h2>

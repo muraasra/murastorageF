@@ -5,9 +5,13 @@ import { NAVIGATION_ITEMS, NAVIGATION_ITEMS_ADMIN, NAVIGATION_ITEMS_SUPERADMIN }
 import type { NavGroup } from '~/constants'
 import { useAuthStore } from '~/stores/auth'
 import { useLogoutConfirm } from '~/composables/useLogoutConfirm'
+import { useLocale } from '~/composables/useLocale'
+import { useNavTranslate } from '~/composables/useNavTranslate'
 
 const auth = useAuthStore()
 const { requestLogout } = useLogoutConfirm()
+const { t } = useLocale()
+const { tNav, tNavLabel } = useNavTranslate()
 const route = useRoute()
 
 const role = ref<string | null>(null)
@@ -36,7 +40,7 @@ const allItems = computed(() =>
   navGroups.value.flatMap(g => g.items).filter(i => i.link && i.name !== 'Logout')
 )
 
-// 4 raccourcis fixes selon le rÃ´le â€” les plus utilisÃ©s
+// 4 raccourcis fixes selon le rôle â€” les plus utilisés
 const pinnedLinks = computed(() => {
   if (role.value === 'superadmin' && !boutiqueSelected.value) return [
     '/superadmin/dashboard',
@@ -66,7 +70,7 @@ const pinnedItems = computed(() =>
 
 const isActive = (link: string) => route.path === link || route.path.startsWith(link + '/')
 
-// Fermer la sheet + rafraÃ®chir rÃ´le/boutique Ã  chaque navigation
+// Fermer la sheet + rafraîchir rôle/boutique Ã  chaque navigation
 watch(() => route.path, () => {
   showSheet.value = false
   if (!process.client) return
@@ -96,7 +100,20 @@ watch(() => route.path, () => {
           <UIcon :name="item.icon" class="w-6 h-6 mb-0.5" />
           <span v-if="isActive(item.link)" class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-emerald-500 rounded-full" />
         </div>
-        <span class="truncate max-w-[56px] leading-tight mt-0.5">{{ item.name.split(' ')[0] }}</span>
+        <span class="truncate max-w-[56px] leading-tight mt-0.5">{{ tNav(item.name).split(' ')[0] }}</span>
+      </NuxtLink>
+
+      <!-- Retour superadmin — visible si superadmin avec boutique sélectionnée -->
+      <NuxtLink
+        v-if="role === 'superadmin' && boutiqueSelected"
+        to="/superadmin/dashboard"
+        @click="showSheet = false"
+        class="flex flex-col items-center justify-center flex-1 px-1 py-2 text-[10px] font-medium text-amber-600 dark:text-amber-400 transition-colors"
+      >
+        <div class="relative">
+          <UIcon name="i-heroicons-arrow-uturn-left" class="w-6 h-6 mb-0.5" />
+        </div>
+        <span class="truncate max-w-[56px] leading-tight mt-0.5">SuperAdmin</span>
       </NuxtLink>
 
       <!-- Bouton "Menu" -->
@@ -114,7 +131,7 @@ watch(() => route.path, () => {
     </div>
   </nav>
 
-  <!-- Bottom Sheet â€” tous les menus groupÃ©s -->
+  <!-- Bottom Sheet â€” tous les menus groupés -->
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="showSheet" class="fixed inset-0 z-50 md:hidden flex flex-col justify-end">
@@ -123,7 +140,7 @@ watch(() => route.path, () => {
 
         <!-- Sheet -->
         <div class="relative bg-white dark:bg-gray-900 rounded-t-2xl max-h-[80vh] flex flex-col shadow-2xl">
-          <!-- PoignÃ©e -->
+          <!-- Poignée -->
           <div class="flex justify-center pt-3 pb-1 flex-shrink-0">
             <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
           </div>
@@ -142,7 +159,7 @@ watch(() => route.path, () => {
               <!-- Titre de groupe -->
               <div v-if="group.label" class="mt-4 mb-2 first:mt-2">
                 <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-1">
-                  {{ group.label }}
+                  {{ tNavLabel(group.label) }}
                 </p>
               </div>
               <div v-else-if="gi > 0" class="border-t border-gray-100 dark:border-gray-800 my-3" />
@@ -150,14 +167,14 @@ watch(() => route.path, () => {
               <!-- Items du groupe -->
               <div class="grid grid-cols-3 gap-2">
                 <template v-for="item in group.items" :key="item.link || item.name">
-                  <!-- DÃ©connexion -->
+                  <!-- Déconnexion -->
                   <button
                     v-if="item.name === 'Logout'"
                     @click="requestLogout()"
                     class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 transition-colors"
                   >
                     <UIcon :name="item.icon" class="w-6 h-6" />
-                    <span class="text-[10px] font-medium text-center leading-tight">DÃ©connexion</span>
+                    <span class="text-[10px] font-medium text-center leading-tight">{{ t('nav.logout') }}</span>
                   </button>
 
                   <!-- Lien normal -->
@@ -170,7 +187,7 @@ watch(() => route.path, () => {
                       : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
                   >
                     <UIcon :name="item.icon" class="w-6 h-6" />
-                    <span class="text-[10px] font-medium text-center leading-tight line-clamp-2">{{ item.name }}</span>
+                    <span class="text-[10px] font-medium text-center leading-tight line-clamp-2">{{ tNav(item.name) }}</span>
                   </NuxtLink>
                 </template>
               </div>

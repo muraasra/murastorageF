@@ -8,7 +8,7 @@ definePageMeta({ layout: 'default' })
 const { success, error } = useNotification()
 const { getApiUrl, getAuthHeaders, parseApiList } = useApiBase()
 
-// --- Ã‰tat ---
+// --- État ---
 const loading = ref(false)
 const submitting = ref(false)
 const showModal = ref(false)
@@ -82,7 +82,7 @@ async function chargerDonnees() {
       ...p,
       stocks: stocks.filter((s: any) => s.produit === p.id)
     }))
-    // Regrouper les mouvements de transfert par rÃ©fÃ©rence
+    // Regrouper les mouvements de transfert par référence
     const mouvements = parseApiList(mRaw)
     const groupes = new Map<string, any>()
     for (const m of mouvements) {
@@ -96,7 +96,7 @@ async function chargerDonnees() {
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
   } catch {
-    error('Erreur lors du chargement des donnÃ©es')
+    error('Erreur lors du chargement des données')
   } finally {
     loading.value = false
   }
@@ -109,11 +109,11 @@ async function soumettre() {
     return
   }
   if (form.value.entrepotSourceId === form.value.entrepotDestinationId) {
-    error('Source et destination doivent Ãªtre diffÃ©rentes')
+    error('Source et destination doivent Ãªtre différentes')
     return
   }
   if (form.value.quantite <= 0 || form.value.quantite > stockDisponible.value) {
-    error(`QuantitÃ© invalide (max: ${stockDisponible.value})`)
+    error(`Quantité invalide (max: ${stockDisponible.value})`)
     return
   }
   submitting.value = true
@@ -130,7 +130,7 @@ async function soumettre() {
         motif: form.value.motif
       }
     })
-    success('Transfert effectuÃ© avec succÃ¨s')
+    success('Transfert effectué avec succès')
     showModal.value = false
     resetForm()
     await chargerDonnees()
@@ -162,7 +162,7 @@ function voirDetails(t: any) {
 
 // --- Utils ---
 function nomEntrepot(id: number) {
-  return entrepots.value.find(e => e.id === id)?.nom || `EntrepÃ´t ${id}`
+  return entrepots.value.find(e => e.id === id)?.nom || `Entrepôt ${id}`
 }
 
 function formatDate(d: string) {
@@ -186,7 +186,7 @@ onMounted(chargerDonnees)
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Transferts de stock</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">DÃ©placer des produits entre entrepÃ´ts</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Déplacer des produits entre entrepôts</p>
       </div>
       <button
         @click="ouvrirModal"
@@ -208,7 +208,7 @@ onMounted(chargerDonnees)
         <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ stats.aujourdhui }}</p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 shadow-sm">
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Produits dÃ©placÃ©s</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Produits déplacés</p>
         <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.produits }}</p>
       </div>
     </div>
@@ -225,7 +225,7 @@ onMounted(chargerDonnees)
 
       <div v-else-if="transferts.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
         <UIcon name="i-heroicons-arrows-right-left" class="w-10 h-10 mb-3 opacity-40" />
-        <p class="text-sm">Aucun transfert enregistrÃ©</p>
+        <p class="text-sm">Aucun transfert enregistré</p>
       </div>
 
       <div v-else class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -247,7 +247,7 @@ onMounted(chargerDonnees)
             </p>
           </div>
           <div class="text-right flex-shrink-0">
-            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t.quantite }} unitÃ©s</p>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t.quantite }} unités</p>
             <p class="text-xs text-gray-400 mt-0.5">{{ formatDate(t.created_at) }}</p>
           </div>
         </div>
@@ -270,7 +270,7 @@ onMounted(chargerDonnees)
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Produit</label>
             <UInput v-model="rechercheModal" placeholder="Rechercher un produit..." icon="i-heroicons-magnifying-glass" />
             <div v-if="rechercheModal" class="mt-1 max-h-36 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm">
-              <div v-if="produitsFiltres.length === 0" class="px-3 py-2 text-xs text-gray-400">Aucun rÃ©sultat</div>
+              <div v-if="produitsFiltres.length === 0" class="px-3 py-2 text-xs text-gray-400">Aucun résultat</div>
               <button
                 v-for="p in produitsFiltres"
                 :key="p.id"
@@ -286,9 +286,9 @@ onMounted(chargerDonnees)
             </div>
           </div>
 
-          <!-- EntrepÃ´t source (verrouillÃ© sur la boutique courante) -->
+          <!-- Entrepôt source (verrouillé sur la boutique courante) -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">EntrepÃ´t source</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Entrepôt source</label>
             <div class="flex items-center gap-2 px-3 py-2.5 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300">
               <UIcon name="i-heroicons-lock-closed" class="w-4 h-4 text-gray-400 flex-shrink-0" />
               {{ boutiqueCourante?.nom || 'Boutique courante' }}
@@ -299,22 +299,22 @@ onMounted(chargerDonnees)
           <!-- Stock dispo -->
           <div v-if="form.entrepotSourceId && form.produitId" class="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-xs text-gray-600 dark:text-gray-400">
             <UIcon name="i-heroicons-cube" class="w-4 h-4" />
-            Stock disponible dans cet entrepÃ´t : <strong class="ml-1">{{ stockDisponible }}</strong>
+            Stock disponible dans cet entrepôt : <strong class="ml-1">{{ stockDisponible }}</strong>
           </div>
 
-          <!-- EntrepÃ´t destination -->
+          <!-- Entrepôt destination -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">EntrepÃ´t destination</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Entrepôt destination</label>
             <USelect
               v-model.number="form.entrepotDestinationId"
               :options="entrepotsSansSource.map(e => ({ label: e.nom + (e.ville ? ` â€” ${e.ville}` : ''), value: e.id }))"
-              placeholder="SÃ©lectionner la destination"
+              placeholder="Sélectionner la destination"
             />
           </div>
 
-          <!-- QuantitÃ© -->
+          <!-- Quantité -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">QuantitÃ©</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Quantité</label>
             <UInput
               v-model.number="form.quantite"
               type="number"
@@ -339,17 +339,17 @@ onMounted(chargerDonnees)
             :disabled="!form.produitId || !form.entrepotSourceId || !form.entrepotDestinationId || form.quantite < 1"
             @click="soumettre"
           >
-            TransfÃ©rer
+            Transférer
           </UButton>
         </div>
       </div>
     </UModal>
 
-    <!-- Modal dÃ©tails -->
+    <!-- Modal détails -->
     <UModal v-model="showDetailsModal" :ui="{ width: 'sm:max-w-md' }">
       <div v-if="selectedTransfert" class="p-6">
         <div class="flex items-center justify-between mb-5">
-          <h3 class="text-base font-semibold text-gray-900 dark:text-white">DÃ©tails du transfert</h3>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Détails du transfert</h3>
           <button @click="showDetailsModal = false" class="text-gray-400 hover:text-gray-600">
             <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
           </button>
@@ -368,7 +368,7 @@ onMounted(chargerDonnees)
             <dd class="font-medium text-gray-900 dark:text-white">{{ nomEntrepot(selectedTransfert.entrepot_destination || 0) }}</dd>
           </div>
           <div class="flex justify-between">
-            <dt class="text-gray-500 dark:text-gray-400">QuantitÃ©</dt>
+            <dt class="text-gray-500 dark:text-gray-400">Quantité</dt>
             <dd class="font-semibold text-purple-600 dark:text-purple-400">{{ selectedTransfert.quantite }}</dd>
           </div>
           <div v-if="selectedTransfert.notes" class="flex justify-between">
@@ -380,7 +380,7 @@ onMounted(chargerDonnees)
             <dd class="font-medium text-gray-900 dark:text-white">{{ formatDate(selectedTransfert.created_at) }}</dd>
           </div>
           <div v-if="selectedTransfert.reference_document" class="flex justify-between">
-            <dt class="text-gray-500 dark:text-gray-400">RÃ©fÃ©rence</dt>
+            <dt class="text-gray-500 dark:text-gray-400">Référence</dt>
             <dd class="font-medium text-gray-500 font-mono text-xs">{{ selectedTransfert.reference_document }}</dd>
           </div>
         </dl>

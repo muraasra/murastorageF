@@ -2,11 +2,15 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useLogoutConfirm } from '~/composables/useLogoutConfirm'
+import { useLocale } from '~/composables/useLocale'
+import { useNavTranslate } from '~/composables/useNavTranslate'
 import { NAVIGATION_ITEMS_SUPERADMIN } from '~/constants'
 import { useApiBase } from '@/composables/useApiBase'
 
 const auth = useAuthStore()
 const { requestLogout } = useLogoutConfirm()
+const { t } = useLocale()
+const { tNav, tNavLabel } = useNavTranslate()
 const { getApiUrl, getAuthHeaders } = useApiBase()
 const boutiqueData = ref<any>(null)
 const lowStockCount = ref(0)
@@ -41,26 +45,26 @@ const isLogout = (item: any) => item.name === 'Logout'
       </span>
     </div>
 
-    <!-- Navigation thÃ©matique -->
+    <!-- Navigation thématique -->
     <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
       <template v-for="(group, gi) in NAVIGATION_ITEMS_SUPERADMIN" :key="gi">
         <!-- Label de groupe -->
         <div v-if="group.label" class="pt-3 pb-1">
           <p class="px-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-            {{ group.label }}
+            {{ tNavLabel(group.label) }}
           </p>
         </div>
         <div v-else-if="gi > 0" class="border-t border-gray-100 dark:border-gray-800 my-2" />
 
         <template v-for="item in group.items" :key="item.link || item.name">
-          <!-- DÃ©connexion -->
+          <!-- Déconnexion -->
           <button
             v-if="isLogout(item)"
             @click="requestLogout()"
             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors mt-1"
           >
             <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
-            <span class="text-sm font-medium">DÃ©connexion</span>
+            <span class="text-sm font-medium">{{ t('nav.logout') }}</span>
           </button>
 
           <!-- Lien normal â€” amber active pour superadmin -->
@@ -72,7 +76,7 @@ const isLogout = (item: any) => item.name === 'Logout'
           >
             <div class="flex items-center gap-3 min-w-0">
               <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
-              <span class="text-sm truncate">{{ item.name }}</span>
+              <span class="text-sm truncate">{{ tNav(item.name) }}</span>
             </div>
             <span
               v-if="item.link === '/stock_produit' && lowStockCount > 0"

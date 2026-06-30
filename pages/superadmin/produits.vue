@@ -77,7 +77,7 @@ function openDelete(p: any) { selected.value = p; showDeleteConfirm.value = true
 async function deleteProduit() {
   try {
     await apiFetch(`/api/produits/${selected.value.id}/`, { method: 'DELETE' })
-    success('Produit supprimÃ©')
+    success('Produit supprimé')
     showDeleteConfirm.value = false
     await load(currentPage.value)
   } catch {
@@ -137,7 +137,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
           <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ stats.total }}</p>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">CatÃ©gories</p>
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Catégories</p>
           <p class="text-3xl font-extrabold text-blue-600 mt-1">{{ stats.categories }}</p>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
@@ -156,12 +156,12 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
         <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-3">
           <div class="relative flex-1 min-w-0 sm:min-w-[160px]">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input v-model="searchQuery" @input="onSearch" type="search" placeholder="Rechercher par nom, rÃ©fÃ©rence..."
+            <input v-model="searchQuery" @input="onSearch" type="search" placeholder="Rechercher par nom, référence..."
               class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" />
           </div>
           <select v-model="categoryFilter" @change="load(1)"
             class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400">
-            <option value="">Toutes les catÃ©gories</option>
+            <option value="">Toutes les catégories</option>
             <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
           </select>
           <!-- Import/Export -->
@@ -176,7 +176,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
         <!-- Empty -->
         <div v-else-if="filtered.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
           <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-          <p class="font-medium">Aucun produit trouvÃ©</p>
+          <p class="font-medium">Aucun produit trouvé</p>
           <button @click="showCreate = true" class="mt-3 px-4 py-2 bg-emerald-500 text-white text-sm rounded-xl hover:bg-emerald-600 transition-colors">
             Ajouter un produit
           </button>
@@ -188,7 +188,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
             <thead class="bg-gray-50 dark:bg-gray-700/50">
               <tr>
                 <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Produit</th>
-                <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">CatÃ©gorie</th>
+                <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Catégorie</th>
                 <th class="px-5 py-3 text-right font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Prix achat</th>
                 <th class="px-5 py-3 text-right font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Prix vente</th>
                 <th class="px-5 py-3 text-right font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Stock</th>
@@ -229,7 +229,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
                 </td>
                 <td class="px-5 py-3">
                   <div class="flex items-center justify-end gap-1">
-                    <button @click="openDetail(p)" title="DÃ©tails"
+                    <button @click="openDetail(p)" title="Détails"
                       class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
@@ -253,7 +253,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
           <span>Page {{ currentPage }} / {{ totalPages }}</span>
           <div class="flex gap-2">
             <button @click="load(currentPage - 1)" :disabled="currentPage <= 1"
-              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">â† PrÃ©cÃ©dent</button>
+              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">â† Précédent</button>
             <button @click="load(currentPage + 1)" :disabled="currentPage >= totalPages"
               class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">Suivant â†’</button>
           </div>
@@ -261,7 +261,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
       </div>
     </section>
 
-    <!-- Modal CrÃ©er -->
+    <!-- Modal Créer -->
     <Teleport to="body">
       <div v-if="showCreate" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showCreate = false">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
@@ -277,7 +277,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
         </div>
       </div>
 
-      <!-- Modal Ã‰diter -->
+      <!-- Modal Éditer -->
       <div v-if="showEdit && selected" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showEdit = false">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
           <div class="bg-blue-500 px-6 py-4 flex items-center justify-between flex-shrink-0">
@@ -292,7 +292,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
         </div>
       </div>
 
-      <!-- Modal DÃ©tail -->
+      <!-- Modal Détail -->
       <div v-if="showDetail && selected" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="showDetail = false">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
           <div class="bg-emerald-500 px-6 py-4 flex items-center justify-between flex-shrink-0">
@@ -304,11 +304,11 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
           <div class="p-6 overflow-y-auto space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
-                <p class="text-xs text-gray-400 uppercase mb-1">RÃ©fÃ©rence</p>
+                <p class="text-xs text-gray-400 uppercase mb-1">Référence</p>
                 <p class="font-semibold text-gray-900 dark:text-white">{{ selected.reference || `#${selected.id}` }}</p>
               </div>
               <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
-                <p class="text-xs text-gray-400 uppercase mb-1">CatÃ©gorie</p>
+                <p class="text-xs text-gray-400 uppercase mb-1">Catégorie</p>
                 <p class="font-semibold text-gray-900 dark:text-white">{{ selected.category || 'â€”' }}</p>
               </div>
               <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
@@ -349,7 +349,7 @@ function onSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => 
             </div>
             <div>
               <h3 class="font-bold text-gray-900 dark:text-white">Supprimer le produit ?</h3>
-              <p class="text-sm text-gray-500 mt-1">{{ selected?.nom }} sera dÃ©finitivement supprimÃ©.</p>
+              <p class="text-sm text-gray-500 mt-1">{{ selected?.nom }} sera définitivement supprimé.</p>
             </div>
           </div>
           <div class="flex gap-3 justify-end">

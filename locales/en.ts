@@ -1,4 +1,4 @@
-export default {
+﻿export default {
   // Navigation groups
   nav: {
     stock: 'Stock',
@@ -28,6 +28,7 @@ export default {
     pricing: 'Pricing',
     fiscalYear: 'Fiscal Year',
     logout: 'Logout',
+    returnSuperAdmin: 'Back to SuperAdmin',
   },
 
   // Profile dropdown

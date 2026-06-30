@@ -12,7 +12,7 @@ async function apiFetch(path: string, opts: any = {}) {
   return $fetch(getApiUrl(path), { headers: getAuthHeaders(), ...opts })
 }
 
-// â”€â”€ DonnÃ©es â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Données â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const factures = ref<any[]>([])
 const clients = ref<any[]>([])
 const boutiques = ref<any[]>([])
@@ -31,7 +31,7 @@ const selectedFacture = ref<any>(null)
 const stats = computed(() => {
   const total = factures.value.length
   const ca = factures.value.reduce((s, f) => s + (parseFloat(f.total) || 0), 0)
-  const payees = factures.value.filter(f => f.status === 'PayÃ©').length
+  const payees = factures.value.filter(f => f.status === 'Payé').length
   const enAttente = factures.value.filter(f => f.status === 'En attente').length
   const reste = factures.value.reduce((s, f) => s + (parseFloat(f.reste) || 0), 0)
   return { total, ca, payees, enAttente, reste }
@@ -86,7 +86,7 @@ function confirmDelete(f: any) {
 async function deleteFacture() {
   try {
     await apiFetch(`/api/factures/${selectedFacture.value.id}/`, { method: 'DELETE' })
-    success('Facture supprimÃ©e')
+    success('Facture supprimée')
     showDeleteConfirm.value = false
     await load(currentPage.value)
   } catch {
@@ -99,8 +99,8 @@ function fmt(n: any) { return Number(n || 0).toLocaleString('fr-FR') }
 function fmtDate(d: string) { return d ? new Date(d).toLocaleDateString('fr-FR') : 'â€”' }
 
 function statusClass(s: string) {
-  if (s === 'PayÃ©') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-  if (s === 'Partiellement payÃ©') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+  if (s === 'Payé') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+  if (s === 'Partiellement payé') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
   if (s === 'En attente') return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
   return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
 }
@@ -150,7 +150,7 @@ function onSearch() {
           <p class="text-2xl font-extrabold text-emerald-600 mt-1">{{ fmt(stats.ca) }} <span class="text-sm font-medium text-gray-500">FCFA</span></p>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">PayÃ©es</p>
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Payées</p>
           <p class="text-3xl font-extrabold text-emerald-600 mt-1">{{ stats.payees }}</p>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
@@ -169,7 +169,7 @@ function onSearch() {
               v-model="searchQuery"
               @input="onSearch"
               type="search"
-              placeholder="Rechercher par nom, client, entrepÃ´t..."
+              placeholder="Rechercher par nom, client, entrepôt..."
               class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
           </div>
@@ -179,8 +179,8 @@ function onSearch() {
             class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
           >
             <option value="">Tous les statuts</option>
-            <option value="PayÃ©">PayÃ©</option>
-            <option value="Partiellement payÃ©">Partiellement payÃ©</option>
+            <option value="Payé">Payé</option>
+            <option value="Partiellement payé">Partiellement payé</option>
             <option value="En attente">En attente</option>
           </select>
         </div>
@@ -193,8 +193,8 @@ function onSearch() {
         <!-- Empty -->
         <div v-else-if="filteredFactures.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
           <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          <p class="font-medium">Aucune facture trouvÃ©e</p>
-          <p class="text-sm mt-1">Modifiez les filtres ou crÃ©ez une nouvelle facture</p>
+          <p class="font-medium">Aucune facture trouvée</p>
+          <p class="text-sm mt-1">Modifiez les filtres ou créez une nouvelle facture</p>
         </div>
 
         <!-- Tableau -->
@@ -204,7 +204,7 @@ function onSearch() {
               <tr>
                 <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Facture</th>
                 <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Client</th>
-                <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">EntrepÃ´t</th>
+                <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Entrepôt</th>
                 <th class="px-5 py-3 text-left font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Date</th>
                 <th class="px-5 py-3 text-right font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Total</th>
                 <th class="px-5 py-3 text-right font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-xs">Reste</th>
@@ -241,7 +241,7 @@ function onSearch() {
                     <button
                       @click="viewFacture(f)"
                       class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
-                      title="Voir dÃ©tails"
+                      title="Voir détails"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
@@ -272,7 +272,7 @@ function onSearch() {
           <div class="flex gap-2">
             <button @click="load(currentPage - 1)" :disabled="currentPage <= 1"
               class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">
-              â† PrÃ©cÃ©dent
+              â† Précédent
             </button>
             <button @click="load(currentPage + 1)" :disabled="currentPage >= totalPages"
               class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:border-emerald-400 transition-colors">
@@ -307,7 +307,7 @@ function onSearch() {
                 <p class="font-semibold text-gray-900 dark:text-white">{{ selectedFacture.client?.nom || 'â€”' }}</p>
               </div>
               <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
-                <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">EntrepÃ´t</p>
+                <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Entrepôt</p>
                 <p class="font-semibold text-gray-900 dark:text-white">{{ selectedFacture.boutique?.nom || 'â€”' }}</p>
               </div>
               <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
@@ -350,7 +350,7 @@ function onSearch() {
 
             <!-- Versements -->
             <div v-if="selectedFacture.versements?.length">
-              <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Versements reÃ§us</h4>
+              <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Versements reçus</h4>
               <div class="space-y-2">
                 <div
                   v-for="v in selectedFacture.versements"
@@ -390,7 +390,7 @@ function onSearch() {
             </div>
             <div>
               <h3 class="font-bold text-gray-900 dark:text-white">Supprimer la facture ?</h3>
-              <p class="text-sm text-gray-500 mt-1">{{ selectedFacture?.nom_facture }} â€” Cette action est irrÃ©versible.</p>
+              <p class="text-sm text-gray-500 mt-1">{{ selectedFacture?.nom_facture }} â€” Cette action est irréversible.</p>
             </div>
           </div>
           <div class="flex gap-3 justify-end">

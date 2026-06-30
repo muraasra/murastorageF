@@ -4,7 +4,7 @@
     <!-- Header de la page -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gestion des Produits</h1>
-      <p class="mt-2 text-gray-600 dark:text-gray-400">GÃ©rez les produits de votre entreprise</p>
+      <p class="mt-2 text-gray-600 dark:text-gray-400">Gérez les produits de votre entreprise</p>
     </div>
 
     <!-- Statistiques -->
@@ -31,7 +31,7 @@
             </svg>
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">CatÃ©gories</p>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Catégories</p>
             <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ uniqueCategories }}</p>
           </div>
         </div>
@@ -66,7 +66,7 @@
       </div>
     </div>
 
-    <!-- Actions (wrappÃ©es sur mobile) -->
+    <!-- Actions (wrappées sur mobile) -->
     <div class="mb-6 flex flex-wrap gap-3">
       <UButton
         color="blue"
@@ -84,7 +84,7 @@
         class="w-full sm:w-auto"
       >
         <UIcon name="i-heroicons-tag" class="mr-2" />
-        GÃ©rer les catÃ©gories
+        Gérer les catégories
       </UButton>
       
       <UButton
@@ -93,7 +93,7 @@
         class="w-full sm:w-auto"
       >
         <UIcon name="i-heroicons-building-office-2" class="mr-2" />
-        GÃ©rer les fournisseurs
+        Gérer les fournisseurs
       </UButton>
       
       <UButton
@@ -121,7 +121,7 @@
         class="w-full sm:w-auto"
       >
         <UIcon name="i-heroicons-qr-code" class="mr-2" />
-        GÃ©nÃ©rer QR Codes
+        Générer QR Codes
       </UButton>
       
     </div>
@@ -144,7 +144,7 @@
             <div class="flex-1 min-w-0 sm:min-w-64">
               <UInput
                 v-model="searchQuery"
-                placeholder="Rechercher par nom, rÃ©fÃ©rence..."
+                placeholder="Rechercher par nom, référence..."
                 icon="i-heroicons-magnifying-glass"
                 size="lg"
               />
@@ -154,7 +154,7 @@
             <USelect
               v-model="filters.category"
               :options="categoryFilterOptions"
-              placeholder="CatÃ©gorie"
+              placeholder="Catégorie"
               icon="i-heroicons-tag"
               size="sm"
               class="w-40"
@@ -184,7 +184,7 @@
             </UButton>
           </div>
           
-          <!-- Filtres avancÃ©s (collapsibles) -->
+          <!-- Filtres avancés (collapsibles) -->
           <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
             <UButton 
               @click="showAdvancedFilters = !showAdvancedFilters" 
@@ -193,7 +193,7 @@
               class="text-gray-600 dark:text-gray-400"
             >
               <UIcon :name="showAdvancedFilters ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="mr-1" />
-              Filtres avancÃ©s
+              Filtres avancés
             </UButton>
             
             <div v-if="showAdvancedFilters" class="mt-3 space-y-3">
@@ -214,11 +214,11 @@
                 />
               </div>
               
-              <!-- Filtres par rÃ©fÃ©rence et marque -->
+              <!-- Filtres par référence et marque -->
               <div class="flex flex-wrap gap-3">
                 <UInput
                   v-model="filters.reference"
-                  placeholder="RÃ©fÃ©rence..."
+                  placeholder="Référence..."
                   icon="i-heroicons-hashtag"
                   size="sm"
                   class="w-40"
@@ -270,9 +270,9 @@
             </div>
           </div>
           
-          <!-- RÃ©sultats de recherche -->
+          <!-- Résultats de recherche -->
           <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-            <span>{{ filteredProduits.length }} produit(s) trouvÃ©(s)</span>
+            <span>{{ filteredProduits.length }} produit(s) trouvé(s)</span>
             <div class="flex items-center space-x-2">
               <span>Afficher:</span>
               <USelect
@@ -291,7 +291,7 @@
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
           </svg>
-          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Aucun produit trouvÃ©</p>
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Aucun produit trouvé</p>
         </div>
 
         <!-- Tableau des produits -->
@@ -308,7 +308,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <div class="flex items-center space-x-2">
                     <UIcon name="i-heroicons-tag" class="h-4 w-4" />
-                    <span>CatÃ©gorie</span>
+                    <span>Catégorie</span>
                   </div>
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -353,12 +353,12 @@
                     </div>
                     <div>
                       <div class="text-sm font-medium text-gray-900 dark:text-white">{{ produit.nom }}</div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">{{ produit.reference || 'Sans rÃ©fÃ©rence' }}</div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">{{ produit.reference || 'Sans référence' }}</div>
                     </div>
                   </div>
                 </td>
                 
-                <!-- CatÃ©gorie -->
+                <!-- Catégorie -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                     {{ getCategoryLabel(produit.categorie || produit.category || produit.categorie_nom) }}
@@ -391,7 +391,7 @@
                       </div>
                     </div>
                     
-                    <!-- Bouton d'Ã©dition du stock -->
+                    <!-- Bouton d'édition du stock -->
                     <UButton 
                       variant="ghost" 
                       size="xs" 
@@ -427,7 +427,7 @@
                     <span v-else class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                       Aucune
                     </span>
-                    <!-- Variantes dÃ©roulÃ©es -->
+                    <!-- Variantes déroulées -->
                     <div v-if="expandedVariantes.has(produit.id) && produit.variantes && produit.variantes.length > 0" class="mt-2 space-y-1">
                       <div v-for="v in produit.variantes" :key="v.id" class="text-xs bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1">
                         <span class="font-medium text-gray-800 dark:text-gray-200">{{ v.nom }}</span>
@@ -441,13 +441,13 @@
                 <!-- Actions -->
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex space-x-2">
-                    <UButton variant="ghost" size="sm" @click="viewProduit(produit)" title="Voir les dÃ©tails">
+                    <UButton variant="ghost" size="sm" @click="viewProduit(produit)" title="Voir les détails">
                       <UIcon name="i-heroicons-eye" />
                     </UButton>
                     <UButton variant="ghost" size="sm" @click="editProduit(produit)" title="Modifier">
                       <UIcon name="i-heroicons-pencil" />
                     </UButton>
-                    <UButton variant="ghost" size="sm" @click="generateCodes(produit)" title="GÃ©nÃ©rer QR Code">
+                    <UButton variant="ghost" size="sm" @click="generateCodes(produit)" title="Générer QR Code">
                       <UIcon name="i-heroicons-qr-code" />
                     </UButton>
                     <UButton variant="ghost" size="sm" color="red" @click="deleteProduit(produit.id)" title="Supprimer">
@@ -505,12 +505,12 @@
       </div>
     </div>
 
-    <!-- Modal de crÃ©ation/modification -->
+    <!-- Modal de création/modification -->
     <UModal v-model="showCreateModal" :ui="{ width: 'max-w-3xl' }">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">CrÃ©er un nouveau produit</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Créer un nouveau produit</h3>
             <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="showCreateModal = false" />
           </div>
           <!-- Onglets -->
@@ -549,37 +549,37 @@
               <UFormGroup label="Marque" name="marque">
                 <UInput v-model="formState.marque" placeholder="Ex: Samsung, Nike..." />
               </UFormGroup>
-              <UFormGroup label="ModÃ¨le" name="modele">
+              <UFormGroup label="Modèle" name="modele">
                 <UInput v-model="formState.modele" placeholder="Ex: Galaxy S24, Air Max..." />
               </UFormGroup>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormGroup label="CatÃ©gorie" name="categorie">
+              <UFormGroup label="Catégorie" name="categorie">
                 <div class="flex gap-2">
-                  <USelect v-model="formState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="SÃ©lectionner une catÃ©gorie" class="flex-1" />
-                  <UButton @click="showCategoriesModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter une catÃ©gorie" />
+                  <USelect v-model="formState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="Sélectionner une catégorie" class="flex-1" />
+                  <UButton @click="showCategoriesModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter une catégorie" />
                 </div>
               </UFormGroup>
               <UFormGroup label="Fournisseur" name="fournisseur_principal">
                 <div class="flex gap-2">
-                  <USelect v-model="formState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="SÃ©lectionner un fournisseur" class="flex-1" />
+                  <USelect v-model="formState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" class="flex-1" />
                   <UButton @click="showFournisseursModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter un fournisseur" />
                 </div>
               </UFormGroup>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormGroup label="UnitÃ© de mesure" name="unite_mesure">
+              <UFormGroup label="Unité de mesure" name="unite_mesure">
                 <USelect v-model="formState.unite_mesure" :options="uniteMesureOptions" />
               </UFormGroup>
-              <UFormGroup label="Ã‰tat" name="etat_produit">
+              <UFormGroup label="État" name="etat_produit">
                 <USelect v-model="formState.etat_produit" :options="etatProduitOptions" />
               </UFormGroup>
             </div>
 
             <UFormGroup label="Emplacement" name="emplacement">
-              <UInput v-model="formState.emplacement" placeholder="Ex: Ã‰tagÃ¨re A3, Palier 2..." />
+              <UInput v-model="formState.emplacement" placeholder="Ex: Étagère A3, Palier 2..." />
             </UFormGroup>
 
             <UFormGroup label="Image du produit" name="image">
@@ -603,7 +603,7 @@
 
             <!-- Marge automatique -->
             <div v-if="margeCreate !== null" class="flex items-center gap-2">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Marge calculÃ©e :</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">Marge calculée :</span>
               <span :class="[
                 'px-2 py-0.5 rounded-full text-xs font-bold',
                 parseFloat(margeCreate) >= 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
@@ -619,17 +619,17 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UFormGroup label="Stock minimal *" name="stock_minimum">
                 <UInput type="number" v-model="formState.stock_minimum" placeholder="0" />
-                <template #help><span class="text-xs text-gray-500">Seuil d'alerte pour rÃ©approvisionnement</span></template>
+                <template #help><span class="text-xs text-gray-500">Seuil d'alerte pour réapprovisionnement</span></template>
               </UFormGroup>
               <UFormGroup label="Stock maximal" name="stock_maximum">
                 <UInput type="number" v-model="formState.stock_maximum" placeholder="1000" />
-                <template #help><span class="text-xs text-gray-500">Stock maximum recommandÃ©</span></template>
+                <template #help><span class="text-xs text-gray-500">Stock maximum recommandé</span></template>
               </UFormGroup>
             </div>
 
             <UFormGroup label="Code-barres" name="code_barres">
-              <UInput v-model="formState.code_barres" placeholder="Laissez vide pour auto-gÃ©nÃ©rer" />
-              <template #help><span class="text-xs text-gray-500">Auto-gÃ©nÃ©rÃ© si vide</span></template>
+              <UInput v-model="formState.code_barres" placeholder="Laissez vide pour auto-générer" />
+              <template #help><span class="text-xs text-gray-500">Auto-généré si vide</span></template>
             </UFormGroup>
           </div>
 
@@ -693,7 +693,7 @@
                     </UButton>
                   </div>
                   <div v-for="(attr, ai) in varianteFormCreate.attributs" :key="ai" class="flex gap-2 mb-2">
-                    <UInput v-model="attr.cle" placeholder="ClÃ© (ex: Grammage)" size="sm" class="flex-1" />
+                    <UInput v-model="attr.cle" placeholder="Clé (ex: Grammage)" size="sm" class="flex-1" />
                     <UInput v-model="attr.valeur" placeholder="Valeur (ex: 500g)" size="sm" class="flex-1" />
                     <UButton size="xs" variant="ghost" color="red" @click="removeAttributCreate(ai)"><UIcon name="i-heroicons-x-mark" /></UButton>
                   </div>
@@ -729,7 +729,7 @@
         <template #footer>
           <div class="flex justify-end space-x-3">
             <UButton color="gray" variant="outline" @click="showCreateModal = false">Annuler</UButton>
-            <UButton color="blue" :loading="loading" @click="createProduit">CrÃ©er le produit</UButton>
+            <UButton color="blue" :loading="loading" @click="createProduit">Créer le produit</UButton>
           </div>
         </template>
       </UCard>
@@ -779,37 +779,37 @@
               <UFormGroup label="Marque" name="marque">
                 <UInput v-model="editFormState.marque" placeholder="Ex: Samsung, Nike..." />
               </UFormGroup>
-              <UFormGroup label="ModÃ¨le" name="modele">
+              <UFormGroup label="Modèle" name="modele">
                 <UInput v-model="editFormState.modele" placeholder="Ex: Galaxy S24, Air Max..." />
               </UFormGroup>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormGroup label="CatÃ©gorie" name="categorie">
+              <UFormGroup label="Catégorie" name="categorie">
                 <div class="flex gap-2">
-                  <USelect v-model="editFormState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="SÃ©lectionner une catÃ©gorie" class="flex-1" />
-                  <UButton @click="showCategoriesModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter une catÃ©gorie" />
+                  <USelect v-model="editFormState.categorie" :options="categories.map(c => ({ label: c.nom, value: c.id }))" placeholder="Sélectionner une catégorie" class="flex-1" />
+                  <UButton @click="showCategoriesModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter une catégorie" />
                 </div>
               </UFormGroup>
               <UFormGroup label="Fournisseur principal" name="fournisseur_principal">
                 <div class="flex gap-2">
-                  <USelect v-model="editFormState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="SÃ©lectionner un fournisseur" class="flex-1" />
+                  <USelect v-model="editFormState.fournisseur_principal" :options="fournisseurs.map(f => ({ label: f.nom, value: f.id }))" placeholder="Sélectionner un fournisseur" class="flex-1" />
                   <UButton @click="showFournisseursModal = true" variant="outline" size="sm" icon="i-heroicons-plus" title="Ajouter un fournisseur" />
                 </div>
               </UFormGroup>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormGroup label="UnitÃ© de mesure" name="unite_mesure">
+              <UFormGroup label="Unité de mesure" name="unite_mesure">
                 <USelect v-model="editFormState.unite_mesure" :options="uniteMesureOptions" />
               </UFormGroup>
-              <UFormGroup label="Ã‰tat" name="etat_produit">
+              <UFormGroup label="État" name="etat_produit">
                 <USelect v-model="editFormState.etat_produit" :options="etatProduitOptions" />
               </UFormGroup>
             </div>
 
             <UFormGroup label="Emplacement" name="emplacement">
-              <UInput v-model="editFormState.emplacement" placeholder="Ex: Ã‰tagÃ¨re A3, Palier 2..." />
+              <UInput v-model="editFormState.emplacement" placeholder="Ex: Étagère A3, Palier 2..." />
             </UFormGroup>
 
             <UFormGroup label="Image du produit" name="image">
@@ -833,7 +833,7 @@
 
             <!-- Marge automatique -->
             <div v-if="margeEdit !== null" class="flex items-center gap-2">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Marge calculÃ©e :</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">Marge calculée :</span>
               <span :class="[
                 'px-2 py-0.5 rounded-full text-xs font-bold',
                 parseFloat(margeEdit) >= 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
@@ -849,17 +849,17 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UFormGroup label="Stock minimal *" name="stock_minimum">
                 <UInput type="number" v-model="editFormState.stock_minimum" placeholder="0" />
-                <template #help><span class="text-xs text-gray-500">Seuil d'alerte pour rÃ©approvisionnement</span></template>
+                <template #help><span class="text-xs text-gray-500">Seuil d'alerte pour réapprovisionnement</span></template>
               </UFormGroup>
               <UFormGroup label="Stock maximal" name="stock_maximum">
                 <UInput type="number" v-model="editFormState.stock_maximum" placeholder="1000" />
-                <template #help><span class="text-xs text-gray-500">Stock maximum recommandÃ©</span></template>
+                <template #help><span class="text-xs text-gray-500">Stock maximum recommandé</span></template>
               </UFormGroup>
             </div>
 
             <UFormGroup label="Code-barres" name="code_barres">
-              <UInput v-model="editFormState.code_barres" placeholder="Laissez vide pour auto-gÃ©nÃ©rer" />
-              <template #help><span class="text-xs text-gray-500">Auto-gÃ©nÃ©rÃ© si vide</span></template>
+              <UInput v-model="editFormState.code_barres" placeholder="Laissez vide pour auto-générer" />
+              <template #help><span class="text-xs text-gray-500">Auto-généré si vide</span></template>
             </UFormGroup>
           </div>
 
@@ -922,7 +922,7 @@
                     </UButton>
                   </div>
                   <div v-for="(attr, ai) in varianteFormEdit.attributs" :key="ai" class="flex gap-2 mb-2">
-                    <UInput v-model="attr.cle" placeholder="ClÃ© (ex: Grammage)" size="sm" class="flex-1" />
+                    <UInput v-model="attr.cle" placeholder="Clé (ex: Grammage)" size="sm" class="flex-1" />
                     <UInput v-model="attr.valeur" placeholder="Valeur (ex: 500g)" size="sm" class="flex-1" />
                     <UButton size="xs" variant="ghost" color="red" @click="removeAttributEdit(ai)"><UIcon name="i-heroicons-x-mark" /></UButton>
                   </div>
@@ -992,7 +992,7 @@
                 <p class="text-sm text-gray-900 dark:text-white">{{ selectedProduit.nom }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">RÃ©fÃ©rence</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Référence</label>
                 <p class="text-sm text-gray-900 dark:text-white">{{ selectedProduit.reference || 'N/A' }}</p>
               </div>
             </div>
@@ -1009,12 +1009,12 @@
                 />
               </UFormGroup>
               
-                  <UFormGroup label="QuantitÃ©" name="nouveauStock" required>
+                  <UFormGroup label="Quantité" name="nouveauStock" required>
                     <UInput
                       v-model="stockForm.nouveauStock"
                       type="number"
                       min="0"
-                      placeholder="Entrez la quantitÃ©"
+                      placeholder="Entrez la quantité"
                     />
                   </UFormGroup>
             </div>
@@ -1023,7 +1023,7 @@
               <USelect
                 v-model="stockForm.typeMouvement"
                 :options="stockMovementOptions"
-                placeholder="SÃ©lectionnez le type de mouvement"
+                placeholder="Sélectionnez le type de mouvement"
               />
             </UFormGroup>
 
@@ -1096,12 +1096,12 @@
       </UCard>
     </UModal>
 
-    <!-- Modal de dÃ©tails -->
+    <!-- Modal de détails -->
     <UModal v-model="showDetailModal">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold">DÃ©tails du produit</h3>
+            <h3 class="text-lg font-semibold">Détails du produit</h3>
             <UButton
               color="gray"
               variant="ghost"
@@ -1112,11 +1112,11 @@
         </template>
 
         <div v-if="selectedProduit" class="space-y-6">
-          <!-- Informations gÃ©nÃ©rales -->
+          <!-- Informations générales -->
           <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
             <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
               <UIcon name="i-heroicons-cube" class="h-5 w-5 mr-2" />
-              Informations gÃ©nÃ©rales
+              Informations générales
             </h4>
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -1124,11 +1124,11 @@
                 <p class="text-gray-900 dark:text-white font-medium">{{ selectedProduit.nom }}</p>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">RÃ©fÃ©rence</label>
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Référence</label>
                 <p class="text-gray-900 dark:text-white">{{ selectedProduit.reference || 'N/A' }}</p>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">CatÃ©gorie</label>
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Catégorie</label>
                 <p class="text-gray-900 dark:text-white">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                     {{ getCategoryLabel(selectedProduit.category || selectedProduit.categorie_nom || 'autre') }}
@@ -1146,11 +1146,11 @@
             </div>
           </div>
 
-          <!-- Informations financiÃ¨res -->
+          <!-- Informations financières -->
           <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
             <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
               <UIcon name="i-heroicons-currency-dollar" class="h-5 w-5 mr-2" />
-              Informations financiÃ¨res
+              Informations financières
             </h4>
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -1176,11 +1176,11 @@
             </div>
           </div>
 
-          <!-- Informations stock et entrepÃ´t -->
+          <!-- Informations stock et entrepôt -->
           <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
             <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
               <UIcon name="i-heroicons-home" class="h-5 w-5 mr-2" />
-              Stock et entrepÃ´t
+              Stock et entrepôt
             </h4>
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -1192,7 +1192,7 @@
                 </p>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">EntrepÃ´t</label>
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Entrepôt</label>
                 <p class="text-gray-900 dark:text-white">{{ selectedProduit.entrepot_nom }}</p>
               </div>
               <div>
@@ -1236,11 +1236,11 @@
                 <p class="text-gray-900 dark:text-white">{{ selectedProduit.marque || 'N/A' }}</p>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">ModÃ¨le</label>
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Modèle</label>
                 <p class="text-gray-900 dark:text-white">{{ selectedProduit.modele || 'N/A' }}</p>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Ã‰tat du produit</label>
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">État du produit</label>
                 <p class="text-gray-900 dark:text-white">{{ selectedProduit.etat_produit || 'neuf' }}</p>
               </div>
               <div>
@@ -1248,7 +1248,7 @@
                 <p class="text-gray-900 dark:text-white font-mono">{{ selectedProduit.code_barres || 'N/A' }}</p>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">UnitÃ© de mesure</label>
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Unité de mesure</label>
                 <p class="text-gray-900 dark:text-white">{{ getUniteLabel(selectedProduit.unite_mesure) }}</p>
               </div>
               <div>
@@ -1275,11 +1275,11 @@
             </h4>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Date de crÃ©ation</label>
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Date de création</label>
                 <p class="text-gray-900 dark:text-white">{{ selectedProduit.created_at || 'N/A' }}</p>
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">DerniÃ¨re modification</label>
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Dernière modification</label>
                 <p class="text-gray-900 dark:text-white">{{ selectedProduit.updated_at || 'N/A' }}</p>
               </div>
             </div>
@@ -1308,19 +1308,19 @@
           <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
             <h4 class="font-medium text-blue-900 dark:text-blue-100 mb-2">Instructions d'importation</h4>
             <div class="text-sm text-blue-800 dark:text-blue-200 space-y-2">
-              <p><strong>Formats acceptÃ©s :</strong></p>
+              <p><strong>Formats acceptés :</strong></p>
               <ul class="space-y-1 ml-4">
-                <li>â€¢ <strong>CSV :</strong> .csv, .txt, .tsv (recommandÃ©)</li>
-                <li>â€¢ <strong>Excel simple :</strong> .xlsx, .xls (fichiers Excel basiques uniquement)</li>
-                <li>â€¢ <strong>Colonnes requises :</strong> nom, prix_achat, prix_vente, quantite</li>
-                <li>â€¢ <strong>Colonnes optionnelles :</strong> reference, description, categorie, code_barre, unite, stock_minimum, stock_maximum, fournisseur_nom, marque, modele, etat_produit, devise, sku</li>
-                <li>â€¢ <strong>Encodage :</strong> UTF-8 recommandÃ©</li>
-                <li>â€¢ <strong>SÃ©parateur CSV :</strong> Virgule (,), point-virgule (;) ou tabulation</li>
-                <li>â€¢ <strong>DÃ©cimales :</strong> Point (.) pour les prix</li>
+                <li>• <strong>CSV :</strong> .csv, .txt, .tsv (recommandé)</li>
+                <li>• <strong>Excel simple :</strong> .xlsx, .xls (fichiers Excel basiques uniquement)</li>
+                <li>• <strong>Colonnes requises :</strong> nom, prix_achat, prix_vente, quantite</li>
+                <li>• <strong>Colonnes optionnelles :</strong> reference, description, categorie, code_barre, unite, stock_minimum, stock_maximum, fournisseur_nom, marque, modele, etat_produit, devise, sku</li>
+                <li>• <strong>Encodage :</strong> UTF-8 recommandé</li>
+                <li>• <strong>Séparateur CSV :</strong> Virgule (,), point-virgule (;) ou tabulation</li>
+                <li>• <strong>Décimales :</strong> Point (.) pour les prix</li>
               </ul>
               <div class="mt-3 p-2 bg-yellow-100 dark:bg-yellow-800 rounded">
                 <p class="font-medium text-yellow-800 dark:text-yellow-200">âš ï¸ Important pour Excel :</p>
-                <p class="text-xs text-yellow-700 dark:text-yellow-300">Les fichiers Excel complexes (avec formules, graphiques, macros) ne sont pas supportÃ©s. Pour les fichiers Excel complexes, convertissez-les d'abord en CSV.</p>
+                <p class="text-xs text-yellow-700 dark:text-yellow-300">Les fichiers Excel complexes (avec formules, graphiques, macros) ne sont pas supportés. Pour les fichiers Excel complexes, convertissez-les d'abord en CSV.</p>
               </div>
               <div class="mt-3 p-2 bg-blue-100 dark:bg-blue-800 rounded">
                 <p class="font-medium">Exemple de format :</p>
@@ -1329,7 +1329,7 @@
             </div>
           </div>
 
-          <!-- Zone de tÃ©lÃ©chargement -->
+          <!-- Zone de téléchargement -->
           <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
             <input
               ref="fileInput"
@@ -1340,8 +1340,8 @@
             />
             <div v-if="!importFile" @click="openFileDialog" class="cursor-pointer">
               <UIcon name="i-heroicons-cloud-arrow-up" class="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p class="text-gray-600 dark:text-gray-400 mb-2">Cliquez pour sÃ©lectionner un fichier Excel ou CSV</p>
-              <p class="text-sm text-gray-500 dark:text-gray-500">ou glissez-dÃ©posez le fichier ici</p>
+              <p class="text-gray-600 dark:text-gray-400 mb-2">Cliquez pour sélectionner un fichier Excel ou CSV</p>
+              <p class="text-sm text-gray-500 dark:text-gray-500">ou glissez-déposez le fichier ici</p>
             </div>
             <div v-else class="space-y-2">
               <UIcon name="i-heroicons-document-text" class="h-8 w-8 text-green-500 mx-auto" />
@@ -1353,10 +1353,10 @@
             </div>
           </div>
 
-          <!-- PrÃ©visualisation -->
+          <!-- Prévisualisation -->
           <div v-if="importPreview.length > 0" class="space-y-4">
             <div class="flex items-center justify-between">
-              <h4 class="font-medium text-gray-900 dark:text-white">PrÃ©visualisation ({{ importPreview.length }} produits)</h4>
+              <h4 class="font-medium text-gray-900 dark:text-white">Prévisualisation ({{ importPreview.length }} produits)</h4>
               <div class="text-sm text-gray-500 dark:text-gray-400">
                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                   âœ“ PrÃªt pour l'importation
@@ -1369,12 +1369,12 @@
                 <thead class="bg-gray-50 dark:bg-gray-800 sticky top-0">
                   <tr>
                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nom</th>
-                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">RÃ©fÃ©rence</th>
+                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Référence</th>
                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prix Achat</th>
                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prix Vente</th>
                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Stock</th>
-                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">CatÃ©gorie</th>
-                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">UnitÃ©</th>
+                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Catégorie</th>
+                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Unité</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1393,7 +1393,7 @@
                         {{ getCategoryLabel(item.category || 'autre') }}
                       </span>
                     </td>
-                    <td class="px-3 py-2 text-gray-900 dark:text-white">{{ item.unite_mesure || 'unitÃ©' }}</td>
+                    <td class="px-3 py-2 text-gray-900 dark:text-white">{{ item.unite_mesure || 'unité' }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -1410,7 +1410,7 @@
               </div>
               <div class="text-center">
                 <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ uniqueCategoriesInImport }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">CatÃ©gories</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Catégories</div>
               </div>
               <div class="text-center">
                 <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ totalStockInImport }}</div>
@@ -1449,7 +1449,7 @@
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-red-600 dark:text-red-400">
               <UIcon name="i-heroicons-exclamation-triangle" class="mr-2" />
-              Erreurs d'importation dÃ©tectÃ©es
+              Erreurs d'importation détectées
             </h3>
             <UButton
               color="gray"
@@ -1461,13 +1461,13 @@
         </template>
 
         <div class="space-y-4">
-          <!-- RÃ©sumÃ© des erreurs -->
+          <!-- Résumé des erreurs -->
           <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
             <div class="flex items-center">
               <UIcon name="i-heroicons-exclamation-triangle" class="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
               <div>
                 <p class="font-medium text-red-900 dark:text-red-100">
-                  {{ importErrors.length }} erreur(s) dÃ©tectÃ©e(s)
+                  {{ importErrors.length }} erreur(s) détectée(s)
                 </p>
                 <p class="text-sm text-red-800 dark:text-red-200">
                   Corrigez ces erreurs avant de pouvoir importer les produits
@@ -1516,11 +1516,11 @@
               Comment corriger ces erreurs
             </h4>
             <div class="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              <p>â€¢ <strong>Nom manquant :</strong> Ajoutez un nom pour chaque produit</p>
-              <p>â€¢ <strong>Prix invalide :</strong> Utilisez des nombres positifs (ex: 100.50)</p>
-              <p>â€¢ <strong>Prix de vente â‰¤ prix d'achat :</strong> Le prix de vente doit Ãªtre supÃ©rieur</p>
-              <p>â€¢ <strong>QuantitÃ© invalide :</strong> Utilisez des nombres entiers positifs ou zÃ©ro</p>
-              <p>â€¢ <strong>En-tÃªtes manquants :</strong> VÃ©rifiez que les colonnes requises sont prÃ©sentes</p>
+              <p>• <strong>Nom manquant :</strong> Ajoutez un nom pour chaque produit</p>
+              <p>• <strong>Prix invalide :</strong> Utilisez des nombres positifs (ex: 100.50)</p>
+              <p>• <strong>Prix de vente â‰¤ prix d'achat :</strong> Le prix de vente doit Ãªtre supérieur</p>
+              <p>• <strong>Quantité invalide :</strong> Utilisez des nombres entiers positifs ou zéro</p>
+              <p>• <strong>En-tÃªtes manquants :</strong> Vérifiez que les colonnes requises sont présentes</p>
             </div>
           </div>
         </div>
@@ -1536,18 +1536,18 @@
             @click="downloadErrorReport"
           >
             <UIcon name="i-heroicons-document-arrow-down" class="mr-2" />
-            TÃ©lÃ©charger le rapport d'erreurs
+            Télécharger le rapport d'erreurs
           </UButton>
         </div>
       </UCard>
     </UModal>
 
-    <!-- Modal de gÃ©nÃ©ration de codes-barres/QR -->
+    <!-- Modal de génération de codes-barres/QR -->
     <UModal v-model="showCodeModal">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold">GÃ©nÃ©rer des QR codes</h3>
+            <h3 class="text-lg font-semibold">Générer des QR codes</h3>
             <UButton
               color="gray"
               variant="ghost"
@@ -1563,19 +1563,19 @@
             <h4 class="font-medium text-gray-900 dark:text-white mb-2">{{ selectedCodeProduit.nom }}</h4>
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span class="text-gray-500 dark:text-gray-400">RÃ©fÃ©rence:</span>
+                <span class="text-gray-500 dark:text-gray-400">Référence:</span>
                 <span class="ml-1 font-medium">{{ selectedCodeProduit.reference || 'N/A' }}</span>
               </div>
               <div>
                 <span class="text-gray-500 dark:text-gray-400">Code-barre:</span>
-                <span class="ml-1 font-medium">{{ selectedCodeProduit.code_barres || 'Non dÃ©fini' }}</span>
+                <span class="ml-1 font-medium">{{ selectedCodeProduit.code_barres || 'Non défini' }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Options de gÃ©nÃ©ration -->
+          <!-- Options de génération -->
           <div class="space-y-4">
-            <h4 class="font-medium text-gray-900 dark:text-white">Options de gÃ©nÃ©ration</h4>
+            <h4 class="font-medium text-gray-900 dark:text-white">Options de génération</h4>
             
             <!-- Type de code -->
             <div class="grid grid-cols-2 gap-4">
@@ -1604,7 +1604,7 @@
               </UFormGroup>
             </div>
 
-            <!-- Options avancÃ©es -->
+            <!-- Options avancées -->
             <div class="space-y-3">
               <UCheckbox v-model="codeOptions.includeText" label="Inclure le texte sous le code" />
               <UCheckbox v-model="codeOptions.includeProductName" label="Inclure le nom du produit" />
@@ -1612,9 +1612,9 @@
             </div>
           </div>
 
-          <!-- PrÃ©visualisation -->
+          <!-- Prévisualisation -->
           <div v-if="generatedCode" class="space-y-4">
-            <h4 class="font-medium text-gray-900 dark:text-white">PrÃ©visualisation</h4>
+            <h4 class="font-medium text-gray-900 dark:text-white">Prévisualisation</h4>
             <div class="flex justify-center p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
               <img :src="generatedCode" :alt="`Code ${codeOptions.type}`" class="max-w-full h-auto" />
             </div>
@@ -1631,19 +1631,19 @@
               :loading="generatingCode"
               @click="generateCode"
             >
-              GÃ©nÃ©rer et tÃ©lÃ©charger
+              Générer et télécharger
             </UButton>
           </div>
         </div>
       </UCard>
     </UModal>
 
-    <!-- Modal de gÃ©nÃ©ration en masse -->
+    <!-- Modal de génération en masse -->
     <UModal v-model="showBulkCodeModal">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold">GÃ©nÃ©rer des QR codes en masse</h3>
+            <h3 class="text-lg font-semibold">Générer des QR codes en masse</h3>
             <UButton
               color="gray"
               variant="ghost"
@@ -1654,15 +1654,15 @@
         </template>
 
         <div class="space-y-6">
-          <!-- SÃ©lection des produits -->
+          <!-- Sélection des produits -->
           <div class="space-y-4">
-            <h4 class="font-medium text-gray-900 dark:text-white">SÃ©lectionner les produits</h4>
+            <h4 class="font-medium text-gray-900 dark:text-white">Sélectionner les produits</h4>
             
             <div class="space-y-2">
               <UCheckbox 
                 v-model="selectAllProducts" 
                 @change="toggleAllProducts"
-                label="SÃ©lectionner tous les produits"
+                label="Sélectionner tous les produits"
               />
               
               <div class="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -1674,7 +1674,7 @@
                   <div class="flex-1">
                     <span class="font-medium">{{ produit.nom }}</span>
                     <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                      ({{ produit.reference || 'Sans rÃ©fÃ©rence' }})
+                      ({{ produit.reference || 'Sans référence' }})
                     </span>
                   </div>
                 </div>
@@ -1682,9 +1682,9 @@
             </div>
           </div>
 
-          <!-- Options de gÃ©nÃ©ration -->
+          <!-- Options de génération -->
           <div class="space-y-4">
-            <h4 class="font-medium text-gray-900 dark:text-white">Options de gÃ©nÃ©ration</h4>
+            <h4 class="font-medium text-gray-900 dark:text-white">Options de génération</h4>
             
             <div class="grid grid-cols-2 gap-4">
               <UFormGroup label="Type de code" name="bulkCodeType">
@@ -1709,7 +1709,7 @@
             <div class="space-y-3">
               <UCheckbox v-model="bulkCodeOptions.includeText" label="Inclure le texte sous le code" />
               <UCheckbox v-model="bulkCodeOptions.includeProductName" label="Inclure le nom du produit" />
-              <UCheckbox v-model="bulkCodeOptions.generateZip" label="CrÃ©er un fichier ZIP" />
+              <UCheckbox v-model="bulkCodeOptions.generateZip" label="Créer un fichier ZIP" />
             </div>
           </div>
 
@@ -1725,7 +1725,7 @@
               :disabled="selectedProductsForBulk.length === 0"
               @click="generateBulkCodesAction"
             >
-              GÃ©nÃ©rer {{ selectedProductsForBulk.length }} code(s)
+              Générer {{ selectedProductsForBulk.length }} code(s)
             </UButton>
           </div>
         </div>
@@ -1752,9 +1752,9 @@
           <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
             <h4 class="font-medium text-gray-900 dark:text-white mb-2">Informations sur l'export</h4>
             <div class="text-sm text-gray-600 dark:text-gray-400">
-              <p>â€¢ <strong>{{ produits.length }}</strong> produit(s) seront exportÃ©s</p>
-              <p>â€¢ Toutes les colonnes disponibles seront incluses</p>
-              <p>â€¢ Le fichier sera tÃ©lÃ©chargÃ© automatiquement</p>
+              <p>• <strong>{{ produits.length }}</strong> produit(s) seront exportés</p>
+              <p>• Toutes les colonnes disponibles seront incluses</p>
+              <p>• Le fichier sera téléchargé automatiquement</p>
             </div>
           </div>
 
@@ -1770,7 +1770,7 @@
                   </div>
                   <div>
                     <h5 class="font-medium text-gray-900 dark:text-white">Export CSV</h5>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Fichier texte sÃ©parÃ© par virgules</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Fichier texte séparé par virgules</p>
                   </div>
                 </div>
               </div>
@@ -1794,7 +1794,7 @@
                   </div>
                   <div>
                     <h5 class="font-medium text-gray-900 dark:text-white">Test Excel</h5>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Tester avec donnÃ©es d'exemple</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Tester avec données d'exemple</p>
                   </div>
                 </div>
               </div>
@@ -1811,7 +1811,7 @@
               </div>
               <div class="flex items-center space-x-2">
                 <UIcon name="i-heroicons-check" class="h-4 w-4 text-green-500" />
-                <span>RÃ©fÃ©rence</span>
+                <span>Référence</span>
               </div>
               <div class="flex items-center space-x-2">
                 <UIcon name="i-heroicons-check" class="h-4 w-4 text-green-500" />
@@ -1831,7 +1831,7 @@
               </div>
               <div class="flex items-center space-x-2">
                 <UIcon name="i-heroicons-check" class="h-4 w-4 text-green-500" />
-                <span>CatÃ©gorie</span>
+                <span>Catégorie</span>
               </div>
               <div class="flex items-center space-x-2">
                 <UIcon name="i-heroicons-check" class="h-4 w-4 text-green-500" />
@@ -1847,7 +1847,7 @@
               </div>
               <div class="flex items-center space-x-2">
                 <UIcon name="i-heroicons-check" class="h-4 w-4 text-green-500" />
-                <span>ModÃ¨le</span>
+                <span>Modèle</span>
               </div>
               <div class="flex items-center space-x-2">
                 <UIcon name="i-heroicons-check" class="h-4 w-4 text-green-500" />
@@ -1866,23 +1866,23 @@
       </UCard>
     </UModal>
 
-    <!-- Modal de gestion des catÃ©gories -->
+    <!-- Modal de gestion des catégories -->
     <UModal v-model="showCategoriesModal">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              GÃ©rer les catÃ©gories
+              Gérer les catégories
             </h3>
             <UButton @click="showCategoriesModal = false" variant="ghost" icon="i-heroicons-x-mark" />
           </div>
         </template>
 
         <div class="space-y-6">
-          <!-- Liste des catÃ©gories existantes -->
+          <!-- Liste des catégories existantes -->
           <div>
             <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">
-              CatÃ©gories existantes ({{ categories.length }})
+              Catégories existantes ({{ categories.length }})
             </h4>
             <div class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
               <div v-for="categorie in categories" :key="categorie.id" 
@@ -1900,21 +1900,21 @@
             </div>
           </div>
 
-          <!-- Formulaire de crÃ©ation -->
+          <!-- Formulaire de création -->
           <div class="border-t pt-4">
             <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">
-              CrÃ©er une nouvelle catÃ©gorie
+              Créer une nouvelle catégorie
             </h4>
             <div class="space-y-4">
-              <UFormGroup label="Nom de la catÃ©gorie" required>
-                <UInput v-model="newCategorie.nom" placeholder="Ex: Ã‰lectronique" />
+              <UFormGroup label="Nom de la catégorie" required>
+                <UInput v-model="newCategorie.nom" placeholder="Ex: Électronique" />
               </UFormGroup>
               
               <UFormGroup label="Description">
-                <UTextarea v-model="newCategorie.description" placeholder="Description de la catÃ©gorie" />
+                <UTextarea v-model="newCategorie.description" placeholder="Description de la catégorie" />
               </UFormGroup>
               
-              <UFormGroup label="IcÃ´ne">
+              <UFormGroup label="Icône">
                 <div class="space-y-2">
                   <div class="grid grid-cols-5 gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded max-h-32 overflow-y-auto">
                     <button
@@ -1952,7 +1952,7 @@
               Annuler
             </UButton>
             <UButton @click="createCategorie" color="primary" :disabled="!newCategorie.nom">
-              CrÃ©er la catÃ©gorie
+              Créer la catégorie
             </UButton>
           </div>
         </template>
@@ -1965,7 +1965,7 @@
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              GÃ©rer les fournisseurs
+              Gérer les fournisseurs
             </h3>
             <UButton @click="showFournisseursModal = false" variant="ghost" icon="i-heroicons-x-mark" />
           </div>
@@ -1994,10 +1994,10 @@
             </div>
           </div>
 
-          <!-- Formulaire de crÃ©ation -->
+          <!-- Formulaire de création -->
           <div class="border-t pt-4">
             <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">
-              CrÃ©er un nouveau fournisseur
+              Créer un nouveau fournisseur
             </h4>
             <div class="grid grid-cols-2 gap-4">
               <UFormGroup label="Nom du fournisseur" required>
@@ -2012,12 +2012,12 @@
                 <UInput v-model="newFournisseur.email" type="email" placeholder="contact@fournisseur.com" />
               </UFormGroup>
               
-              <UFormGroup label="TÃ©lÃ©phone">
+              <UFormGroup label="Téléphone">
                 <UInput v-model="newFournisseur.telephone" placeholder="+237 6XX XX XX XX" />
               </UFormGroup>
               
               <UFormGroup label="Adresse" class="col-span-2">
-                <UInput v-model="newFournisseur.adresse" placeholder="Adresse complÃ¨te" />
+                <UInput v-model="newFournisseur.adresse" placeholder="Adresse complète" />
               </UFormGroup>
               
               <UFormGroup label="Ville">
@@ -2037,7 +2037,7 @@
               </UFormGroup>
               
               <UFormGroup label="Notes" class="col-span-2">
-                <UTextarea v-model="newFournisseur.notes" placeholder="Notes supplÃ©mentaires" />
+                <UTextarea v-model="newFournisseur.notes" placeholder="Notes supplémentaires" />
               </UFormGroup>
             </div>
           </div>
@@ -2049,35 +2049,35 @@
               Annuler
             </UButton>
             <UButton @click="createFournisseur" color="primary" :disabled="!newFournisseur.nom">
-              CrÃ©er le fournisseur
+              Créer le fournisseur
             </UButton>
           </div>
         </template>
       </UCard>
     </UModal>
 
-    <!-- Modal d'Ã©dition de catÃ©gorie -->
+    <!-- Modal d'édition de catégorie -->
     <UModal v-model="showEditCategorieModal">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Modifier la catÃ©gorie
+              Modifier la catégorie
             </h3>
             <UButton @click="showEditCategorieModal = false" variant="ghost" icon="i-heroicons-x-mark" />
           </div>
         </template>
 
         <div class="space-y-4" v-if="editingCategorie">
-          <UFormGroup label="Nom de la catÃ©gorie" required>
-            <UInput v-model="editingCategorie.nom" placeholder="Ex: Ã‰lectronique" />
+          <UFormGroup label="Nom de la catégorie" required>
+            <UInput v-model="editingCategorie.nom" placeholder="Ex: Électronique" />
           </UFormGroup>
           
           <UFormGroup label="Description">
-            <UTextarea v-model="editingCategorie.description" placeholder="Description de la catÃ©gorie" />
+            <UTextarea v-model="editingCategorie.description" placeholder="Description de la catégorie" />
           </UFormGroup>
           
-          <UFormGroup label="IcÃ´ne">
+          <UFormGroup label="Icône">
             <div class="space-y-2">
               <div class="grid grid-cols-5 gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded max-h-32 overflow-y-auto">
                 <button
@@ -2120,7 +2120,7 @@
       </UCard>
     </UModal>
 
-    <!-- Modal d'Ã©dition de fournisseur -->
+    <!-- Modal d'édition de fournisseur -->
     <UModal v-model="showEditFournisseurModal">
       <UCard>
         <template #header>
@@ -2146,12 +2146,12 @@
               <UInput v-model="editingFournisseur.email" type="email" placeholder="contact@fournisseur.com" />
             </UFormGroup>
             
-            <UFormGroup label="TÃ©lÃ©phone">
+            <UFormGroup label="Téléphone">
               <UInput v-model="editingFournisseur.telephone" placeholder="+237 6XX XX XX XX" />
             </UFormGroup>
             
             <UFormGroup label="Adresse" class="col-span-2">
-              <UInput v-model="editingFournisseur.adresse" placeholder="Adresse complÃ¨te" />
+              <UInput v-model="editingFournisseur.adresse" placeholder="Adresse complète" />
             </UFormGroup>
             
             <UFormGroup label="Ville">
@@ -2171,7 +2171,7 @@
             </UFormGroup>
             
             <UFormGroup label="Notes" class="col-span-2">
-              <UTextarea v-model="editingFournisseur.notes" placeholder="Notes supplÃ©mentaires" />
+              <UTextarea v-model="editingFournisseur.notes" placeholder="Notes supplémentaires" />
             </UFormGroup>
           </div>
         </div>
@@ -2194,7 +2194,7 @@
 <script setup lang="ts">
 import { useSeo } from '@/composables/useSeo'
 
-// Page privÃ©e - Noindex
+// Page privée - Noindex
 useSeo({
   title: 'Produits - Mura Storage',
   description: 'Gestion des produits et inventaire',
@@ -2210,7 +2210,7 @@ const canImportCSVUI = computed(() => canCreateResource('produits'))
 
 function handleCreateProduitClick() {
   if (!canCreateProduitUI.value) {
-    warning('Limite de produits atteinte. Passez Ã  un plan supÃ©rieur pour crÃ©er plus de produits.')
+    warning('Limite de produits atteinte. Passez Ã  un plan supérieur pour créer plus de produits.')
     return
   }
   // ouvrir le modal existant
@@ -2223,11 +2223,11 @@ import { useBarcodeGenerator } from '@/composables/useBarcodeGenerator'
 import { useImportExport } from '@/composables/useImportExport'
 import { API_BASE_URL } from '@/constants'
 
-// Utiliser le composable pour la gÃ©nÃ©ration de codes
+// Utiliser le composable pour la génération de codes
 const { generateAndDownloadProductCodes, generateBulkCodes: generateBulkCodesUtil } = useBarcodeGenerator()
 
-// Interface pour les produits (adaptÃ©e au modÃ¨le backend)
-// Interface temporaire pour l'import (permet les chaÃ®nes)
+// Interface pour les produits (adaptée au modèle backend)
+// Interface temporaire pour l'import (permet les chaînes)
 interface ProduitImport {
   id?: number
   sku?: string
@@ -2255,10 +2255,10 @@ interface ProduitImport {
   stock_maximum: number
   etat_produit: string
   actif: boolean
-  // MÃ©tadonnÃ©es
+  // Métadonnées
   created_at?: string
   updated_at?: string
-  // Champs supplÃ©mentaires
+  // Champs supplémentaires
   marque?: string
   modele?: string
   couleur?: string
@@ -2294,10 +2294,10 @@ interface Produit {
   prix_achat: number
   prix_vente: number
   prix_gros?: number
-  prix?: number // compatibilitÃ©
+  prix?: number // compatibilité
   quantite: number
   reference?: string
-  category?: string // compatibilitÃ©
+  category?: string // compatibilité
   // Relations
   categorie?: number
   categorie_nom?: string
@@ -2312,17 +2312,17 @@ interface Produit {
   stock_maximum: number
   etat_produit: string
   actif: boolean
-  // MÃ©tadonnÃ©es
+  // Métadonnées
   created_at?: string
   updated_at?: string
-  // Champs de compatibilitÃ© et spÃ©cifiques
+  // Champs de compatibilité et spécifiques
   marque?: string
   modele?: string
   specifications?: any
   image?: string
-  // Stocks par entrepÃ´t
+  // Stocks par entrepôt
   stocks?: any[]
-  // Informations d'entrepÃ´t pour l'affichage
+  // Informations d'entrepôt pour l'affichage
   entrepot_nom?: string
   // Calculs automatiques
   marge?: number
@@ -2343,7 +2343,7 @@ definePageMeta({
 
 const { error, success, warning } = useNotification()
 
-// Ã‰tat des donnÃ©es
+// État des données
 const produits = ref<Produit[]>([])
 const entreprises = ref<any[]>([])
 const entrepots = ref<any[]>([])
@@ -2361,11 +2361,11 @@ interface ImportError {
   message: string
 }
 
-// Ã‰tat pour les erreurs d'importation
+// État pour les erreurs d'importation
 const importErrors = ref<ImportError[]>([])
 const showErrorModal = ref(false)
 
-// Ã‰tat des modales
+// État des modales
 const showCreateModal = ref(false)
 const showDetailModal = ref(false)
 const showEditModal = ref(false)
@@ -2377,15 +2377,15 @@ const showCategoriesModal = ref(false)
 const showFournisseursModal = ref(false)
 const selectedProduit = ref<Produit | null>(null)
 
-// Ã‰tat des filtres avancÃ©s
+// État des filtres avancés
 const showAdvancedFilters = ref(false)
 
-// Ã‰tat des modals de confirmation
+// État des modals de confirmation
 const showConfirmModal = ref(false)
 const confirmAction = ref<(() => void) | null>(null)
 const confirmMessage = ref('')
 
-// Ã‰tat des filtres
+// État des filtres
 const filters = ref({
   category: '',
   priceRange: '',
@@ -2400,7 +2400,7 @@ const filters = ref({
   stockMax: ''
 })
 
-// Ã‰tat pour les nouvelles entitÃ©s
+// État pour les nouvelles entités
 const newCategorie = ref({
   nom: '',
   description: '',
@@ -2408,23 +2408,23 @@ const newCategorie = ref({
   couleur: '#3B82F6'
 })
 
-// Ã‰tat pour l'Ã©dition de catÃ©gorie
+// État pour l'édition de catégorie
 const editingCategorie = ref<any>(null)
 const showEditCategorieModal = ref(false)
 
-// Ã‰tat pour l'Ã©dition de fournisseur
+// État pour l'édition de fournisseur
 const editingFournisseur = ref<any>(null)
 const showEditFournisseurModal = ref(false)
 
-// Liste d'icÃ´nes disponibles pour les catÃ©gories
+// Liste d'icônes disponibles pour les catégories
 const availableIcons = [
-  { name: 'i-heroicons-device-phone-mobile', label: 'TÃ©lÃ©phone' },
+  { name: 'i-heroicons-device-phone-mobile', label: 'Téléphone' },
   { name: 'i-heroicons-computer-desktop', label: 'Ordinateur' },
   { name: 'i-heroicons-cube', label: 'Produit' },
   { name: 'i-heroicons-tag', label: 'Tag' },
   { name: 'i-heroicons-shopping-bag', label: 'Sac' },
   { name: 'i-heroicons-gift', label: 'Cadeau' },
-  { name: 'i-heroicons-bolt', label: 'Ã‰lectronique' },
+  { name: 'i-heroicons-bolt', label: 'Électronique' },
   { name: 'i-heroicons-wrench-screwdriver', label: 'Outils' },
   { name: 'i-heroicons-home', label: 'Maison' },
   { name: 'i-heroicons-building-office-2', label: 'Bureau' },
@@ -2432,7 +2432,7 @@ const availableIcons = [
   { name: 'i-heroicons-camera', label: 'Photo' },
   { name: 'i-heroicons-musical-note', label: 'Musique' },
   { name: 'i-heroicons-book', label: 'Livre' },
-  { name: 'i-heroicons-heart', label: 'SantÃ©' }
+  { name: 'i-heroicons-heart', label: 'Santé' }
 ]
 
 const newFournisseur = ref({
@@ -2452,12 +2452,12 @@ const sortBy = ref('')
 const itemsPerPage = ref(10)
 const currentPage = ref(1)
 
-// Ã‰tat de l'importation
+// État de l'importation
 const importFile = ref<File | null>(null)
 const importPreview = ref<Produit[]>([])
 const importing = ref(false)
 
-// Ã‰tat de la gÃ©nÃ©ration de codes
+// État de la génération de codes
 const showCodeModal = ref(false)
 const showBulkCodeModal = ref(false)
 const selectedCodeProduit = ref<Produit | null>(null)
@@ -2467,7 +2467,7 @@ const generatingBulkCodes = ref(false)
 const selectedProductsForBulk = ref<number[]>([])
 const selectAllProducts = ref(false)
 
-// Ã‰tat du formulaire de modification
+// État du formulaire de modification
 const editFormState = ref({
   nom: "",
   description: "",
@@ -2490,7 +2490,7 @@ const editFormState = ref({
   imagePreviewUrl: "" as string
 })
 
-// Ã‰tat du formulaire de modification du stock
+// État du formulaire de modification du stock
 const stockForm = ref({
   nouveauStock: 0,
   typeMouvement: '',
@@ -2502,14 +2502,14 @@ const stockUpdating = ref(false)
 // Options pour les types de mouvement de stock
 const stockMovementOptions = [
   { label: 'Ajustement', value: 'ajustement' },
-  { label: 'EntrÃ©e', value: 'entree' },
+  { label: 'Entrée', value: 'entree' },
   { label: 'Sortie', value: 'sortie' },
   { label: 'Transfert', value: 'transfert' },
   { label: 'Perte', value: 'perte' },
   { label: 'Retour', value: 'retour' }
 ]
 
-// Ã‰tat du formulaire de crÃ©ation
+// État du formulaire de création
 const formState = ref({
   nom: "",
   description: "",
@@ -2533,11 +2533,11 @@ const formState = ref({
   imagePreviewUrl: "" as string
 })
 
-// Onglet actif pour les modaux de crÃ©ation/modification
+// Onglet actif pour les modaux de création/modification
 const activeCreateTab = ref<'infos' | 'prix' | 'variantes'>('infos')
 const activeEditTab = ref<'infos' | 'prix' | 'variantes'>('infos')
 
-// Marge calculÃ©e en temps rÃ©el
+// Marge calculée en temps réel
 const margeCreate = computed(() => {
   const pa = parseFloat(formState.value.prix_achat.toString()) || 0
   const pv = parseFloat(formState.value.prix_vente.toString()) || 0
@@ -2583,7 +2583,7 @@ const variantesEdit = ref<VarianteForm[]>([])
 const hasVariantesCreate = ref(false)
 const hasVariantesEdit = ref(false)
 
-// Index de la variante en cours d'Ã©dition inline (-1 = aucune)
+// Index de la variante en cours d'édition inline (-1 = aucune)
 const editingVarianteIndexCreate = ref<number | null>(null)
 const editingVarianteIndexEdit = ref<number | null>(null)
 
@@ -2644,7 +2644,7 @@ const margeVariante = (pa: number, pv: number) => {
   return ((pv - pa) / pa * 100).toFixed(1)
 }
 
-// Sauvegarder les variantes aprÃ¨s crÃ©ation/modification du produit
+// Sauvegarder les variantes après création/modification du produit
 const saveVariantesProduit = async (produitId: number, variantes: VarianteForm[]) => {
   const h = getAuthHeaders()
   for (const v of variantes) {
@@ -2675,7 +2675,7 @@ const deleteVarianteProduit = async (id: number) => {
   await $fetch(getApiUrl(`/api/variantes-produit/${id}/`), { method: 'DELETE', headers: h })
 }
 
-// Ã‰tat dÃ©roulable des variantes dans la liste
+// État déroulable des variantes dans la liste
 const expandedVariantes = ref<Set<number>>(new Set())
 const toggleVariantes = (id: number) => {
   const next = new Set(expandedVariantes.value)
@@ -2687,9 +2687,9 @@ const toggleVariantes = (id: number) => {
   expandedVariantes.value = next
 }
 
-// Options unitÃ©s et Ã©tats
+// Options unités et états
 const uniteMesureOptions = [
-  { value: 'piece', label: 'PiÃ¨ce' },
+  { value: 'piece', label: 'Pièce' },
   { value: 'kg', label: 'kg' },
   { value: 'g', label: 'g' },
   { value: 'L', label: 'L' },
@@ -2703,13 +2703,13 @@ const uniteMesureOptions = [
 const etatProduitOptions = [
   { value: 'neuf', label: 'Neuf' },
   { value: 'occasion', label: 'Occasion' },
-  { value: 'reconditionne', label: 'ReconditionnÃ©' },
-  { value: 'defectueux', label: 'DÃ©fectueux' },
+  { value: 'reconditionne', label: 'Reconditionné' },
+  { value: 'defectueux', label: 'Défectueux' },
 ]
 
-// Options pour les catÃ©gories
+// Options pour les catégories
 const categoryOptions = [
-  { value: 'telephone', label: 'TÃ©lÃ©phone' },
+  { value: 'telephone', label: 'Téléphone' },
   { value: 'ordinateur', label: 'Ordinateur' },
   { value: 'accessoire', label: 'Accessoire' },
   { value: 'autre', label: 'Autre' },
@@ -2717,7 +2717,7 @@ const categoryOptions = [
 
 // Options pour les filtres
 const categoryFilterOptions = computed(() => [
-  { value: '', label: 'Toutes les catÃ©gories' },
+  { value: '', label: 'Toutes les catégories' },
   ...categoryOptions
 ])
 
@@ -2741,9 +2741,9 @@ const sortOptions = [
   { value: 'nom-asc', label: 'Nom (A-Z)' },
   { value: 'nom-desc', label: 'Nom (Z-A)' },
   { value: 'prix-asc', label: 'Prix croissant' },
-  { value: 'prix-desc', label: 'Prix dÃ©croissant' },
+  { value: 'prix-desc', label: 'Prix décroissant' },
   { value: 'stock-asc', label: 'Stock croissant' },
-  { value: 'stock-desc', label: 'Stock dÃ©croissant' }
+  { value: 'stock-desc', label: 'Stock décroissant' }
 ]
 
 // Options pour les filtres de nom
@@ -2753,7 +2753,7 @@ const nameFilterTypeOptions = [
   { value: 'starts-with', label: 'Commence par' },
   { value: 'ends-with', label: 'Finit par' },
   { value: 'exact', label: 'Exact' },
-  { value: 'regex', label: 'Expression rÃ©guliÃ¨re' }
+  { value: 'regex', label: 'Expression régulière' }
 ]
 
 const itemsPerPageOptions = [
@@ -2763,12 +2763,12 @@ const itemsPerPageOptions = [
   { value: 100, label: '100' }
 ]
 
-// Options pour la gÃ©nÃ©ration de codes
+// Options pour la génération de codes
 const codeTypeOptions = [
   { value: 'qr', label: 'QR Code' },
   { value: 'qr_small', label: 'QR Code (petit)' },
   { value: 'qr_large', label: 'QR Code (grand)' },
-  { value: 'qr_custom', label: 'QR Code (personnalisÃ©)' }
+  { value: 'qr_custom', label: 'QR Code (personnalisé)' }
 ]
 
 const formatOptions = [
@@ -2778,15 +2778,15 @@ const formatOptions = [
 ]
 
 const contentOptions = [
-  { value: 'reference', label: 'RÃ©fÃ©rence du produit' },
+  { value: 'reference', label: 'Référence du produit' },
   { value: 'barcode', label: 'Code-barre existant' },
   { value: 'id', label: 'ID du produit' },
   { value: 'url', label: 'URL du produit' },
-  { value: 'json', label: 'DonnÃ©es complÃ¨tes (JSON)' },
-  { value: 'custom', label: 'Texte personnalisÃ©' }
+  { value: 'json', label: 'Données complètes (JSON)' },
+  { value: 'custom', label: 'Texte personnalisé' }
 ]
 
-// Configuration des options de gÃ©nÃ©ration
+// Configuration des options de génération
 const codeOptions = ref({
   type: 'qr',
   format: 'png',
@@ -2808,7 +2808,7 @@ const bulkCodeOptions = ref({
   generateZip: true
 })
 
-// Statistiques calculÃ©es
+// Statistiques calculées
 const uniqueCategories = computed(() => {
   const categories = new Set(produits.value.map(p => p.category))
   return categories.size
@@ -2822,11 +2822,11 @@ const valeurStock = computed(() => {
   return produits.value.reduce((total, produit) => total + ((produit.prix_vente || produit.prix || 0) * (produit.quantite || 0)), 0)
 })
 
-// Produits filtrÃ©s et triÃ©s
+// Produits filtrés et triés
 const filteredProduits = computed(() => {
   let filtered = produits.value
 
-  // Recherche textuelle gÃ©nÃ©rale
+  // Recherche textuelle générale
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(produit =>
@@ -2837,7 +2837,7 @@ const filteredProduits = computed(() => {
     )
   }
 
-  // Filtre par nom avec type spÃ©cifique
+  // Filtre par nom avec type spécifique
   if (filters.value.nameFilterType && filters.value.nameFilterValue) {
     const value = filters.value.nameFilterValue.toLowerCase()
     filtered = filtered.filter(produit => {
@@ -2859,7 +2859,7 @@ const filteredProduits = computed(() => {
     })
   }
 
-  // Filtre par rÃ©fÃ©rence
+  // Filtre par référence
   if (filters.value.reference) {
     const ref = filters.value.reference.toLowerCase()
     filtered = filtered.filter(produit => 
@@ -2875,12 +2875,12 @@ const filteredProduits = computed(() => {
     )
   }
 
-  // Filtre par catÃ©gorie
+  // Filtre par catégorie
   if (filters.value.category) {
     filtered = filtered.filter(produit => produit.category === filters.value.category)
   }
 
-  // Filtre par prix (plage prÃ©dÃ©finie)
+  // Filtre par prix (plage prédéfinie)
   if (filters.value.priceRange) {
     const [min, max] = filters.value.priceRange.split('-').map(Number)
     filtered = filtered.filter(produit => {
@@ -2892,7 +2892,7 @@ const filteredProduits = computed(() => {
     })
   }
 
-  // Filtre par plage de prix personnalisÃ©e
+  // Filtre par plage de prix personnalisée
   if (filters.value.priceMin || filters.value.priceMax) {
     const minPrice = filters.value.priceMin ? parseFloat(filters.value.priceMin) : 0
     const maxPrice = filters.value.priceMax ? parseFloat(filters.value.priceMax) : Infinity
@@ -2902,7 +2902,7 @@ const filteredProduits = computed(() => {
     })
   }
 
-  // Filtre par stock (statut prÃ©dÃ©fini)
+  // Filtre par stock (statut prédéfini)
   if (filters.value.stockStatus) {
     filtered = filtered.filter(produit => {
       const stock = produit.quantite || 0
@@ -2915,7 +2915,7 @@ const filteredProduits = computed(() => {
     })
   }
 
-  // Filtre par plage de stock personnalisÃ©e
+  // Filtre par plage de stock personnalisée
   if (filters.value.stockMin || filters.value.stockMax) {
     const minStock = filters.value.stockMin ? parseInt(filters.value.stockMin) : 0
     const maxStock = filters.value.stockMax ? parseInt(filters.value.stockMax) : Infinity
@@ -2943,7 +2943,7 @@ const filteredProduits = computed(() => {
   return filtered
 })
 
-// Produits paginÃ©s
+// Produits paginés
 const paginatedProduits = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
@@ -2980,7 +2980,7 @@ const margeProduit = (produit: Produit) => {
 import { useApiBase } from '@/composables/useApiBase'
 const { getApiUrl, getAuthHeaders } = useApiBase()
 
-// Charger les donnÃ©es depuis l'API backend
+// Charger les données depuis l'API backend
 const isLoadingRequest = ref(false)
 const loadData = async () => {
   try {
@@ -2988,7 +2988,7 @@ const loadData = async () => {
     isLoadingRequest.value = true
     loading.value = true
     
-    // RÃ©cupÃ©rer le token d'authentification
+    // Récupérer le token d'authentification
     const token = process.client ? localStorage.getItem('access_token') : null
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
@@ -2998,7 +2998,7 @@ const loadData = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // RÃ©cupÃ©rer l'entreprise et l'entrepÃ´t de l'utilisateur connectÃ©
+    // Récupérer l'entreprise et l'entrepôt de l'utilisateur connecté
     const entreprise = process.client ? localStorage.getItem('entreprise') : null
     const boutique = process.client ? localStorage.getItem('boutique') : null
     
@@ -3023,10 +3023,10 @@ const loadData = async () => {
       }
     }
     
-    console.log('IDs rÃ©cupÃ©rÃ©s:', { entrepriseId, entrepotId })
+    console.log('IDs récupérés:', { entrepriseId, entrepotId })
     
     const h = getAuthHeaders()
-    // Charger toutes les donnÃ©es en parallÃ¨le via $fetch (pas de cache)
+    // Charger toutes les données en parallèle via $fetch (pas de cache)
     const fetchAll = [
       $fetch(getApiUrl('/api/entreprises/'), { headers: h }),
       $fetch(getApiUrl('/api/boutiques/'), { headers: h }),
@@ -3055,17 +3055,17 @@ const loadData = async () => {
     fournisseurs.value = fournisseursResponse
     stocks.value = stocksResponse
     
-    // Debug: Afficher les premiÃ¨res donnÃ©es
-    console.log('=== DEBUG DONNÃ‰ES ===')
+    // Debug: Afficher les premières données
+    console.log('=== DEBUG DONNÉES ===')
     console.log('Premier produit brut:', produitsResponse[0])
-    console.log('PremiÃ¨re entreprise:', entreprisesResponse[0])
-    console.log('Premier entrepÃ´t:', entrepotsResponse[0])
-    console.log('PremiÃ¨re catÃ©gorie:', categoriesResponse[0])
+    console.log('Première entreprise:', entreprisesResponse[0])
+    console.log('Premier entrepôt:', entrepotsResponse[0])
+    console.log('Première catégorie:', categoriesResponse[0])
     console.log('Premier fournisseur:', fournisseursResponse[0])
     console.log('Premier stock:', stocksResponse[0])
     console.log('====================')
     
-    // Adapter les donnÃ©es de l'API au format frontend avec les relations complÃ¨tes
+    // Adapter les données de l'API au format frontend avec les relations complètes
     // Filtrer les produits par entreprise et afficher tous les produits de l'entreprise
     let produitsFiltres = produitsResponse
     
@@ -3074,24 +3074,24 @@ const loadData = async () => {
       produitsFiltres = produitsResponse.filter((item: any) => item.entreprise === entrepriseId)
     }
     
-    console.log(`Produits trouvÃ©s: ${produitsResponse.length}, aprÃ¨s filtrage entreprise: ${produitsFiltres.length}`)
+    console.log(`Produits trouvés: ${produitsResponse.length}, après filtrage entreprise: ${produitsFiltres.length}`)
     
     produits.value = produitsFiltres.map((item: any) => {
       // Trouver l'entreprise correspondante
       const entreprise = entreprises.value.find(e => e.id === item.entreprise)
       
-      // Trouver la catÃ©gorie correspondante
+      // Trouver la catégorie correspondante
       const categorie = categories.value.find(c => c.id === item.categorie)
       
       // Trouver le fournisseur correspondant
       const fournisseur = fournisseurs.value.find(f => f.id === item.fournisseur_principal)
       
-      // Gestion des stocks par entrepÃ´t - utiliser le stock de l'entrepÃ´t de l'utilisateur
+      // Gestion des stocks par entrepôt - utiliser le stock de l'entrepôt de l'utilisateur
       let stockTotal = 0
       let stockParEntrepot: any[] = []
       let entrepotPrincipal = null
       
-      // Chercher le stock spÃ©cifique Ã  l'entrepÃ´t de l'utilisateur
+      // Chercher le stock spécifique Ã  l'entrepôt de l'utilisateur
       const stockEntrepotUtilisateur = entrepotId ? stocks.value.find(stock => 
         stock.produit === item.id && stock.entrepot === entrepotId
       ) : null
@@ -3101,12 +3101,12 @@ const loadData = async () => {
         const entrepot = entrepots.value.find(e => e.id === stockEntrepotUtilisateur.entrepot)
         entrepotPrincipal = {
           ...stockEntrepotUtilisateur,
-          entrepot_nom: entrepot?.nom || 'EntrepÃ´t Principal',
+          entrepot_nom: entrepot?.nom || 'Entrepôt Principal',
           entrepot_id: stockEntrepotUtilisateur.entrepot
         }
         stockParEntrepot = [entrepotPrincipal]
       } else {
-        // Si pas de stock dans cet entrepÃ´t ou pas d'entrepÃ´t, afficher 0
+        // Si pas de stock dans cet entrepôt ou pas d'entrepôt, afficher 0
         stockTotal = 0
         if (entrepotId) {
           const entrepot = entrepots.value.find(e => e.id === entrepotId)
@@ -3116,7 +3116,7 @@ const loadData = async () => {
             quantite: 0,
             quantite_reservee: 0,
             emplacement: '',
-            entrepot_nom: entrepot?.nom || 'EntrepÃ´t Principal',
+            entrepot_nom: entrepot?.nom || 'Entrepôt Principal',
             entrepot_id: entrepotId
           }
         } else {
@@ -3126,7 +3126,7 @@ const loadData = async () => {
             quantite: 0,
             quantite_reservee: 0,
             emplacement: '',
-            entrepot_nom: 'Aucun entrepÃ´t',
+            entrepot_nom: 'Aucun entrepôt',
             entrepot_id: null
           }
         }
@@ -3155,13 +3155,13 @@ const loadData = async () => {
         prix_achat: parseFloat(item.prix_achat) || 0,
         prix_vente: parseFloat(item.prix_vente) || 0,
         prix_gros: item.prix_gros ? parseFloat(item.prix_gros) : undefined,
-        prix: parseFloat(item.prix_vente) || 0, // compatibilitÃ©
-        quantite: stockTotal, // Utiliser le stock calculÃ©
+        prix: parseFloat(item.prix_vente) || 0, // compatibilité
+        quantite: stockTotal, // Utiliser le stock calculé
         reference: item.reference,
-        category: item.category || item.categorie_nom, // compatibilitÃ©
-        // Relations complÃ¨tes
+        category: item.category || item.categorie_nom, // compatibilité
+        // Relations complètes
         categorie: item.categorie,
-        categorie_nom: categorie?.nom || item.categorie_nom || 'CatÃ©gorie inconnue',
+        categorie_nom: categorie?.nom || item.categorie_nom || 'Catégorie inconnue',
         entreprise: item.entreprise,
         entreprise_nom: entreprise?.nom || item.entreprise_nom || 'Entreprise inconnue',
         fournisseur_principal: item.fournisseur_principal,
@@ -3173,23 +3173,23 @@ const loadData = async () => {
         stock_maximum: item.stock_maximum || 1000,
         etat_produit: item.etat_produit || 'neuf',
         actif: item.actif !== false,
-        // MÃ©tadonnÃ©es
+        // Métadonnées
         created_at: item.created_at,
         updated_at: item.updated_at,
-        // Champs spÃ©cifiques
+        // Champs spécifiques
         marque: item.marque,
         modele: item.modele,
         specifications: item.specifications,
         image: item.image,
-        // Stocks par entrepÃ´t avec informations complÃ¨tes
+        // Stocks par entrepôt avec informations complètes
         stocks: stockParEntrepot,
         // Calculs automatiques
         marge: item.marge,
         marge_absolue: item.marge_absolue,
         stock_low: item.stock_low,
         stock_high: item.stock_high,
-        // Informations d'entrepÃ´t pour l'affichage
-        entrepot_nom: entrepotPrincipal?.entrepot_nom || 'EntrepÃ´t principal',
+        // Informations d'entrepôt pour l'affichage
+        entrepot_nom: entrepotPrincipal?.entrepot_nom || 'Entrepôt principal',
         entrepot_id: entrepotPrincipal?.entrepot_id,
         // Variantes
         variantes: item.variantes || [],
@@ -3197,7 +3197,7 @@ const loadData = async () => {
       }
     })
     
-    console.log('DonnÃ©es chargÃ©es depuis l\'API:', {
+    console.log('Données chargées depuis l\'API:', {
       produits: produits.value.length,
       entreprises: entreprises.value.length,
       entrepots: entrepots.value.length,
@@ -3206,36 +3206,36 @@ const loadData = async () => {
       stocks: stocks.value.length
     })
     
-    // VÃ©rifier que les catÃ©gories et fournisseurs appartiennent Ã  l'entreprise
-    console.log('CatÃ©gories chargÃ©es:', categories.value.map(c => ({ id: c.id, nom: c.nom, entreprise: c.entreprise })))
-    console.log('Fournisseurs chargÃ©s:', fournisseurs.value.map(f => ({ id: f.id, nom: f.nom, entreprise: f.entreprise })))
+    // Vérifier que les catégories et fournisseurs appartiennent Ã  l'entreprise
+    console.log('Catégories chargées:', categories.value.map(c => ({ id: c.id, nom: c.nom, entreprise: c.entreprise })))
+    console.log('Fournisseurs chargés:', fournisseurs.value.map(f => ({ id: f.id, nom: f.nom, entreprise: f.entreprise })))
     
     if (produits.value.length === 0) {
       if (entrepriseId) {
-        warning('Aucun produit trouvÃ© pour votre entreprise')
+        warning('Aucun produit trouvé pour votre entreprise')
       } else {
-        warning('Aucune entreprise associÃ©e Ã  votre compte')
+        warning('Aucune entreprise associée Ã  votre compte')
       }
     } else {
-      success(`${produits.value.length} produit(s) chargÃ©(s) avec ${entreprises.value.length} entreprise(s), ${entrepots.value.length} entrepÃ´t(s), ${categories.value.length} catÃ©gorie(s) et ${fournisseurs.value.length} fournisseur(s)`)
+      success(`${produits.value.length} produit(s) chargé(s) avec ${entreprises.value.length} entreprise(s), ${entrepots.value.length} entrepôt(s), ${categories.value.length} catégorie(s) et ${fournisseurs.value.length} fournisseur(s)`)
     }
     
   } catch (err: any) {
-    console.error('Erreur chargement donnÃ©es:', err)
+    console.error('Erreur chargement données:', err)
     
-    // Gestion des erreurs spÃ©cifiques avec messages conviviaux
+    // Gestion des erreurs spécifiques avec messages conviviaux
     if (err.status === 401) {
-      error('Session expirÃ©e. Veuillez vous reconnecter.')
+      error('Session expirée. Veuillez vous reconnecter.')
     } else if (err.status === 403) {
-      error('AccÃ¨s refusÃ©. Vous n\'avez pas les permissions nÃ©cessaires.')
+      error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
     } else if (err.status === 404) {
       error('Service temporairement indisponible.')
     } else if (err.status === 500 || err.status === 502 || err.status === 503) {
-      error('Erreur serveur. Veuillez rÃ©essayer plus tard.')
+      error('Erreur serveur. Veuillez réessayer plus tard.')
     } else if (err.name === 'FetchError' || err.message?.includes('fetch')) {
-      error('Erreur de connexion. VÃ©rifiez votre connexion internet.')
+      error('Erreur de connexion. Vérifiez votre connexion internet.')
     } else {
-      error('Erreur lors du chargement des donnÃ©es. Veuillez rÃ©essayer.')
+      error('Erreur lors du chargement des données. Veuillez réessayer.')
     }
   } finally {
     loading.value = false
@@ -3243,10 +3243,10 @@ const loadData = async () => {
   }
 }
 
-// Fonction de chargement des produits (pour compatibilitÃ©)
+// Fonction de chargement des produits (pour compatibilité)
 const loadProduits = loadData
 
-// Fonctions pour recharger uniquement les catÃ©gories (sans fermer la popup produit)
+// Fonctions pour recharger uniquement les catégories (sans fermer la popup produit)
 const fetchCategories = async () => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null
@@ -3259,9 +3259,9 @@ const fetchCategories = async () => {
     const catRes: any = await $fetch(getApiUrl('/api/categories/'), { headers: getAuthHeaders() })
     const categoriesResponse = Array.isArray(catRes) ? catRes : (catRes?.results ?? [])
     categories.value = categoriesResponse
-    console.log('CatÃ©gories rechargÃ©es:', categories.value.length)
+    console.log('Catégories rechargées:', categories.value.length)
   } catch (err: any) {
-    console.error('Erreur lors du rechargement des catÃ©gories:', err)
+    console.error('Erreur lors du rechargement des catégories:', err)
   }
 }
 
@@ -3277,13 +3277,13 @@ const fetchFournisseurs = async () => {
     }
     const fourRes: any = await $fetch(getApiUrl('/api/fournisseurs/'), { headers: getAuthHeaders() })
     fournisseurs.value = Array.isArray(fourRes) ? fourRes : (fourRes?.results ?? [])
-    console.log('Fournisseurs rechargÃ©s:', fournisseurs.value.length)
+    console.log('Fournisseurs rechargés:', fournisseurs.value.length)
   } catch (err: any) {
     console.error('Erreur lors du rechargement des fournisseurs:', err)
   }
 }
 
-// Fonctions pour gÃ©rer les catÃ©gories
+// Fonctions pour gérer les catégories
 const createCategorie = async () => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null
@@ -3295,7 +3295,7 @@ const createCategorie = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // RÃ©cupÃ©rer l'entreprise de l'utilisateur connectÃ©
+    // Récupérer l'entreprise de l'utilisateur connecté
     const entreprise = process.client ? localStorage.getItem('entreprise') : null
     let entrepriseId = null
     if (entreprise) {
@@ -3308,11 +3308,11 @@ const createCategorie = async () => {
     }
     
     if (!entrepriseId) {
-      error('Aucune entreprise associÃ©e Ã  votre compte')
+      error('Aucune entreprise associée Ã  votre compte')
       return
     }
     
-    // PrÃ©parer les donnÃ©es avec les champs requis
+    // Préparer les données avec les champs requis
     const categorieData = {
       nom: newCategorie.value.nom,
       description: newCategorie.value.description || '',
@@ -3322,7 +3322,7 @@ const createCategorie = async () => {
       actif: true
     }
     
-    console.log('DonnÃ©es envoyÃ©es pour la catÃ©gorie:', categorieData)
+    console.log('Données envoyées pour la catégorie:', categorieData)
     
     const response = await $fetch(`${API_BASE_URL}/api/categories/`, {
       method: 'POST',
@@ -3330,26 +3330,26 @@ const createCategorie = async () => {
       body: categorieData
     })
     
-    success('CatÃ©gorie crÃ©Ã©e avec succÃ¨s!')
+    success('Catégorie créée avec succès!')
     // Ne pas fermer la popup, juste vider le formulaire
     newCategorie.value = { nom: '', description: '', icone: '', couleur: '#3B82F6' }
     
-    // Invalider le cache et recharger uniquement les catÃ©gories (sans fermer la popup produit)
+    // Invalider le cache et recharger uniquement les catégories (sans fermer la popup produit)
     const nuxtApp = useNuxtApp()
     if (nuxtApp.$invalidateCacheByPattern) {
       nuxtApp.$invalidateCacheByPattern('/api/categories')
       nuxtApp.$invalidateCacheByPattern('/api/produits')
     }
-    // Recharger uniquement les catÃ©gories sans fermer la popup produit
+    // Recharger uniquement les catégories sans fermer la popup produit
     await fetchCategories()
   } catch (err: any) {
-    console.error('Erreur crÃ©ation catÃ©gorie:', err)
-    console.error('DÃ©tails de l\'erreur:', err.data)
-    error('Erreur lors de la crÃ©ation de la catÃ©gorie. Veuillez rÃ©essayer.')
+    console.error('Erreur création catégorie:', err)
+    console.error('Détails de l\'erreur:', err.data)
+    error('Erreur lors de la création de la catégorie. Veuillez réessayer.')
   }
 }
 
-// Fonctions pour Ã©diter et supprimer les catÃ©gories
+// Fonctions pour éditer et supprimer les catégories
 const editCategorie = (categorie: any) => {
   editingCategorie.value = { ...categorie }
   showEditCategorieModal.value = true
@@ -3368,7 +3368,7 @@ const updateCategorie = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // RÃ©cupÃ©rer l'entreprise de l'utilisateur connectÃ©
+    // Récupérer l'entreprise de l'utilisateur connecté
     const entreprise = process.client ? localStorage.getItem('entreprise') : null
     let entrepriseId = null
     if (entreprise) {
@@ -3389,7 +3389,7 @@ const updateCategorie = async () => {
       ...(entrepriseId && { entreprise: entrepriseId })
     }
     
-    console.log('DonnÃ©es envoyÃ©es pour la modification de catÃ©gorie:', categorieData)
+    console.log('Données envoyées pour la modification de catégorie:', categorieData)
     
     await $fetch(`${API_BASE_URL}/api/categories/${editingCategorie.value.id}/`, {
       method: 'PUT',
@@ -3397,11 +3397,11 @@ const updateCategorie = async () => {
       body: categorieData
     })
     
-    success('CatÃ©gorie modifiÃ©e avec succÃ¨s!')
+    success('Catégorie modifiée avec succès!')
     showEditCategorieModal.value = false
     editingCategorie.value = null
     
-    // Invalider le cache et recharger les donnÃ©es
+    // Invalider le cache et recharger les données
     const nuxtApp = useNuxtApp()
     if (nuxtApp.$invalidateCacheByPattern) {
       nuxtApp.$invalidateCacheByPattern('/api/categories')
@@ -3409,13 +3409,13 @@ const updateCategorie = async () => {
     }
     await loadData()
   } catch (err: any) {
-    console.error('Erreur modification catÃ©gorie:', err)
-    error('Erreur lors de la modification de la catÃ©gorie. Veuillez rÃ©essayer.')
+    console.error('Erreur modification catégorie:', err)
+    error('Erreur lors de la modification de la catégorie. Veuillez réessayer.')
   }
 }
 
 const deleteCategorie = async (id: number) => {
-  if (!confirm('ÃŠtes-vous sÃ»r de vouloir supprimer cette catÃ©gorie ? Cette action est irrÃ©versible.')) return
+  if (!confirm('ÃŠtes-vous sûr de vouloir supprimer cette catégorie ? Cette action est irréversible.')) return
   
   try {
     const token = process.client ? localStorage.getItem('access_token') : null
@@ -3432,15 +3432,15 @@ const deleteCategorie = async (id: number) => {
       headers
     })
     
-    success('CatÃ©gorie supprimÃ©e avec succÃ¨s!')
+    success('Catégorie supprimée avec succès!')
     loadData()
   } catch (err: any) {
-    console.error('Erreur suppression catÃ©gorie:', err)
-    error('Erreur lors de la suppression de la catÃ©gorie. Veuillez rÃ©essayer.')
+    console.error('Erreur suppression catégorie:', err)
+    error('Erreur lors de la suppression de la catégorie. Veuillez réessayer.')
   }
 }
 
-// Fonctions pour gÃ©rer les fournisseurs
+// Fonctions pour gérer les fournisseurs
 const createFournisseur = async () => {
   try {
     const token = process.client ? localStorage.getItem('access_token') : null
@@ -3452,7 +3452,7 @@ const createFournisseur = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // RÃ©cupÃ©rer l'entreprise de l'utilisateur connectÃ©
+    // Récupérer l'entreprise de l'utilisateur connecté
     const entreprise = process.client ? localStorage.getItem('entreprise') : null
     let entrepriseId = null
     if (entreprise) {
@@ -3465,25 +3465,25 @@ const createFournisseur = async () => {
     }
     
     if (!entrepriseId) {
-      error('Aucune entreprise associÃ©e Ã  votre compte')
+      error('Aucune entreprise associée Ã  votre compte')
       return
     }
     
-    // PrÃ©parer les donnÃ©es avec les champs requis
+    // Préparer les données avec les champs requis
     const fournisseurData = {
       nom: newFournisseur.value.nom,
       code_fournisseur: newFournisseur.value.code_fournisseur || `FOUR${Date.now()}`,
       description: newFournisseur.value.notes || '',
       email: newFournisseur.value.email || 'contact@fournisseur.com',
       telephone: newFournisseur.value.telephone || '+237 6XX XX XX XX',
-      adresse: newFournisseur.value.adresse || 'Adresse non spÃ©cifiÃ©e',
-      ville: newFournisseur.value.ville || 'Ville non spÃ©cifiÃ©e',
+      adresse: newFournisseur.value.adresse || 'Adresse non spécifiée',
+      ville: newFournisseur.value.ville || 'Ville non spécifiée',
       pays: newFournisseur.value.pays || 'Cameroun',
       entreprise: entrepriseId, // Ajouter l'ID de l'entreprise
       actif: true
     }
     
-    console.log('DonnÃ©es envoyÃ©es pour le fournisseur:', fournisseurData)
+    console.log('Données envoyées pour le fournisseur:', fournisseurData)
     
     const response = await $fetch(`${API_BASE_URL}/api/fournisseurs/`, {
       method: 'POST',
@@ -3491,7 +3491,7 @@ const createFournisseur = async () => {
       body: fournisseurData
     })
     
-    success('Fournisseur crÃ©Ã© avec succÃ¨s!')
+    success('Fournisseur créé avec succès!')
     // Ne pas fermer la popup, juste vider le formulaire
     newFournisseur.value = { nom: '', code_fournisseur: '', email: '', telephone: '', adresse: '', ville: '', pays: '', site_web: '', contact_principal: '', notes: '' }
     
@@ -3504,13 +3504,13 @@ const createFournisseur = async () => {
     // Recharger uniquement les fournisseurs sans fermer la popup produit
     await fetchFournisseurs()
   } catch (err: any) {
-    console.error('Erreur crÃ©ation fournisseur:', err)
-    console.error('DÃ©tails de l\'erreur:', err.data)
-    error('Erreur lors de la crÃ©ation du fournisseur. Veuillez rÃ©essayer.')
+    console.error('Erreur création fournisseur:', err)
+    console.error('Détails de l\'erreur:', err.data)
+    error('Erreur lors de la création du fournisseur. Veuillez réessayer.')
   }
 }
 
-// Fonctions pour Ã©diter et supprimer les fournisseurs
+// Fonctions pour éditer et supprimer les fournisseurs
 const editFournisseur = (fournisseur: any) => {
   editingFournisseur.value = { ...fournisseur }
   showEditFournisseurModal.value = true
@@ -3529,7 +3529,7 @@ const updateFournisseur = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // RÃ©cupÃ©rer l'entreprise de l'utilisateur connectÃ©
+    // Récupérer l'entreprise de l'utilisateur connecté
     const entreprise = process.client ? localStorage.getItem('entreprise') : null
     let entrepriseId = null
     if (entreprise) {
@@ -3554,7 +3554,7 @@ const updateFournisseur = async () => {
       ...(entrepriseId && { entreprise: entrepriseId })
     }
     
-    console.log('DonnÃ©es envoyÃ©es pour la modification de fournisseur:', fournisseurData)
+    console.log('Données envoyées pour la modification de fournisseur:', fournisseurData)
     
     await $fetch(`${API_BASE_URL}/api/fournisseurs/${editingFournisseur.value.id}/`, {
       method: 'PUT',
@@ -3562,11 +3562,11 @@ const updateFournisseur = async () => {
       body: fournisseurData
     })
     
-    success('Fournisseur modifiÃ© avec succÃ¨s!')
+    success('Fournisseur modifié avec succès!')
     showEditFournisseurModal.value = false
     editingFournisseur.value = null
     
-    // Invalider le cache et recharger les donnÃ©es
+    // Invalider le cache et recharger les données
     const nuxtApp = useNuxtApp()
     if (nuxtApp.$invalidateCacheByPattern) {
       nuxtApp.$invalidateCacheByPattern('/api/fournisseurs')
@@ -3575,12 +3575,12 @@ const updateFournisseur = async () => {
     await loadData()
   } catch (err: any) {
     console.error('Erreur modification fournisseur:', err)
-    error('Erreur lors de la modification du fournisseur. Veuillez rÃ©essayer.')
+    error('Erreur lors de la modification du fournisseur. Veuillez réessayer.')
   }
 }
 
 const deleteFournisseur = async (id: number) => {
-  if (!confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce fournisseur ? Cette action est irrÃ©versible.')) return
+  if (!confirm('ÃŠtes-vous sûr de vouloir supprimer ce fournisseur ? Cette action est irréversible.')) return
   
   try {
     const token = process.client ? localStorage.getItem('access_token') : null
@@ -3597,11 +3597,11 @@ const deleteFournisseur = async (id: number) => {
       headers
     })
     
-    success('Fournisseur supprimÃ© avec succÃ¨s!')
+    success('Fournisseur supprimé avec succès!')
     loadData()
   } catch (err: any) {
     console.error('Erreur suppression fournisseur:', err)
-    error('Erreur lors de la suppression du fournisseur. Veuillez rÃ©essayer.')
+    error('Erreur lors de la suppression du fournisseur. Veuillez réessayer.')
   }
 }
 
@@ -3612,9 +3612,9 @@ const viewProduit = (produit: Produit) => {
 }
 
 const deleteProduit = async (id: number) => {
-  if (confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce produit ? Cette action est irrÃ©versible.')) {
+  if (confirm('ÃŠtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.')) {
     try {
-      // RÃ©cupÃ©rer le token d'authentification
+      // Récupérer le token d'authentification
       const token = process.client ? localStorage.getItem('access_token') : null
       const headers: Record<string, string> = {
         'Content-Type': 'application/json'
@@ -3632,19 +3632,19 @@ const deleteProduit = async (id: number) => {
       
       // Mettre Ã  jour la liste locale
       produits.value = produits.value.filter(p => p.id !== id)
-      success('Produit supprimÃ© avec succÃ¨s')
+      success('Produit supprimé avec succès')
     } catch (err: any) {
       console.error('Erreur suppression:', err)
       
       if (err.status === 401) {
-        error('Session expirÃ©e. Veuillez vous reconnecter.')
+        error('Session expirée. Veuillez vous reconnecter.')
         if (process.client) {
           navigateTo('/connexion')
         }
       } else if (err.status === 403) {
-        error('AccÃ¨s refusÃ©. Vous n\'avez pas les permissions nÃ©cessaires.')
+        error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
       } else {
-        error('Erreur lors de la suppression. Veuillez rÃ©essayer.')
+        error('Erreur lors de la suppression. Veuillez réessayer.')
       }
     }
   }
@@ -3657,29 +3657,29 @@ const createProduit = async () => {
   }
   
   if (!formState.value.prix_achat || formState.value.prix_achat <= 0) {
-    error('Le prix d\'achat doit Ãªtre supÃ©rieur Ã  0')
+    error('Le prix d\'achat doit Ãªtre supérieur Ã  0')
     return
   }
   
   if (!formState.value.prix_vente || formState.value.prix_vente <= 0) {
-    error('Le prix de vente doit Ãªtre supÃ©rieur Ã  0')
+    error('Le prix de vente doit Ãªtre supérieur Ã  0')
     return
   }
   
   if (!formState.value.stock_minimum || formState.value.stock_minimum < 0) {
-    error('Le stock minimal doit Ãªtre dÃ©fini et positif')
+    error('Le stock minimal doit Ãªtre défini et positif')
     return
   }
   
   if (formState.value.prix_vente <= formState.value.prix_achat) {
-    error('Le prix de vente doit Ãªtre supÃ©rieur au prix d\'achat')
+    error('Le prix de vente doit Ãªtre supérieur au prix d\'achat')
     return
   }
 
   loading.value = true
   
   try {
-    // RÃ©cupÃ©rer le token d'authentification
+    // Récupérer le token d'authentification
     const token = process.client ? localStorage.getItem('access_token') : null
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
@@ -3689,7 +3689,7 @@ const createProduit = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // RÃ©soudre l'entreprise de l'utilisateur (localStorage ou API)
+    // Résoudre l'entreprise de l'utilisateur (localStorage ou API)
     const resolveEntrepriseId = async (): Promise<number | null> => {
       // 1) Essayer localStorage
       const entrepriseLocal = process.client ? localStorage.getItem('entreprise') : null
@@ -3701,7 +3701,7 @@ const createProduit = async () => {
           console.error('Erreur parsing entreprise depuis localStorage:', e)
         }
       }
-      // 2) Fallback: rÃ©cupÃ©rer via /api/user/me/ puis dÃ©duire l'entreprise
+      // 2) Fallback: récupérer via /api/user/me/ puis déduire l'entreprise
       try {
         const token = process.client ? localStorage.getItem('access_token') : null
         const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -3716,24 +3716,24 @@ const createProduit = async () => {
           return Number(entrepriseFromMe)
         }
       } catch (e) {
-        console.error('Erreur rÃ©solution entreprise via /api/user/me/:', e)
+        console.error('Erreur résolution entreprise via /api/user/me/:', e)
       }
       return null
     }
 
     const entrepriseId = await resolveEntrepriseId()
     if (!entrepriseId) {
-      error('Aucune entreprise associÃ©e. Veuillez sÃ©lectionner une entreprise.')
+      error('Aucune entreprise associée. Veuillez sélectionner une entreprise.')
       return
     }
     
-    // PrÃ©parer les donnÃ©es pour l'API avec tous les champs requis
+    // Préparer les données pour l'API avec tous les champs requis
     const produitData: any = {
       nom: formState.value.nom,
       description: formState.value.description || '',
       prix_achat: parseFloat(formState.value.prix_achat.toString()),
       prix_vente: parseFloat(formState.value.prix_vente.toString()),
-      quantite: 0, // La quantitÃ© sera gÃ©rÃ©e via l'API de stock aprÃ¨s crÃ©ation
+      quantite: 0, // La quantité sera gérée via l'API de stock après création
       reference: formState.value.reference || '',
       categorie: formState.value.categorie || null,
       fournisseur_principal: formState.value.fournisseur_principal || null,
@@ -3747,7 +3747,7 @@ const createProduit = async () => {
       marque: formState.value.marque || '',
       modele: formState.value.modele || '',
       code_barres: formState.value.code_barres || '',
-      // Valeurs par dÃ©faut
+      // Valeurs par défaut
       devise: 'XAF',
       unite_mesure: formState.value.unite_mesure || 'piece',
       etat_produit: formState.value.etat_produit || 'neuf',
@@ -3755,16 +3755,16 @@ const createProduit = async () => {
     }
     if (formState.value.prix_gros) produitData.prix_gros = formState.value.prix_gros
     
-    console.log('DonnÃ©es envoyÃ©es pour le produit:', produitData)
+    console.log('Données envoyées pour le produit:', produitData)
     
-    // Appel Ã  l'API pour crÃ©er le produit - utilise useApi pour l'invalidation automatique du cache
+    // Appel Ã  l'API pour créer le produit - utilise useApi pour l'invalidation automatique du cache
     const response = await $fetch<any>(`${API_BASE_URL}/api/produits/`, {
       method: 'POST',
       headers,
       body: produitData
     })
     
-    // Invalidation automatique du cache via useApi (dÃ©jÃ  fait dans useApi)
+    // Invalidation automatique du cache via useApi (déjÃ  fait dans useApi)
     
     // Ajouter le nouveau produit Ã  la liste locale
     const nouveauProduit: Produit = {
@@ -3807,26 +3807,26 @@ const createProduit = async () => {
     
     produits.value.push(nouveauProduit)
 
-    // Sauvegarder les variantes si activÃ©es
+    // Sauvegarder les variantes si activées
     if (hasVariantesCreate.value && variantesCreate.value.length > 0) {
       try {
         await saveVariantesProduit(response.id, variantesCreate.value)
       } catch (varErr) {
         console.error('Erreur sauvegarde variantes:', varErr)
-        warning('Produit crÃ©Ã© mais erreur lors de la sauvegarde des variantes.')
+        warning('Produit créé mais erreur lors de la sauvegarde des variantes.')
       }
     }
 
-    success('Produit crÃ©Ã© avec succÃ¨s!')
+    success('Produit créé avec succès!')
     showCreateModal.value = false
-    // RÃ©initialiser
+    // Réinitialiser
     variantesCreate.value = []
     hasVariantesCreate.value = false
     varianteFormCreate.value = emptyVarianteForm()
     activeCreateTab.value = 'infos'
     await loadData()
 
-    // RÃ©initialiser le formulaire
+    // Réinitialiser le formulaire
     formState.value = {
       nom: "",
       description: "",
@@ -3850,19 +3850,19 @@ const createProduit = async () => {
       imagePreviewUrl: ""
     }
   } catch (err: any) {
-    console.error('Erreur crÃ©ation produit:', err)
+    console.error('Erreur création produit:', err)
     
     if (err.status === 401) {
-      error('Session expirÃ©e. Veuillez vous reconnecter.')
+      error('Session expirée. Veuillez vous reconnecter.')
       if (process.client) {
         navigateTo('/connexion')
       }
     } else if (err.status === 403) {
-      error('AccÃ¨s refusÃ©. Vous n\'avez pas les permissions nÃ©cessaires.')
+      error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
     } else if (err.status === 400) {
-      error('DonnÃ©es invalides. VÃ©rifiez les champs requis.')
+      error('Données invalides. Vérifiez les champs requis.')
     } else {
-      error('Erreur lors de la crÃ©ation. Veuillez rÃ©essayer.')
+      error('Erreur lors de la création. Veuillez réessayer.')
     }
   } finally {
     loading.value = false
@@ -3873,7 +3873,7 @@ const createProduit = async () => {
 const openEditModal = (produit: Produit) => {
   selectedProduit.value = produit
 
-  // PrÃ©-remplir le formulaire avec les donnÃ©es du produit
+  // Pré-remplir le formulaire avec les données du produit
   editFormState.value = {
     nom: produit.nom || "",
     description: produit.description || "",
@@ -3925,29 +3925,29 @@ const saveProduit = async () => {
   }
   
   if (!editFormState.value.prix_achat || editFormState.value.prix_achat <= 0) {
-    error('Le prix d\'achat doit Ãªtre supÃ©rieur Ã  0')
+    error('Le prix d\'achat doit Ãªtre supérieur Ã  0')
     return
   }
   
   if (!editFormState.value.prix_vente || editFormState.value.prix_vente <= 0) {
-    error('Le prix de vente doit Ãªtre supÃ©rieur Ã  0')
+    error('Le prix de vente doit Ãªtre supérieur Ã  0')
     return
   }
   
   if (!editFormState.value.stock_minimum || editFormState.value.stock_minimum < 0) {
-    error('Le stock minimal doit Ãªtre dÃ©fini et positif')
+    error('Le stock minimal doit Ãªtre défini et positif')
     return
   }
   
   if (editFormState.value.prix_vente <= editFormState.value.prix_achat) {
-    error('Le prix de vente doit Ãªtre supÃ©rieur au prix d\'achat')
+    error('Le prix de vente doit Ãªtre supérieur au prix d\'achat')
     return
   }
 
   loading.value = true
   
   try {
-    // RÃ©cupÃ©rer le token d'authentification
+    // Récupérer le token d'authentification
     const token = process.client ? localStorage.getItem('access_token') : null
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
@@ -3957,7 +3957,7 @@ const saveProduit = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // RÃ©soudre l'entreprise de l'utilisateur (localStorage ou API)
+    // Résoudre l'entreprise de l'utilisateur (localStorage ou API)
     const resolveEntrepriseIdForUpdate = async (): Promise<number | null> => {
       const entrepriseLocal = process.client ? localStorage.getItem('entreprise') : null
       if (entrepriseLocal) {
@@ -3980,18 +3980,18 @@ const saveProduit = async () => {
           return Number(entrepriseFromMe)
         }
       } catch (e) {
-        console.error('Erreur rÃ©solution entreprise via /api/user/me/:', e)
+        console.error('Erreur résolution entreprise via /api/user/me/:', e)
       }
       return null
     }
 
     const entrepriseId = await resolveEntrepriseIdForUpdate()
     if (!entrepriseId) {
-      error('Aucune entreprise associÃ©e. Veuillez sÃ©lectionner une entreprise.')
+      error('Aucune entreprise associée. Veuillez sélectionner une entreprise.')
       return
     }
     
-    // PrÃ©parer les donnÃ©es pour l'API avec tous les champs requis
+    // Préparer les données pour l'API avec tous les champs requis
     const produitData: any = {
       nom: editFormState.value.nom,
       description: editFormState.value.description || '',
@@ -4010,7 +4010,7 @@ const saveProduit = async () => {
       marque: editFormState.value.marque || '',
       modele: editFormState.value.modele || '',
       code_barres: editFormState.value.code_barres || '',
-      // Valeurs par dÃ©faut
+      // Valeurs par défaut
       devise: 'XAF',
       unite_mesure: editFormState.value.unite_mesure || 'piece',
       etat_produit: editFormState.value.etat_produit || 'neuf',
@@ -4018,10 +4018,10 @@ const saveProduit = async () => {
     }
     if (editFormState.value.prix_gros) produitData.prix_gros = editFormState.value.prix_gros
     
-    // IMPORTANT: NE PAS ENVOYER LA QUANTITE - elle ne doit pas Ãªtre modifiÃ©e via cette fonction
-    // La quantitÃ© est gÃ©rÃ©e indÃ©pendamment via l'API de stock
+    // IMPORTANT: NE PAS ENVOYER LA QUANTITE - elle ne doit pas Ãªtre modifiée via cette fonction
+    // La quantité est gérée indépendamment via l'API de stock
     
-    console.log('DonnÃ©es de modification envoyÃ©es:', produitData)
+    console.log('Données de modification envoyées:', produitData)
     
     // Appel Ã  l'API pour modifier le produit
     const response = await $fetch<any>(`${API_BASE_URL}/api/produits/${selectedProduit.value.id}/`, {
@@ -4031,17 +4031,17 @@ const saveProduit = async () => {
     })
     
     // Mettre Ã  jour le produit dans la liste locale
-    // IMPORTANT: Conserver la quantitÃ© existante (ne pas la modifier)
+    // IMPORTANT: Conserver la quantité existante (ne pas la modifier)
     const index = produits.value.findIndex(p => p.id === selectedProduit.value!.id)
     if (index !== -1) {
-      const ancienneQuantite = produits.value[index].quantite  // Conserver la quantitÃ© actuelle
+      const ancienneQuantite = produits.value[index].quantite  // Conserver la quantité actuelle
       produits.value[index] = {
         ...produits.value[index],
         nom: response.nom,
         description: response.description,
         prix_achat: parseFloat(response.prix_achat) || 0,
         prix_vente: parseFloat(response.prix_vente) || 0,
-        quantite: ancienneQuantite,  // NE PAS MODIFIER - garder la quantitÃ© existante
+        quantite: ancienneQuantite,  // NE PAS MODIFIER - garder la quantité existante
         reference: response.reference,
         categorie: response.categorie,
         fournisseur_principal: response.fournisseur_principal,
@@ -4053,32 +4053,32 @@ const saveProduit = async () => {
       }
     }
     
-    // Sauvegarder les variantes si activÃ©es
+    // Sauvegarder les variantes si activées
     if (hasVariantesEdit.value && variantesEdit.value.length > 0) {
       try {
         await saveVariantesProduit(selectedProduit.value.id, variantesEdit.value)
       } catch (varErr) {
         console.error('Erreur sauvegarde variantes:', varErr)
-        warning('Produit modifiÃ© mais erreur lors de la sauvegarde des variantes.')
+        warning('Produit modifié mais erreur lors de la sauvegarde des variantes.')
       }
     }
 
-    success('Produit modifiÃ© avec succÃ¨s!')
+    success('Produit modifié avec succès!')
     showEditModal.value = false
     await loadData()
     
   } catch (err: any) {
     console.error('Erreur modification produit:', err)
-    console.error('DÃ©tails de l\'erreur:', err.data)
+    console.error('Détails de l\'erreur:', err.data)
     
     if (err.status === 401) {
-      error('Session expirÃ©e. Veuillez vous reconnecter.')
+      error('Session expirée. Veuillez vous reconnecter.')
     } else if (err.status === 403) {
-      error('AccÃ¨s refusÃ©. Vous n\'avez pas les permissions nÃ©cessaires.')
+      error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
     } else if (err.status === 400) {
-      error('DonnÃ©es invalides. VÃ©rifiez tous les champs requis.')
+      error('Données invalides. Vérifiez tous les champs requis.')
     } else {
-      error('Erreur lors de la modification du produit. Veuillez rÃ©essayer.')
+      error('Erreur lors de la modification du produit. Veuillez réessayer.')
     }
   } finally {
     loading.value = false
@@ -4091,7 +4091,7 @@ const updateStock = async () => {
   
   // Validation des champs requis
   if (!stockForm.value.nouveauStock && stockForm.value.nouveauStock !== 0) {
-    error('La nouvelle quantitÃ© de stock est requise')
+    error('La nouvelle quantité de stock est requise')
     return
   }
   
@@ -4101,14 +4101,14 @@ const updateStock = async () => {
   }
   
   if (stockForm.value.nouveauStock < 0) {
-    error('La quantitÃ© de stock ne peut pas Ãªtre nÃ©gative')
+    error('La quantité de stock ne peut pas Ãªtre négative')
     return
   }
 
   stockUpdating.value = true
   
   try {
-    // RÃ©cupÃ©rer le token d'authentification
+    // Récupérer le token d'authentification
     const token = process.client ? localStorage.getItem('access_token') : null
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
@@ -4118,7 +4118,7 @@ const updateStock = async () => {
       headers['Authorization'] = `Bearer ${token}`
     }
     
-    // RÃ©cupÃ©rer l'entrepÃ´t de l'utilisateur connectÃ©
+    // Récupérer l'entrepôt de l'utilisateur connecté
     const boutique = process.client ? localStorage.getItem('boutique') : null
     let entrepotId = null
     if (boutique) {
@@ -4127,11 +4127,11 @@ const updateStock = async () => {
     }
     
             if (!entrepotId) {
-              error('Aucun entrepÃ´t associÃ© Ã  votre compte')
+              error('Aucun entrepôt associé Ã  votre compte')
               return
             }
 
-            // VÃ©rifier que le produit appartient Ã  l'entreprise de l'utilisateur
+            // Vérifier que le produit appartient Ã  l'entreprise de l'utilisateur
             const entreprise = process.client ? localStorage.getItem('entreprise') : null
             let entrepriseId = null
             if (entreprise) {
@@ -4148,7 +4148,7 @@ const updateStock = async () => {
               return
             }
     
-            // Calculer la diffÃ©rence de stock (ajout/soustraction)
+            // Calculer la différence de stock (ajout/soustraction)
             const ancienStock = selectedProduit.value.quantite || 0
             const quantiteModification = parseInt(stockForm.value.nouveauStock.toString())
             
@@ -4165,7 +4165,7 @@ const updateStock = async () => {
               nouveauStock = Math.max(0, ancienStock - quantiteModification)
               difference = -quantiteModification
             } else if (stockForm.value.typeMouvement === 'ajustement') {
-              // Ajustement : dÃ©finir directement la quantitÃ©
+              // Ajustement : définir directement la quantité
               nouveauStock = quantiteModification
               difference = quantiteModification - ancienStock
             } else if (stockForm.value.typeMouvement === 'transfert') {
@@ -4182,25 +4182,25 @@ const updateStock = async () => {
               typeMouvement: stockForm.value.typeMouvement
             })
 
-            // PrÃ©parer les donnÃ©es pour l'API
+            // Préparer les données pour l'API
             const stockData = {
               produit: selectedProduit.value.id,
               entrepot: entrepotId,
               quantite: nouveauStock,
-              quantite_reservee: 0, // Par dÃ©faut
-              emplacement: '', // Peut Ãªtre ajoutÃ© plus tard
+              quantite_reservee: 0, // Par défaut
+              emplacement: '', // Peut Ãªtre ajouté plus tard
             }
     
-            console.log('DonnÃ©es de mise Ã  jour du stock:', stockData)
-            console.log('EntrepÃ´t ID:', entrepotId)
+            console.log('Données de mise Ã  jour du stock:', stockData)
+            console.log('Entrepôt ID:', entrepotId)
             console.log('Produit ID:', selectedProduit.value.id)
 
-            // VÃ©rifier si un stock existe dÃ©jÃ  pour ce produit dans cet entrepÃ´t
+            // Vérifier si un stock existe déjÃ  pour ce produit dans cet entrepôt
             const existingStock = stocks.value.find(s =>
               s.produit === selectedProduit.value!.id && s.entrepot === entrepotId
             )
 
-            console.log('Stock existant trouvÃ©:', existingStock)
+            console.log('Stock existant trouvé:', existingStock)
 
             let response
             if (existingStock) {
@@ -4212,8 +4212,8 @@ const updateStock = async () => {
                 body: stockData
               })
             } else {
-              console.log('CrÃ©ation d\'un nouveau stock')
-              // CrÃ©er un nouveau stock
+              console.log('Création d\'un nouveau stock')
+              // Créer un nouveau stock
               response = await $fetch<any>(`${API_BASE_URL}/api/stocks/`, {
                 method: 'POST',
                 headers,
@@ -4221,9 +4221,9 @@ const updateStock = async () => {
               })
             }
 
-            console.log('RÃ©ponse API stock:', response)
+            console.log('Réponse API stock:', response)
     
-            // CrÃ©er un mouvement de stock pour tracer le changement
+            // Créer un mouvement de stock pour tracer le changement
             if (difference !== 0) {
               const mouvementData = {
                 produit: selectedProduit.value.id,
@@ -4236,7 +4236,7 @@ const updateStock = async () => {
                 reference_document: `Stock-${selectedProduit.value.id}-${Date.now()}`
               }
 
-              console.log('DonnÃ©es mouvement:', mouvementData)
+              console.log('Données mouvement:', mouvementData)
 
               await $fetch<any>(`${API_BASE_URL}/api/mouvements-stock/`, {
                 method: 'POST',
@@ -4254,7 +4254,7 @@ const updateStock = async () => {
     // Mettre Ã  jour la liste des stocks
     await loadData()
     
-    // IMPORTANT: Invalidation manuelle du cache pour les opÃ©rations de stock
+    // IMPORTANT: Invalidation manuelle du cache pour les opérations de stock
     // car nous utilisons $fetch directement pour les mouvements de stock
     if (process.client) {
       const nuxtApp = useNuxtApp()
@@ -4263,14 +4263,14 @@ const updateStock = async () => {
         invalidateCache('/api/stocks')
         invalidateCache('/api/produits')
         invalidateCache('/api/mouvements-stock')
-        console.log('[Cache] Cache invalidÃ© aprÃ¨s modification stock')
+        console.log('[Cache] Cache invalidé après modification stock')
       }
     }
     
-    success(`Stock mis Ã  jour avec succÃ¨s! Nouveau stock: ${nouveauStock}`)
+    success(`Stock mis Ã  jour avec succès! Nouveau stock: ${nouveauStock}`)
     showStockModal.value = false
     
-    // RÃ©initialiser le formulaire
+    // Réinitialiser le formulaire
     stockForm.value = {
       nouveauStock: 0,
       typeMouvement: '',
@@ -4279,16 +4279,16 @@ const updateStock = async () => {
     
   } catch (err: any) {
     console.error('Erreur mise Ã  jour stock:', err)
-    console.error('DÃ©tails de l\'erreur:', err.data)
+    console.error('Détails de l\'erreur:', err.data)
     
     if (err.status === 401) {
-      error('Session expirÃ©e. Veuillez vous reconnecter.')
+      error('Session expirée. Veuillez vous reconnecter.')
     } else if (err.status === 403) {
-      error('AccÃ¨s refusÃ©. Vous n\'avez pas les permissions nÃ©cessaires.')
+      error('Accès refusé. Vous n\'avez pas les permissions nécessaires.')
     } else if (err.status === 400) {
-      error('DonnÃ©es invalides. VÃ©rifiez tous les champs requis.')
+      error('Données invalides. Vérifiez tous les champs requis.')
     } else {
-      error('Erreur lors de la mise Ã  jour du stock. Veuillez rÃ©essayer.')
+      error('Erreur lors de la mise Ã  jour du stock. Veuillez réessayer.')
     }
   } finally {
     stockUpdating.value = false
@@ -4327,11 +4327,11 @@ const handleFileSelect = (event: Event) => {
   const file = target.files?.[0]
   
   if (!file) {
-    error('Aucun fichier sÃ©lectionnÃ©')
+    error('Aucun fichier sélectionné')
     return
   }
 
-  // VÃ©rifier le type de fichier (plus flexible)
+  // Vérifier le type de fichier (plus flexible)
   const validTypes = [
     'text/csv',
     'text/plain',
@@ -4345,13 +4345,13 @@ const handleFileSelect = (event: Event) => {
   const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'))
   
   if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
-    error('Format de fichier non supportÃ©. Veuillez sÃ©lectionner un fichier Excel (.xlsx, .xls) ou CSV (.csv, .txt, .tsv).')
+    error('Format de fichier non supporté. Veuillez sélectionner un fichier Excel (.xlsx, .xls) ou CSV (.csv, .txt, .tsv).')
     return
   }
 
-  // VÃ©rifier la taille du fichier (max 10MB)
+  // Vérifier la taille du fichier (max 10MB)
   if (file.size > 10 * 1024 * 1024) {
-    error('Le fichier est trop volumineux. Taille maximale autorisÃ©e : 10MB')
+    error('Le fichier est trop volumineux. Taille maximale autorisée : 10MB')
     return
   }
 
@@ -4390,41 +4390,41 @@ const parseExcelFile = (file: File) => {
           return
         }
         
-        console.log('DonnÃ©es lues, parsing avec SheetJS...')
+        console.log('Données lues, parsing avec SheetJS...')
         
         // Parser le fichier Excel avec SheetJS
         const workbook = XLSX.read(data, { type: 'array' })
-        console.log('Workbook parsÃ©:', workbook.SheetNames)
+        console.log('Workbook parsé:', workbook.SheetNames)
         
-        // Prendre la premiÃ¨re feuille
+        // Prendre la première feuille
         const firstSheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[firstSheetName]
         
         if (!worksheet) {
-          error('Aucune feuille trouvÃ©e dans le fichier Excel')
+          error('Aucune feuille trouvée dans le fichier Excel')
           return
         }
         
-        console.log('Feuille sÃ©lectionnÃ©e:', firstSheetName)
+        console.log('Feuille sélectionnée:', firstSheetName)
         
         // Convertir la feuille en JSON
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
-          header: 1, // Utiliser la premiÃ¨re ligne comme en-tÃªtes
-          defval: '', // Valeur par dÃ©faut pour les cellules vides
+          header: 1, // Utiliser la première ligne comme en-tÃªtes
+          defval: '', // Valeur par défaut pour les cellules vides
           raw: false // Convertir les valeurs en texte
         })
         
-        console.log('DonnÃ©es JSON:', jsonData.length, 'lignes')
-        console.log('PremiÃ¨re ligne (en-tÃªtes):', jsonData[0])
+        console.log('Données JSON:', jsonData.length, 'lignes')
+        console.log('Première ligne (en-tÃªtes):', jsonData[0])
         
         if (jsonData.length < 2) {
-          error('Le fichier Excel ne contient pas assez de donnÃ©es (minimum 2 lignes : en-tÃªtes + donnÃ©es)')
+          error('Le fichier Excel ne contient pas assez de données (minimum 2 lignes : en-tÃªtes + données)')
           return
         }
         
-        // Traiter les donnÃ©es comme du CSV
+        // Traiter les données comme du CSV
         const csvText = jsonData.map((row: any) => Array.isArray(row) ? row.join(',') : String(row)).join('\n')
-        console.log('CSV gÃ©nÃ©rÃ©:', csvText.substring(0, 200) + '...')
+        console.log('CSV généré:', csvText.substring(0, 200) + '...')
         
         parseExcelAsCSV(csvText, file.name)
         
@@ -4442,16 +4442,16 @@ const parseExcelFile = (file: File) => {
     
   }).catch((err) => {
     console.error('Erreur lors du chargement de SheetJS:', err)
-    error('Erreur lors du chargement de la bibliothÃ¨que Excel. Veuillez convertir votre fichier en CSV.')
+    error('Erreur lors du chargement de la bibliothèque Excel. Veuillez convertir votre fichier en CSV.')
   })
 }
 
 const parseExcelAsCSV = (text: string, fileName: string) => {
   try {
     console.log('=== PARSING EXCEL COMME CSV ===')
-    console.log('Texte reÃ§u:', text.substring(0, 200) + '...')
+    console.log('Texte reçu:', text.substring(0, 200) + '...')
     
-    // DÃ©tecter le sÃ©parateur (virgule, point-virgule, tabulation)
+    // Détecter le séparateur (virgule, point-virgule, tabulation)
     const separators = [',', ';', '\t']
     let separator = ','
     let maxColumns = 0
@@ -4465,19 +4465,19 @@ const parseExcelAsCSV = (text: string, fileName: string) => {
       }
     }
 
-    console.log('SÃ©parateur dÃ©tectÃ© pour Excel:', separator, 'Colonnes:', maxColumns)
+    console.log('Séparateur détecté pour Excel:', separator, 'Colonnes:', maxColumns)
 
     // Parser le contenu ligne par ligne
     const lines = text.split('\n').filter(line => line.trim())
     if (lines.length < 2) {
-      error('Le fichier Excel doit contenir au moins une ligne d\'en-tÃªte et une ligne de donnÃ©es')
+      error('Le fichier Excel doit contenir au moins une ligne d\'en-tÃªte et une ligne de données')
       return
     }
 
     const headers = lines[0].split(separator).map(h => h.trim().toLowerCase().replace(/"/g, '').replace(/'/g, ''))
-    console.log('En-tÃªtes Excel dÃ©tectÃ©s:', headers)
+    console.log('En-tÃªtes Excel détectés:', headers)
 
-    // CrÃ©er un mapping des colonnes
+    // Créer un mapping des colonnes
     const columnMap = createColumnMapping(headers)
     console.log('Mapping des colonnes Excel:', columnMap)
 
@@ -4503,7 +4503,7 @@ const parseExcelAsCSV = (text: string, fileName: string) => {
 
       try {
         const values = parseCSVLine(line, separator)
-        console.log(`Ligne ${i + 1} parsÃ©e:`, values.slice(0, 5), '...')
+        console.log(`Ligne ${i + 1} parsée:`, values.slice(0, 5), '...')
         
         // Valider chaque champ
         const ligneErrors = validateProduitData(values, columnMap, i + 1)
@@ -4525,23 +4525,23 @@ const parseExcelAsCSV = (text: string, fileName: string) => {
       }
     }
 
-    // Afficher les erreurs dÃ©taillÃ©es
+    // Afficher les erreurs détaillées
     if (errors.length > 0) {
-      console.warn('Erreurs dÃ©tectÃ©es dans Excel:', errors)
+      console.warn('Erreurs détectées dans Excel:', errors)
       importErrors.value = errors
       showErrorModal.value = true
       
-      // Message rÃ©sumÃ©
+      // Message résumé
       const errorCount = errors.length
       const successCount = preview.length
-      error(`${errorCount} erreur(s) dÃ©tectÃ©e(s) sur ${errorCount + successCount} lignes. ${successCount} produit(s) valide(s).`)
+      error(`${errorCount} erreur(s) détectée(s) sur ${errorCount + successCount} lignes. ${successCount} produit(s) valide(s).`)
     } else {
       importPreview.value = preview
-      console.log('âœ… Excel parsing rÃ©ussi, importPreview rempli:', preview.length, 'produits')
-      success(`${preview.length} produit(s) parsÃ©s avec succÃ¨s depuis Excel`)
+      console.log('âœ… Excel parsing réussi, importPreview rempli:', preview.length, 'produits')
+      success(`${preview.length} produit(s) parsés avec succès depuis Excel`)
     }
 
-    console.log(`${preview.length} produits parsÃ©s avec succÃ¨s depuis Excel`)
+    console.log(`${preview.length} produits parsés avec succès depuis Excel`)
 
   } catch (err) {
     console.error('Erreur parsing Excel comme CSV:', err)
@@ -4549,11 +4549,11 @@ const parseExcelAsCSV = (text: string, fileName: string) => {
   }
 }
 
-// Fonction pour valider les donnÃ©es d'un produit
+// Fonction pour valider les données d'un produit
 const validateProduitData = (values: string[], columnMap: any, ligne: number): ImportError[] => {
   const errors: ImportError[] = []
   
-  // VÃ©rifier le nom
+  // Vérifier le nom
   const nom = values[columnMap.nom] || ''
   if (!nom || nom.trim() === '') {
     errors.push({
@@ -4564,7 +4564,7 @@ const validateProduitData = (values: string[], columnMap: any, ligne: number): I
     })
   }
   
-  // VÃ©rifier le prix d'achat
+  // Vérifier le prix d'achat
   const prixAchatStr = values[columnMap.prix_achat] || ''
   const prixAchat = parseFloat(prixAchatStr)
   if (isNaN(prixAchat) || prixAchat <= 0) {
@@ -4576,7 +4576,7 @@ const validateProduitData = (values: string[], columnMap: any, ligne: number): I
     })
   }
   
-  // VÃ©rifier le prix de vente
+  // Vérifier le prix de vente
   const prixVenteStr = values[columnMap.prix_vente] || ''
   const prixVente = parseFloat(prixVenteStr)
   if (isNaN(prixVente) || prixVente <= 0) {
@@ -4588,17 +4588,17 @@ const validateProduitData = (values: string[], columnMap: any, ligne: number): I
     })
   }
   
-  // VÃ©rifier que le prix de vente > prix d'achat
+  // Vérifier que le prix de vente > prix d'achat
   if (!isNaN(prixAchat) && !isNaN(prixVente) && prixVente <= prixAchat) {
     errors.push({
       ligne,
       champ: 'prix_vente',
       valeur: prixVenteStr,
-      message: 'Le prix de vente doit Ãªtre supÃ©rieur au prix d\'achat'
+      message: 'Le prix de vente doit Ãªtre supérieur au prix d\'achat'
     })
   }
   
-  // VÃ©rifier la quantitÃ©
+  // Vérifier la quantité
   const quantiteStr = values[columnMap.quantite] || '0'
   const quantite = parseInt(quantiteStr)
   if (isNaN(quantite) || quantite < 0) {
@@ -4606,26 +4606,26 @@ const validateProduitData = (values: string[], columnMap: any, ligne: number): I
       ligne,
       champ: 'quantite',
       valeur: quantiteStr,
-      message: 'La quantitÃ© doit Ãªtre un nombre positif ou zÃ©ro'
+      message: 'La quantité doit Ãªtre un nombre positif ou zéro'
     })
   }
   
   return errors
 }
 
-// Fonction pour tÃ©lÃ©charger le rapport d'erreurs
+// Fonction pour télécharger le rapport d'erreurs
 const downloadErrorReport = () => {
   try {
-    console.log('=== GÃ‰NÃ‰RATION RAPPORT D\'ERREURS ===')
+    console.log('=== GÉNÉRATION RAPPORT D\'ERREURS ===')
     
-    // CrÃ©er le contenu du rapport
+    // Créer le contenu du rapport
     const reportContent = [
       'RAPPORT D\'ERREURS D\'IMPORTATION',
       '================================',
       `Date: ${new Date().toLocaleString('fr-FR')}`,
       `Total d'erreurs: ${importErrors.value.length}`,
       '',
-      'DÃ‰TAIL DES ERREURS:',
+      'DÉTAIL DES ERREURS:',
       '==================',
       ''
     ]
@@ -4654,13 +4654,13 @@ const downloadErrorReport = () => {
     // Ajouter les instructions
     reportContent.push('INSTRUCTIONS DE CORRECTION:')
     reportContent.push('=========================')
-    reportContent.push('â€¢ Nom manquant: Ajoutez un nom pour chaque produit')
-    reportContent.push('â€¢ Prix invalide: Utilisez des nombres positifs (ex: 100.50)')
-    reportContent.push('â€¢ Prix de vente â‰¤ prix d\'achat: Le prix de vente doit Ãªtre supÃ©rieur')
-    reportContent.push('â€¢ QuantitÃ© invalide: Utilisez des nombres entiers positifs ou zÃ©ro')
-    reportContent.push('â€¢ En-tÃªtes manquants: VÃ©rifiez que les colonnes requises sont prÃ©sentes')
+    reportContent.push('• Nom manquant: Ajoutez un nom pour chaque produit')
+    reportContent.push('• Prix invalide: Utilisez des nombres positifs (ex: 100.50)')
+    reportContent.push('• Prix de vente â‰¤ prix d\'achat: Le prix de vente doit Ãªtre supérieur')
+    reportContent.push('• Quantité invalide: Utilisez des nombres entiers positifs ou zéro')
+    reportContent.push('• En-tÃªtes manquants: Vérifiez que les colonnes requises sont présentes')
     
-    // CrÃ©er et tÃ©lÃ©charger le fichier
+    // Créer et télécharger le fichier
     const content = reportContent.join('\n')
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
     
@@ -4681,12 +4681,12 @@ const downloadErrorReport = () => {
       document.body.removeChild(a)
     }, 100)
     
-    success(`Rapport d'erreurs tÃ©lÃ©chargÃ©: ${filename}`)
-    console.log('=== RAPPORT GÃ‰NÃ‰RÃ‰ AVEC SUCCÃˆS ===')
+    success(`Rapport d'erreurs téléchargé: ${filename}`)
+    console.log('=== RAPPORT GÉNÉRÉ AVEC SUCCÃˆS ===')
     
   } catch (err) {
-    console.error('Erreur lors de la gÃ©nÃ©ration du rapport:', err)
-    error('Erreur lors de la gÃ©nÃ©ration du rapport d\'erreurs')
+    console.error('Erreur lors de la génération du rapport:', err)
+    error('Erreur lors de la génération du rapport d\'erreurs')
   }
 }
 
@@ -4700,7 +4700,7 @@ const parseTextFile = (file: File) => {
         return
       }
 
-      // DÃ©tecter le sÃ©parateur
+      // Détecter le séparateur
       const separators = [',', ';', '\t']
       let separator = ','
       let maxColumns = 0
@@ -4714,19 +4714,19 @@ const parseTextFile = (file: File) => {
         }
       }
 
-      console.log('SÃ©parateur dÃ©tectÃ©:', separator)
+      console.log('Séparateur détecté:', separator)
 
       // Parser le CSV ligne par ligne
       const lines = text.split('\n').filter(line => line.trim())
       if (lines.length < 2) {
-        error('Le fichier doit contenir au moins une ligne d\'en-tÃªte et une ligne de donnÃ©es')
+        error('Le fichier doit contenir au moins une ligne d\'en-tÃªte et une ligne de données')
         return
       }
 
       const headers = lines[0].split(separator).map(h => h.trim().toLowerCase().replace(/"/g, '').replace(/'/g, ''))
-      console.log('En-tÃªtes dÃ©tectÃ©s:', headers)
+      console.log('En-tÃªtes détectés:', headers)
 
-      // CrÃ©er un mapping des colonnes
+      // Créer un mapping des colonnes
       const columnMap = createColumnMapping(headers)
       console.log('Mapping des colonnes:', columnMap)
 
@@ -4744,7 +4744,7 @@ const parseTextFile = (file: File) => {
           if (produit.nom && produit.prix_achat > 0 && produit.prix_vente > 0) {
             preview.push(produit)
           } else {
-            errors.push(`Ligne ${i + 1}: DonnÃ©es manquantes ou invalides`)
+            errors.push(`Ligne ${i + 1}: Données manquantes ou invalides`)
           }
         } catch (err) {
           errors.push(`Ligne ${i + 1}: Erreur de parsing - ${err}`)
@@ -4752,13 +4752,13 @@ const parseTextFile = (file: File) => {
       }
 
       if (errors.length > 0) {
-        console.warn('Erreurs dÃ©tectÃ©es:', errors)
-        error(`${errors.length} erreur(s) dÃ©tectÃ©e(s). VÃ©rifiez les donnÃ©es.`)
+        console.warn('Erreurs détectées:', errors)
+        error(`${errors.length} erreur(s) détectée(s). Vérifiez les données.`)
       }
 
       importPreview.value = preview
-      console.log('âœ… Text/CSV parsing rÃ©ussi, importPreview rempli:', preview.length, 'produits')
-      console.log(`${preview.length} produits parsÃ©s avec succÃ¨s`)
+      console.log('âœ… Text/CSV parsing réussi, importPreview rempli:', preview.length, 'produits')
+      console.log(`${preview.length} produits parsés avec succès`)
 
     } catch (err) {
       console.error('Erreur parsing fichier:', err)
@@ -4773,14 +4773,14 @@ const parseTextFile = (file: File) => {
   reader.readAsText(file, 'UTF-8')
 }
 
-// Fonction pour crÃ©er le mapping des colonnes
+// Fonction pour créer le mapping des colonnes
 const createColumnMapping = (headers: string[]) => {
   const mapping: Record<string, number> = {}
   
   headers.forEach((header, index) => {
     const cleanHeader = header.toLowerCase().trim()
     
-        // Mapping flexible des colonnes - Support franÃ§ais et anglais
+        // Mapping flexible des colonnes - Support français et anglais
         if (cleanHeader.includes('nom') || cleanHeader.includes('name') || cleanHeader.includes('produit') || cleanHeader.includes('libelle')) {
           mapping.nom = index
         } else if (cleanHeader === 'prix_achat' || cleanHeader.includes('prix d\'achat') || cleanHeader.includes('prix_achat') || cleanHeader.includes('prix d achat') || cleanHeader.includes('achat') || cleanHeader.includes('cost')) {
@@ -4789,15 +4789,15 @@ const createColumnMapping = (headers: string[]) => {
           mapping.prix_vente = index
         } else if (cleanHeader === 'quantite' || cleanHeader.includes('stock actuel') || cleanHeader.includes('quantite') || cleanHeader.includes('stock') || cleanHeader.includes('quantity')) {
           mapping.quantite = index
-        } else if (cleanHeader.includes('rÃ©fÃ©rence') || cleanHeader.includes('reference') || cleanHeader.includes('ref') || cleanHeader.includes('sku')) {
+        } else if (cleanHeader.includes('référence') || cleanHeader.includes('reference') || cleanHeader.includes('ref') || cleanHeader.includes('sku')) {
           mapping.reference = index
         } else if (cleanHeader.includes('description') || cleanHeader.includes('desc')) {
           mapping.description = index
-        } else if (cleanHeader.includes('catÃ©gorie') || cleanHeader.includes('categorie') || cleanHeader.includes('category') || cleanHeader.includes('type')) {
+        } else if (cleanHeader.includes('catégorie') || cleanHeader.includes('categorie') || cleanHeader.includes('category') || cleanHeader.includes('type')) {
           mapping.categorie = index
         } else if (cleanHeader.includes('code-barre') || cleanHeader.includes('code_barre') || cleanHeader.includes('code barre') || cleanHeader.includes('barcode') || cleanHeader.includes('ean')) {
           mapping.code_barre = index
-        } else if (cleanHeader.includes('unitÃ©') || cleanHeader.includes('unite') || cleanHeader.includes('unit') || cleanHeader.includes('uom')) {
+        } else if (cleanHeader.includes('unité') || cleanHeader.includes('unite') || cleanHeader.includes('unit') || cleanHeader.includes('uom')) {
           mapping.unite_mesure = index
         } else if (cleanHeader.includes('stock minimum') || cleanHeader.includes('stock_minimum') || cleanHeader.includes('seuil_min') || cleanHeader.includes('min_stock')) {
           mapping.stock_minimum = index
@@ -4807,9 +4807,9 @@ const createColumnMapping = (headers: string[]) => {
           mapping.fournisseur_nom = index
         } else if (cleanHeader.includes('marque') || cleanHeader.includes('brand') || cleanHeader.includes('fabricant')) {
           mapping.marque = index
-        } else if (cleanHeader.includes('modÃ¨le') || cleanHeader.includes('modele') || cleanHeader.includes('model') || cleanHeader.includes('version')) {
+        } else if (cleanHeader.includes('modèle') || cleanHeader.includes('modele') || cleanHeader.includes('model') || cleanHeader.includes('version')) {
           mapping.modele = index
-        } else if (cleanHeader.includes('Ã©tat') || cleanHeader.includes('etat') || cleanHeader.includes('condition') || cleanHeader.includes('state')) {
+        } else if (cleanHeader.includes('état') || cleanHeader.includes('etat') || cleanHeader.includes('condition') || cleanHeader.includes('state')) {
           mapping.etat_produit = index
         } else if (cleanHeader.includes('devise') || cleanHeader.includes('currency') || cleanHeader.includes('monnaie')) {
           mapping.devise = index
@@ -4835,7 +4835,7 @@ const createColumnMapping = (headers: string[]) => {
   return mapping
 }
 
-// Fonction pour parser une ligne CSV en gÃ©rant les guillemets et apostrophes
+// Fonction pour parser une ligne CSV en gérant les guillemets et apostrophes
 const parseCSVLine = (line: string, separator: string): string[] => {
   const values: string[] = []
   let current = ''
@@ -4847,27 +4847,27 @@ const parseCSVLine = (line: string, separator: string): string[] => {
     
     if (char === '"') {
       if (inQuotes && nextChar === '"') {
-        // Guillemet Ã©chappÃ© (doublÃ©) - ajouter un seul guillemet
+        // Guillemet échappé (doublé) - ajouter un seul guillemet
         current += '"'
         i++ // Passer le guillemet suivant
       } else {
-        // DÃ©but ou fin de guillemets
+        // Début ou fin de guillemets
         inQuotes = !inQuotes
       }
     } else if (char === separator && !inQuotes) {
-      // SÃ©parateur trouvÃ© en dehors des guillemets
+      // Séparateur trouvé en dehors des guillemets
       values.push(current.trim())
       current = ''
     } else {
-      // CaractÃ¨re normal (y compris apostrophes)
+      // Caractère normal (y compris apostrophes)
       current += char
     }
   }
   
-  // Ajouter la derniÃ¨re valeur
+  // Ajouter la dernière valeur
   values.push(current.trim())
   
-  // Nettoyer les valeurs (supprimer les guillemets de dÃ©but/fin si prÃ©sents)
+  // Nettoyer les valeurs (supprimer les guillemets de début/fin si présents)
   return values.map(value => {
     if (value.startsWith('"') && value.endsWith('"') && value.length > 1) {
       return value.slice(1, -1)
@@ -4879,11 +4879,11 @@ const parseCSVLine = (line: string, separator: string): string[] => {
 // Fonction utilitaire pour nettoyer les valeurs CSV
 const cleanCSVValue = (value: string | undefined): string => {
   if (!value) return ''
-  // Supprimer les guillemets en dÃ©but/fin et nettoyer
+  // Supprimer les guillemets en début/fin et nettoyer
   return value.replace(/^["']|["']$/g, '').trim()
 }
 
-// Fonction pour crÃ©er un produit Ã  partir des valeurs
+// Fonction pour créer un produit Ã  partir des valeurs
 const createProduitFromValues = (values: string[], mapping: Record<string, number>, lineNumber: number): ProduitImport => {
   const produit: ProduitImport = {
     id: Date.now() + lineNumber,
@@ -4912,7 +4912,7 @@ const createProduitFromValues = (values: string[], mapping: Record<string, numbe
   
   if (mapping.prix_vente !== undefined) {
     produit.prix_vente = cleanCSVValue(values[mapping.prix_vente])
-    produit.prix = produit.prix_vente // CompatibilitÃ©
+    produit.prix = produit.prix_vente // Compatibilité
   }
   
   if (mapping.quantite !== undefined) {
@@ -4929,7 +4929,7 @@ const createProduitFromValues = (values: string[], mapping: Record<string, numbe
   
   if (mapping.categorie !== undefined) {
     const categoryValue = cleanCSVValue(values[mapping.categorie])
-    // Si c'est un ID numÃ©rique, l'utiliser directement
+    // Si c'est un ID numérique, l'utiliser directement
     if (/^\d+$/.test(categoryValue)) {
       produit.categorie = parseInt(categoryValue)
       produit.category = categories.value.find(c => c.id === produit.categorie)?.nom || 'autre'
@@ -4959,7 +4959,7 @@ const createProduitFromValues = (values: string[], mapping: Record<string, numbe
   
   if (mapping.fournisseur_nom !== undefined) {
     const fournisseurValue = cleanCSVValue(values[mapping.fournisseur_nom])
-    // Si c'est un ID numÃ©rique, l'utiliser directement
+    // Si c'est un ID numérique, l'utiliser directement
     if (/^\d+$/.test(fournisseurValue)) {
       produit.fournisseur_principal = parseInt(fournisseurValue)
       produit.fournisseur_nom = fournisseurs.value.find(f => f.id === produit.fournisseur_principal)?.nom || ''
@@ -4991,7 +4991,7 @@ const createProduitFromValues = (values: string[], mapping: Record<string, numbe
     produit.sku = cleanCSVValue(values[mapping.sku])
   }
 
-  // Champs non disponibles dans le nouveau modÃ¨le
+  // Champs non disponibles dans le nouveau modèle
   // if (mapping.couleur !== undefined) {
   //   produit.couleur = values[mapping.couleur]?.replace(/"/g, '') || ''
   // }
@@ -5034,7 +5034,7 @@ const convertProduitImportToProduit = (produitImport: ProduitImport): Produit =>
   }
 }
 
-// Fonction pour mapper les catÃ©gories
+// Fonction pour mapper les catégories
 const mapCategory = (category: string): string => {
   const categoryMap: Record<string, string> = {
     'telephone': 'telephone',
@@ -5062,39 +5062,39 @@ const clearImportFile = () => {
 }
 
 const processImport = async () => {
-  console.log('=== PROCESS IMPORT DÃ‰BUT ===')
+  console.log('=== PROCESS IMPORT DÉBUT ===')
   console.log('importFile.value:', importFile.value)
   console.log('importPreview.value.length:', importPreview.value.length)
   console.log('importPreview.value:', importPreview.value)
   
-  // VÃ©rifier l'authentification
+  // Vérifier l'authentification
   const token = process.client ? localStorage.getItem('access_token') : null
   const user = process.client ? localStorage.getItem('user') : null
-  console.log('ðŸ” Token:', token ? 'PrÃ©sent' : 'Manquant')
-  console.log('ðŸ‘¤ User:', user ? 'PrÃ©sent' : 'Manquant')
+  console.log('ðŸ” Token:', token ? 'Présent' : 'Manquant')
+  console.log('ðŸ‘¤ User:', user ? 'Présent' : 'Manquant')
   
   if (!token || !user) {
-    console.log('âŒ Import annulÃ©: utilisateur non authentifiÃ©')
-    error('Vous devez Ãªtre connectÃ© pour importer des produits')
+    console.log('âŒ Import annulé: utilisateur non authentifié')
+    error('Vous devez Ãªtre connecté pour importer des produits')
     return
   }
   
   if (!importFile.value || importPreview.value.length === 0) {
-    console.log('âŒ Import annulÃ©: fichier ou preview manquant')
-    error('Aucun fichier ou donnÃ©es Ã  importer')
+    console.log('âŒ Import annulé: fichier ou preview manquant')
+    error('Aucun fichier ou données Ã  importer')
     return
   }
   
-  console.log('âœ… Conditions OK, dÃ©marrage de l\'import...')
+  console.log('âœ… Conditions OK, démarrage de l\'import...')
   importing.value = true
   
   try {
     console.log('=== IMPORT VIA API BACKEND ===')
     console.log(`${importPreview.value.length} produits Ã  importer`)
     
-    // PrÃ©parer les donnÃ©es pour l'API
+    // Préparer les données pour l'API
     const produitsToImport = importPreview.value.map((item) => {
-      // Convertir les chaÃ®nes en nombres pour l'API
+      // Convertir les chaînes en nombres pour l'API
       const prixAchat = parseFloat(String(item.prix_achat).replace(/[^\d.,]/g, '').replace(',', '.')) || 0
       const prixVente = parseFloat(String(item.prix_vente).replace(/[^\d.,]/g, '').replace(',', '.')) || 0
       const quantite = parseInt(String(item.quantite).replace(/[^\d]/g, '')) || 0
@@ -5121,11 +5121,11 @@ const processImport = async () => {
       }
     })
     
-    console.log('DonnÃ©es prÃ©parÃ©es:', produitsToImport.slice(0, 2))
+    console.log('Données préparées:', produitsToImport.slice(0, 2))
     
-    // Envoyer les donnÃ©es au backend avec authentification
+    // Envoyer les données au backend avec authentification
     console.log('ðŸš€ Envoi de la requÃªte API...')
-    console.log('URL complÃ¨te:', `${API_BASE_URL}/api/produits/import_produits/`)
+    console.log('URL complète:', `${API_BASE_URL}/api/produits/import_produits/`)
     console.log('Headers:', {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token.substring(0, 20)}...`
@@ -5143,15 +5143,15 @@ const processImport = async () => {
       }
     }) as { success: boolean; imported_count: number; error?: string }
     
-    console.log('âœ… RÃ©ponse API reÃ§ue:', response)
+    console.log('âœ… Réponse API reçue:', response)
     
     if (response.success) {
-      success(`${response.imported_count} produit(s) importÃ©(s) avec succÃ¨s!`)
+      success(`${response.imported_count} produit(s) importé(s) avec succès!`)
       
       // Recharger la liste des produits
       await loadProduits()
       
-      // Fermer le modal et rÃ©initialiser
+      // Fermer le modal et réinitialiser
       showImportModal.value = false
       clearImportFile()
     } else {
@@ -5168,7 +5168,7 @@ const processImport = async () => {
     console.error('Erreur response:', err.response)
     console.error('Erreur stack:', err.stack)
     
-    // Afficher l'erreur dÃ©taillÃ©e
+    // Afficher l'erreur détaillée
     let errorMessage = 'Erreur inconnue'
     
     if (err.data?.error) {
@@ -5185,7 +5185,7 @@ const processImport = async () => {
     if (err.status === 404 || err.status === 500 || err.statusCode === 404 || err.statusCode === 500) {
       console.log('API non disponible, import local...')
       
-      // Ajouter les produits importÃ©s localement
+      // Ajouter les produits importés localement
       const nouveauxProduits: Produit[] = importPreview.value.map((item, index) => {
         const prixVente = parseFloat(String(item.prix_vente).replace(/[^\d.,]/g, '').replace(',', '.')) || 0
         return {
@@ -5197,9 +5197,9 @@ const processImport = async () => {
       })
       
       produits.value.push(...nouveauxProduits)
-      success(`${importPreview.value.length} produit(s) importÃ©(s) localement!`)
+      success(`${importPreview.value.length} produit(s) importé(s) localement!`)
       
-      // Fermer le modal et rÃ©initialiser
+      // Fermer le modal et réinitialiser
       showImportModal.value = false
       clearImportFile()
     } else {
@@ -5230,15 +5230,15 @@ const getStockClass = (stock: number) => {
 }
 
 const getCategoryLabel = (category: string | number | undefined) => {
-  if (!category) return 'Non dÃ©fini'
+  if (!category) return 'Non défini'
   
-  // Si c'est un ID numÃ©rique, chercher dans les catÃ©gories
+  // Si c'est un ID numérique, chercher dans les catégories
   if (typeof category === 'number') {
     const categorie = categories.value.find(c => c.id === category)
-    return categorie?.nom || 'CatÃ©gorie inconnue'
+    return categorie?.nom || 'Catégorie inconnue'
   }
   
-  // Si c'est une chaÃ®ne, chercher par nom
+  // Si c'est une chaîne, chercher par nom
   if (typeof category === 'string') {
     const categorie = categories.value.find(c => c.nom.toLowerCase() === category.toLowerCase())
     return categorie?.nom || category || 'Autre'
@@ -5279,10 +5279,10 @@ const getMargeClass = (marge: number) => {
   return 'text-green-600 font-semibold'
 }
 
-// Fonction pour obtenir le label de l'unitÃ© de mesure
+// Fonction pour obtenir le label de l'unité de mesure
 const getUniteLabel = (unite: string) => {
   const labels: Record<string, string> = {
-    'piece': 'piÃ¨ce',
+    'piece': 'pièce',
     'kg': 'kg',
     'g': 'g',
     'l': 'L',
@@ -5292,7 +5292,7 @@ const getUniteLabel = (unite: string) => {
     'carton': 'carton',
     'paquet': 'paquet'
   }
-  return labels[unite] || unite || 'piÃ¨ce'
+  return labels[unite] || unite || 'pièce'
 }
 
 // Statistiques pour l'importation
@@ -5309,10 +5309,10 @@ const totalValueInImport = computed(() => {
   return importPreview.value.reduce((total, produit) => total + ((produit.prix_vente || 0) * (produit.quantite || 0)), 0)
 })
 
-// Fonctions pour la gÃ©nÃ©ration de codes-barres et QR codes
+// Fonctions pour la génération de codes-barres et QR codes
 const generateCodes = async (produit: Produit) => {
   try {
-    // RÃ©cupÃ©rer l'ID de l'entreprise
+    // Récupérer l'ID de l'entreprise
     const entreprise = process.client ? localStorage.getItem('entreprise') : null
     let entrepriseId = null
     if (entreprise) {
@@ -5326,15 +5326,15 @@ const generateCodes = async (produit: Produit) => {
 
     // Message de confirmation avec popup
     showConfirmation(
-      `Voulez-vous gÃ©nÃ©rer et tÃ©lÃ©charger les codes barre et QR code pour le produit "${produit.nom}" ?`,
+      `Voulez-vous générer et télécharger les codes barre et QR code pour le produit "${produit.nom}" ?`,
       async () => {
         await generateAndDownloadProductCodes(produit, entrepriseId)
-        success(`Codes gÃ©nÃ©rÃ©s et tÃ©lÃ©chargÃ©s pour ${produit.nom}`)
+        success(`Codes générés et téléchargés pour ${produit.nom}`)
       }
     )
   } catch (error: any) {
-    console.error('Erreur gÃ©nÃ©ration codes:', error)
-    error('Erreur lors de la gÃ©nÃ©ration des codes: ' + error.message)
+    console.error('Erreur génération codes:', error)
+    error('Erreur lors de la génération des codes: ' + error.message)
   }
 }
 
@@ -5343,11 +5343,11 @@ const generateBulkCodes = async () => {
     const selectedProducts = produits.value.filter(p => selectedProductsForBulk.value.includes(p.id))
 
     if (selectedProducts.length === 0) {
-      error('Aucun produit sÃ©lectionnÃ©')
+      error('Aucun produit sélectionné')
       return
     }
 
-    // RÃ©cupÃ©rer l'ID de l'entreprise
+    // Récupérer l'ID de l'entreprise
     const entreprise = process.client ? localStorage.getItem('entreprise') : null
     let entrepriseId = null
     if (entreprise) {
@@ -5361,7 +5361,7 @@ const generateBulkCodes = async () => {
 
             // Message de confirmation avec popup
             showConfirmation(
-              `Voulez-vous gÃ©nÃ©rer et tÃ©lÃ©charger les codes barre et QR code pour ${selectedProducts.length} produit(s) sÃ©lectionnÃ©(s) dans un fichier ZIP ?`,
+              `Voulez-vous générer et télécharger les codes barre et QR code pour ${selectedProducts.length} produit(s) sélectionné(s) dans un fichier ZIP ?`,
               async () => {
                 generatingBulkCodes.value = true
 
@@ -5369,17 +5369,17 @@ const generateBulkCodes = async () => {
                   const result = await generateBulkCodesUtil(selectedProducts, entrepriseId)
 
                   if (result.successCount > 0) {
-                    success(`${result.successCount} codes gÃ©nÃ©rÃ©s avec succÃ¨s et tÃ©lÃ©chargÃ©s dans ${result.zipFilename}`)
+                    success(`${result.successCount} codes générés avec succès et téléchargés dans ${result.zipFilename}`)
                   }
 
                   if (result.errorCount > 0) {
-                    warning(`${result.errorCount} erreurs lors de la gÃ©nÃ©ration de certains codes`)
+                    warning(`${result.errorCount} erreurs lors de la génération de certains codes`)
                   }
 
                   showBulkCodeModal.value = false
                 } catch (error: any) {
-                  console.error('Erreur gÃ©nÃ©ration en masse:', error)
-                  error('Erreur lors de la gÃ©nÃ©ration en masse: ' + error.message)
+                  console.error('Erreur génération en masse:', error)
+                  error('Erreur lors de la génération en masse: ' + error.message)
                 } finally {
                   generatingBulkCodes.value = false
                 }
@@ -5387,8 +5387,8 @@ const generateBulkCodes = async () => {
             )
 
   } catch (error: any) {
-    console.error('Erreur gÃ©nÃ©ration en masse:', error)
-    error('Erreur lors de la gÃ©nÃ©ration en masse: ' + error.message)
+    console.error('Erreur génération en masse:', error)
+    error('Erreur lors de la génération en masse: ' + error.message)
   }
 }
 
@@ -5412,7 +5412,7 @@ const generateCode = async () => {
   generatingCode.value = true
   
   try {
-    // DÃ©terminer le contenu du code
+    // Déterminer le contenu du code
     let content = ''
     switch (codeOptions.value.content) {
       case 'reference':
@@ -5440,17 +5440,17 @@ const generateCode = async () => {
         content = selectedCodeProduit.value.reference || selectedCodeProduit.value.id.toString()
     }
     
-    // GÃ©nÃ©rer l'URL du QR code
+    // Générer l'URL du QR code
     const codeUrl = generateCodeUrl(content, codeOptions.value)
     generatedCode.value = codeUrl
     
-    // TÃ©lÃ©charger automatiquement
+    // Télécharger automatiquement
     await downloadCode()
     
-    success('QR Code gÃ©nÃ©rÃ© et tÃ©lÃ©chargÃ© avec succÃ¨s!')
+    success('QR Code généré et téléchargé avec succès!')
   } catch (err) {
-    console.error('Erreur gÃ©nÃ©ration code:', err)
-    error('Erreur lors de la gÃ©nÃ©ration du code')
+    console.error('Erreur génération code:', err)
+    error('Erreur lors de la génération du code')
   } finally {
     generatingCode.value = false
   }
@@ -5459,7 +5459,7 @@ const generateCode = async () => {
 const generateCodeUrl = (content: string, options: any): string => {
   const { type, format, width, height, includeText, includeProductName, includePrice } = options
   
-  // DÃ©terminer la taille selon le type de QR code
+  // Déterminer la taille selon le type de QR code
   let qrSize = `${width}x${height}`
   
   switch (type) {
@@ -5479,7 +5479,7 @@ const generateCodeUrl = (content: string, options: any): string => {
   // Construire le contenu enrichi du QR code
   let qrContent = content
   
-  // Ajouter des informations supplÃ©mentaires si demandÃ©es
+  // Ajouter des informations supplémentaires si demandées
   if (includeProductName && selectedCodeProduit.value) {
     const productInfo = `${selectedCodeProduit.value.nom}`
     if (includePrice) {
@@ -5490,12 +5490,12 @@ const generateCodeUrl = (content: string, options: any): string => {
     }
   }
   
-  // Ajouter le texte sous le code si demandÃ©
+  // Ajouter le texte sous le code si demandé
   if (includeText) {
     qrContent += `\n${content}`
   }
   
-  // GÃ©nÃ©rer l'URL du QR code
+  // Générer l'URL du QR code
   const baseUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}&data=${encodeURIComponent(qrContent)}&format=${format}&bgcolor=255-255-255&color=0-0-0&margin=10&ecc=L`
   
   return baseUrl
@@ -5511,7 +5511,7 @@ const downloadCode = () => {
   link.click()
   document.body.removeChild(link)
   
-  success('Code tÃ©lÃ©chargÃ© avec succÃ¨s!')
+  success('Code téléchargé avec succès!')
 }
 
 const generateBulkCodesAction = async () => {
@@ -5523,7 +5523,7 @@ const generateBulkCodesAction = async () => {
     const selectedProducts = produits.value.filter(p => selectedProductsForBulk.value.includes(p.id))
     const codes: { product: Produit, url: string }[] = []
     
-      // GÃ©nÃ©rer les codes pour chaque produit sÃ©lectionnÃ©
+      // Générer les codes pour chaque produit sélectionné
       for (const produit of selectedProducts) {
         let content = ''
         switch (codeOptions.value.content) {
@@ -5556,24 +5556,24 @@ const generateBulkCodesAction = async () => {
       codes.push({ product: produit, url: codeUrl })
     }
     
-    // TÃ©lÃ©charger automatiquement tous les codes
+    // Télécharger automatiquement tous les codes
     await downloadBulkCodesAsZip(codes)
     
-    success(`${codes.length} code(s) gÃ©nÃ©rÃ©(s) avec succÃ¨s!`)
+    success(`${codes.length} code(s) généré(s) avec succès!`)
     showBulkCodeModal.value = false
     
   } catch (err) {
-    console.error('Erreur gÃ©nÃ©ration codes en masse:', err)
-    error('Erreur lors de la gÃ©nÃ©ration des codes')
+    console.error('Erreur génération codes en masse:', err)
+    error('Erreur lors de la génération des codes')
   } finally {
     generatingBulkCodes.value = false
   }
 }
 
 const downloadBulkCodesAsZip = async (codes: { product: Produit, url: string }[]) => {
-  // Pour une implÃ©mentation complÃ¨te, il faudrait utiliser une bibliothÃ¨que comme JSZip
-  // Pour l'instant, on tÃ©lÃ©charge les fichiers individuellement avec un dÃ©lai
-  success('TÃ©lÃ©chargement des codes en cours...')
+  // Pour une implémentation complète, il faudrait utiliser une bibliothèque comme JSZip
+  // Pour l'instant, on télécharge les fichiers individuellement avec un délai
+  success('Téléchargement des codes en cours...')
   
   for (let i = 0; i < codes.length; i++) {
     setTimeout(() => {
@@ -5584,7 +5584,7 @@ const downloadBulkCodesAsZip = async (codes: { product: Produit, url: string }[]
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-    }, i * 200) // DÃ©lai de 200ms entre chaque tÃ©lÃ©chargement
+    }, i * 200) // Délai de 200ms entre chaque téléchargement
   }
 }
 
@@ -5613,20 +5613,20 @@ const handleExport = () => {
 }
 
 const exportToCSV = () => {
-  // Fonction pour Ã©chapper les caractÃ¨res spÃ©ciaux dans CSV
+  // Fonction pour échapper les caractères spéciaux dans CSV
   const escapeCSVField = (field: any) => {
     if (field === null || field === undefined) return ''
     const str = String(field)
-    // Ã‰chapper les guillemets doubles en les doublant
+    // Échapper les guillemets doubles en les doublant
     const escaped = str.replace(/"/g, '""')
-    // Entourer de guillemets si nÃ©cessaire
+    // Entourer de guillemets si nécessaire
     if (escaped.includes(',') || escaped.includes('"') || escaped.includes('\n') || escaped.includes('\r')) {
       return `"${escaped}"`
     }
     return escaped
   }
 
-    // CrÃ©er un CSV avec les en-tÃªtes simples pour Ã©viter les problÃ¨mes de reconnaissance
+    // Créer un CSV avec les en-tÃªtes simples pour éviter les problèmes de reconnaissance
     const csvContent = `nom,prix_achat,prix_vente,quantite,reference,description,categorie,code_barre,unite,fournisseur,marque,modele,etat,devise,sku
 ${produits.value.map((p: Produit) => [
       escapeCSVField(p.nom),
@@ -5656,16 +5656,16 @@ ${produits.value.map((p: Produit) => [
   window.URL.revokeObjectURL(url)
   document.body.removeChild(a)
   
-  success('Export CSV rÃ©ussi! Le fichier a Ã©tÃ© tÃ©lÃ©chargÃ©.')
+  success('Export CSV réussi! Le fichier a été téléchargé.')
   showExportModal.value = false
 }
 
-// Fonction d'export Excel amÃ©liorÃ©e avec gestion d'erreurs
-// Fonction de test pour la gÃ©nÃ©ration Excel avec SheetJS
+// Fonction d'export Excel améliorée avec gestion d'erreurs
+// Fonction de test pour la génération Excel avec SheetJS
 const testExcelGeneration = () => {
-  console.log('=== TEST GÃ‰NÃ‰RATION EXCEL AVEC SHEETJS ===')
+  console.log('=== TEST GÉNÉRATION EXCEL AVEC SHEETJS ===')
   
-  // CrÃ©er des donnÃ©es de test
+  // Créer des données de test
   const testProduits: Produit[] = [
     {
       id: 1,
@@ -5677,10 +5677,10 @@ const testExcelGeneration = () => {
       prix: 550000,
       quantite: 25,
       category: 'telephones',
-      categorie_nom: 'TÃ©lÃ©phones',
+      categorie_nom: 'Téléphones',
       categorie: 1,
       entreprise_nom: 'Tech Store',
-      entrepot_nom: 'EntrepÃ´t Principal',
+      entrepot_nom: 'Entrepôt Principal',
       code_barres: '1234567890123',
       unite_mesure: 'piece',
       stock_minimum: 5,
@@ -5709,7 +5709,7 @@ const testExcelGeneration = () => {
       categorie_nom: 'Ordinateurs',
       categorie: 2,
       entreprise_nom: 'Tech Store',
-      entrepot_nom: 'EntrepÃ´t Principal',
+      entrepot_nom: 'Entrepôt Principal',
       code_barres: '2345678901234',
       unite_mesure: 'piece',
       stock_minimum: 2,
@@ -5729,7 +5729,7 @@ const testExcelGeneration = () => {
       id: 3,
       nom: 'AirPods Pro 2',
       reference: 'APP2-001',
-      description: 'Ã‰couteurs sans fil Apple AirPods Pro 2Ã¨me gÃ©nÃ©ration',
+      description: 'Écouteurs sans fil Apple AirPods Pro 2ème génération',
       prix_achat: 180000,
       prix_vente: 220000,
       prix: 220000,
@@ -5738,7 +5738,7 @@ const testExcelGeneration = () => {
       categorie_nom: 'Accessoires',
       categorie: 3,
       entreprise_nom: 'Tech Store',
-      entrepot_nom: 'EntrepÃ´t Principal',
+      entrepot_nom: 'Entrepôt Principal',
       code_barres: '3456789012345',
       unite_mesure: 'piece',
       stock_minimum: 10,
@@ -5756,19 +5756,19 @@ const testExcelGeneration = () => {
     }
   ]
   
-  console.log('DonnÃ©es de test crÃ©Ã©es:', testProduits.length, 'produits')
+  console.log('Données de test créées:', testProduits.length, 'produits')
   
   try {
     // Importer SheetJS dynamiquement
     import('xlsx').then((XLSX) => {
-      // PrÃ©parer les donnÃ©es avec en-tÃªtes simples pour Ã©viter les problÃ¨mes de reconnaissance
+      // Préparer les données avec en-tÃªtes simples pour éviter les problèmes de reconnaissance
       const headers = [
         'nom', 'prix_achat', 'prix_vente', 'quantite', 'reference', 'description', 'categorie', 'code_barre', 'unite', 'fournisseur', 'marque', 'modele', 'etat', 'devise', 'sku'
       ]
       
-      // PrÃ©parer les donnÃ©es avec validation
+      // Préparer les données avec validation
       const data = testProduits.map((p: any) => {
-        // Validation et nettoyage des donnÃ©es
+        // Validation et nettoyage des données
         const prixAchat = typeof p.prix_achat === 'number' && p.prix_achat > 0 ? p.prix_achat : 0
         const prixVente = typeof p.prix_vente === 'number' && p.prix_vente > 0 ? p.prix_vente : 0
         const quantite = typeof p.quantite === 'number' && p.quantite >= 0 ? p.quantite : 0
@@ -5795,12 +5795,12 @@ const testExcelGeneration = () => {
         ]
       })
       
-      console.log('DonnÃ©es prÃ©parÃ©es:', data.length, 'lignes')
+      console.log('Données préparées:', data.length, 'lignes')
       
-      // CrÃ©er le workbook
+      // Créer le workbook
       const wb = XLSX.utils.book_new()
       
-      // CrÃ©er la feuille de calcul
+      // Créer la feuille de calcul
       const ws_data = [headers, ...data]
       const ws = XLSX.utils.aoa_to_sheet(ws_data)
       
@@ -5836,7 +5836,7 @@ const testExcelGeneration = () => {
         }
       })
       
-      // DÃ©finir les largeurs de colonnes
+      // Définir les largeurs de colonnes
       const colWidths = [
         { wch: 8 },   // ID
         { wch: 25 },  // nom
@@ -5868,21 +5868,21 @@ const testExcelGeneration = () => {
       // Ajouter la feuille au workbook
       XLSX.utils.book_append_sheet(wb, ws, 'Test Produits')
       
-      // GÃ©nÃ©rer le fichier Excel
+      // Générer le fichier Excel
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
       const filename = `test_export_produits_${timestamp}.xlsx`
       
-      console.log('GÃ©nÃ©ration du fichier de test:', filename)
+      console.log('Génération du fichier de test:', filename)
       
-      // TÃ©lÃ©charger le fichier
+      // Télécharger le fichier
       XLSX.writeFile(wb, filename)
       
-      success(`Test Excel rÃ©ussi! ${data.length} produit(s) exportÃ©(s) dans le fichier ${filename}`)
-      console.log('=== TEST TERMINÃ‰ AVEC SUCCÃˆS ===')
+      success(`Test Excel réussi! ${data.length} produit(s) exporté(s) dans le fichier ${filename}`)
+      console.log('=== TEST TERMINÉ AVEC SUCCÃˆS ===')
       
     }).catch((err) => {
       console.error('Erreur lors du chargement de SheetJS:', err)
-      error('Erreur lors du chargement de la bibliothÃ¨que Excel')
+      error('Erreur lors du chargement de la bibliothèque Excel')
     })
     
   } catch (err: any) {
@@ -5896,7 +5896,7 @@ if (process.client) {
   (window as any).testExcelGeneration = testExcelGeneration
 }
 
-// Fonction d'export Excel amÃ©liorÃ©e avec SheetJS
+// Fonction d'export Excel améliorée avec SheetJS
 const exportToExcel = () => {
   try {
     if (!produits.value || produits.value.length === 0) {
@@ -5909,14 +5909,14 @@ const exportToExcel = () => {
     
     // Importer SheetJS dynamiquement
     import('xlsx').then((XLSX) => {
-      // PrÃ©parer les donnÃ©es avec en-tÃªtes simples pour Ã©viter les problÃ¨mes de reconnaissance
+      // Préparer les données avec en-tÃªtes simples pour éviter les problèmes de reconnaissance
       const headers = [
         'nom', 'prix_achat', 'prix_vente', 'quantite', 'reference', 'description', 'categorie', 'code_barre', 'unite', 'fournisseur', 'marque', 'modele', 'etat', 'devise', 'sku'
       ]
       
-      // PrÃ©parer les donnÃ©es avec validation
+      // Préparer les données avec validation
       const data = produits.value.map((p: Produit) => {
-        // Validation et nettoyage des donnÃ©es
+        // Validation et nettoyage des données
         const prixAchat = typeof p.prix_achat === 'number' && p.prix_achat > 0 ? p.prix_achat : 0
         const prixVente = typeof p.prix_vente === 'number' && p.prix_vente > 0 ? p.prix_vente : 0
         const quantite = typeof p.quantite === 'number' && p.quantite >= 0 ? p.quantite : 0
@@ -5943,12 +5943,12 @@ const exportToExcel = () => {
         ]
       })
       
-      console.log('DonnÃ©es prÃ©parÃ©es:', data.length, 'lignes')
+      console.log('Données préparées:', data.length, 'lignes')
       
-      // CrÃ©er le workbook
+      // Créer le workbook
       const wb = XLSX.utils.book_new()
       
-      // CrÃ©er la feuille de calcul
+      // Créer la feuille de calcul
       const ws_data = [headers, ...data]
       const ws = XLSX.utils.aoa_to_sheet(ws_data)
       
@@ -5984,7 +5984,7 @@ const exportToExcel = () => {
         }
       })
       
-      // DÃ©finir les largeurs de colonnes
+      // Définir les largeurs de colonnes
       const colWidths = [
         { wch: 8 },   // ID
         { wch: 25 },  // nom
@@ -6016,23 +6016,23 @@ const exportToExcel = () => {
       // Ajouter la feuille au workbook
       XLSX.utils.book_append_sheet(wb, ws, 'Produits')
       
-      // GÃ©nÃ©rer le fichier Excel
+      // Générer le fichier Excel
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
       const filename = `export_produits_${timestamp}.xlsx`
       
-      console.log('GÃ©nÃ©ration du fichier:', filename)
+      console.log('Génération du fichier:', filename)
       
-      // TÃ©lÃ©charger le fichier
+      // Télécharger le fichier
       XLSX.writeFile(wb, filename)
       
-      success(`Export Excel rÃ©ussi! ${data.length} produit(s) exportÃ©(s) dans le fichier ${filename}`)
+      success(`Export Excel réussi! ${data.length} produit(s) exporté(s) dans le fichier ${filename}`)
       showExportModal.value = false
       
-      console.log('=== EXPORT TERMINÃ‰ AVEC SUCCÃˆS ===')
+      console.log('=== EXPORT TERMINÉ AVEC SUCCÃˆS ===')
       
     }).catch((err) => {
       console.error('Erreur lors du chargement de SheetJS:', err)
-      error('Erreur lors du chargement de la bibliothÃ¨que Excel')
+      error('Erreur lors du chargement de la bibliothèque Excel')
     })
     
   } catch (err: any) {
@@ -6041,7 +6041,7 @@ const exportToExcel = () => {
   }
 }
 
-// Fonction pour crÃ©er un fichier Excel XML valide et amÃ©liorÃ©
+// Fonction pour créer un fichier Excel XML valide et amélioré
 const createExcelXML = (headers: string[], data: any[][]) => {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -6051,7 +6051,7 @@ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
 xmlns:html="http://www.w3.org/TR/REC-html40">
 <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
  <Title>Export des Produits - ${new Date().toLocaleDateString('fr-FR')}</Title>
- <Author>SystÃ¨me de Gestion des Produits</Author>
+ <Author>Système de Gestion des Produits</Author>
  <Created>${new Date().toISOString()}</Created>
  <LastSaved>${new Date().toISOString()}</LastSaved>
  <Company>Walner Durel</Company>
@@ -6163,7 +6163,7 @@ xmlns:html="http://www.w3.org/TR/REC-html40">
   return xml
 }
 
-// Fonction pour Ã©chapper les caractÃ¨res XML
+// Fonction pour échapper les caractères XML
 const escapeXml = (text: string) => {
   return text
     .replace(/&/g, '&amp;')
@@ -6173,27 +6173,27 @@ const escapeXml = (text: string) => {
     .replace(/'/g, '&apos;')
 }
 
-// Fonction de test pour vÃ©rifier le chargement des donnÃ©es
+// Fonction de test pour vérifier le chargement des données
 const testDataLoading = async () => {
-  console.log('=== TEST CHARGEMENT DONNÃ‰ES ===')
+  console.log('=== TEST CHARGEMENT DONNÉES ===')
   
-  // VÃ©rifier les donnÃ©es dans localStorage
+  // Vérifier les données dans localStorage
   const token = process.client ? localStorage.getItem('access_token') : null
   const user = process.client ? localStorage.getItem('user') : null
   const entreprise = process.client ? localStorage.getItem('entreprise') : null
   const boutique = process.client ? localStorage.getItem('boutique') : null
   
-  console.log('DonnÃ©es localStorage:', {
-    token: token ? 'PrÃ©sent' : 'Absent',
-    user: user ? 'PrÃ©sent' : 'Absent',
-    entreprise: entreprise ? 'PrÃ©sent' : 'Absent',
-    boutique: boutique ? 'PrÃ©sent' : 'Absent'
+  console.log('Données localStorage:', {
+    token: token ? 'Présent' : 'Absent',
+    user: user ? 'Présent' : 'Absent',
+    entreprise: entreprise ? 'Présent' : 'Absent',
+    boutique: boutique ? 'Présent' : 'Absent'
   })
   
   if (user) {
     try {
       const userData = JSON.parse(user)
-      console.log('DonnÃ©es utilisateur:', userData)
+      console.log('Données utilisateur:', userData)
     } catch (e) {
       console.error('Erreur parsing user:', e)
     }
@@ -6202,7 +6202,7 @@ const testDataLoading = async () => {
   if (entreprise) {
     try {
       const entrepriseData = JSON.parse(entreprise)
-      console.log('DonnÃ©es entreprise:', entrepriseData)
+      console.log('Données entreprise:', entrepriseData)
     } catch (e) {
       console.error('Erreur parsing entreprise:', e)
     }
@@ -6211,37 +6211,37 @@ const testDataLoading = async () => {
   if (boutique) {
     try {
       const boutiqueData = JSON.parse(boutique)
-      console.log('DonnÃ©es boutique:', boutiqueData)
+      console.log('Données boutique:', boutiqueData)
     } catch (e) {
       console.error('Erreur parsing boutique:', e)
     }
   }
   
-  // Tester le chargement des donnÃ©es
+  // Tester le chargement des données
   await loadData()
   
   console.log('=== FIN TEST ===')
 }
 
-// Fonction de test pour vÃ©rifier la crÃ©ation
+// Fonction de test pour vérifier la création
 const testCreation = async () => {
-  console.log('=== TEST DE CRÃ‰ATION ===')
+  console.log('=== TEST DE CRÉATION ===')
   console.log('Entreprises disponibles:', entreprises.value)
-  console.log('CatÃ©gories disponibles:', categories.value)
+  console.log('Catégories disponibles:', categories.value)
   console.log('Fournisseurs disponibles:', fournisseurs.value)
   
   if (entreprises.value.length === 0) {
-    console.error('Aucune entreprise trouvÃ©e!')
+    console.error('Aucune entreprise trouvée!')
     return
   }
   
   const entrepriseId = entreprises.value[0].id
-  console.log('ID de l\'entreprise utilisÃ©e:', entrepriseId)
+  console.log('ID de l\'entreprise utilisée:', entrepriseId)
   
-  // Test de crÃ©ation d'une catÃ©gorie
+  // Test de création d'une catégorie
   const testCategorie = {
-    nom: `Test CatÃ©gorie ${Date.now()}`,
-    description: 'CatÃ©gorie de test',
+    nom: `Test Catégorie ${Date.now()}`,
+    description: 'Catégorie de test',
     icone: 'i-heroicons-tag',
     couleur: '#FF5733',
     parent: null,
@@ -6249,7 +6249,7 @@ const testCreation = async () => {
     actif: true
   }
   
-  console.log('DonnÃ©es de test pour catÃ©gorie:', testCategorie)
+  console.log('Données de test pour catégorie:', testCategorie)
   
   try {
     const token = process.client ? localStorage.getItem('access_token') : null
@@ -6267,12 +6267,12 @@ const testCreation = async () => {
       body: testCategorie
     })
     
-    console.log('âœ… CatÃ©gorie crÃ©Ã©e avec succÃ¨s:', response)
-    success('Test de crÃ©ation de catÃ©gorie rÃ©ussi!')
+    console.log('âœ… Catégorie créée avec succès:', response)
+    success('Test de création de catégorie réussi!')
   } catch (err: any) {
-    console.error('âŒ Erreur lors du test de crÃ©ation:', err)
-    console.error('DÃ©tails:', err.data)
-    error('Test de crÃ©ation Ã©chouÃ©. Veuillez rÃ©essayer.')
+    console.error('âŒ Erreur lors du test de création:', err)
+    console.error('Détails:', err.data)
+    error('Test de création échoué. Veuillez réessayer.')
   }
 }
 
